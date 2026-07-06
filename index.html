@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigo Assistant</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        button { padding: 15px 30px; font-size: 16px; margin: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Trigo Assistant</h1>
+    <div id="status">กำลังโหลด...</div>
+    <button id="scanBtn" style="display:none;">สแกน QR Code</button>
+    <pre id="output"></pre>
+
+    <script>
+        // เปลี่ยน URL ตรงนี้เป็น URL ของ GAS ที่คุณเพิ่ง Deploy สำเร็จ
+        const API_URL = 
+'https://script.google.com/macros/s/AKfycbyyaGZo9-K642kXn78lE96Qq-kezdynJHk-sF5qcoIADEXXLXHrSsNO2SVTYSw_XChQGA/exec';
+        const LIFF_ID = '2010604851-K7e6kZ3m'; // <--- ใส่ LIFF ID ของคุณที่นี่
+
+        async function initApp() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    document.getElementById('status').innerText = "พร้อมใช้งาน";
+                    document.getElementById('scanBtn').style.display = 'inline-block';
+                    // ดึงข้อมูลเริ่มต้นจาก API (ถ้าต้องการ)
+                    fetchData('getInitialData', { lineUserId: liff.getDecodedIDToken().sub });
+                }
+            } catch (err) {
+                document.getElementById('status').innerText = "LIFF Init Error: " + err.message;
+            }
+        }
+
+        // ฟังก์ชันสำหรับส่ง Request ไปที่ GAS
+        async function fetchData(action, payload = {}) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, ...payload })
+            });
+            return await response.json();
+        }
+
+        // ปุ่มสแกน
+        document.getElementById('scanBtn').onclick = async () => {
+            try {
+                const result = await liff.scanCodeV2();
+                document.getElementById('output').innerText = "กำลังประมวลผล...";
+                
+                // ส่งค่าที่สแกนได้ไปหา GAS
+                const response = await fetchData('scanReceive', { 
+                    rawScan: result.value, 
+                    lineUserId: liff.getDecodedIDToken().sub 
+                });
+                
+                document.getElementById('output').innerText = JSON.stringify(response, null, 2);
+                alert("สแกนสำเร็จ!");
+            } catch (err) {
+                alert("สแกนล้มเหลว: " + err.message);
+            }
+        };
+
+        initApp();
+    </script>
+</body>
+</html>
