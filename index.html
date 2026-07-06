@@ -6,40 +6,27 @@
     <title>Trigo Assistant</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        button { padding: 15px 30px; font-size: 16px; margin: 10px; cursor: pointer; }
+        /* [เอา CSS เดิมของคุณมาแปะตรงนี้ได้เลยครับ] */
+        body { font-family: sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
+        #app { margin-top: 20px; }
+        .scan-button { padding: 15px; background: #00B900; color: white; border: none; border-radius: 5px; width: 100%; font-size: 16px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>Trigo Assistant</h1>
-    <div id="status">กำลังโหลด...</div>
-    <button id="scanBtn" style="display:none;">สแกน QR Code</button>
-    <pre id="output"></pre>
+
+    <div id="app">
+        <h1 id="homeUserName">กำลังโหลด...</h1>
+        <div id="receiveContent">
+            <button class="scan-button" type="button" onclick="startScan()">เริ่มสแกน QR Code</button>
+        </div>
+    </div>
 
     <script>
-        // เปลี่ยน URL ตรงนี้เป็น URL ของ GAS ที่คุณเพิ่ง Deploy สำเร็จ
-        const API_URL = 
-'https://script.google.com/macros/s/AKfycbyyaGZo9-K642kXn78lE96Qq-kezdynJHk-sF5qcoIADEXXLXHrSsNO2SVTYSw_XChQGA/exec';
-        const LIFF_ID = '2010604851-K7e6kZ3m'; // <--- ใส่ LIFF ID ของคุณที่นี่
-
-        async function initApp() {
-            try {
-                await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
-                    document.getElementById('status').innerText = "พร้อมใช้งาน";
-                    document.getElementById('scanBtn').style.display = 'inline-block';
-                    // ดึงข้อมูลเริ่มต้นจาก API (ถ้าต้องการ)
-                    fetchData('getInitialData', { lineUserId: liff.getDecodedIDToken().sub });
-                }
-            } catch (err) {
-                document.getElementById('status').innerText = "LIFF Init Error: " + err.message;
-            }
-        }
-
-        // ฟังก์ชันสำหรับส่ง Request ไปที่ GAS
-        async function fetchData(action, payload = {}) {
+        // --- ส่วนที่ปรับปรุงเพื่อ GitHub ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyyaGZo9-K642kXn78lE96Qq-kezdynJHk-sF5qcoIADEXXLXHrSsNO2SVTYSw_XChQGA/exec';
+        const LIFF_ID = '2010604851-K7e6kZ3m';
+        
+        async function callAPI(action, payload = {}) {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -48,26 +35,85 @@
             return await response.json();
         }
 
-        // ปุ่มสแกน
-        document.getElementById('scanBtn').onclick = async () => {
+        // --- ส่วน Logic ของคุณ (ที่คุณเคยเขียนไว้) ---
+        var receiveState = { scanResult: null, form: { total: "", ok: "", ng: "" } };
+        var currentLineUserId = "";
+        var liffReady_ = false;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await liff.init({ liffId: LIFF_ID });
+            liffReady_ = true;
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                currentLineUserId = profile.userId;
+                loadInitialData();
+            } else {
+                liff.login();
+            }
+        });
+
+        // [จุดสำคัญ] ปรับแก้ loadInitialData ให้ใช้ callAPI แทน google.script.run
+        async function loadInitialData() {
+            try {
+                const data = await callAPI('getInitialData', { lineUserId: currentLineUserId });
+                var userName = document.getElementById("homeUserName");
+                if (userName && data.employee) {
+                    userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        // [จุดสำคัญ] ปรับแก้ startScan ให้ใช้ callAPI แทน google.script.run
+        async function startScan() {
+            if (!liffReady_) return alert("LIFF ยังไม่พร้อม");
             try {
                 const result = await liff.scanCodeV2();
-                document.getElementById('output').innerText = "กำลังประมวลผล...";
-                
-                // ส่งค่าที่สแกนได้ไปหา GAS
-                const response = await fetchData('scanReceive', { 
-                    rawScan: result.value, 
-                    lineUserId: liff.getDecodedIDToken().sub 
-                });
-                
-                document.getElementById('output').innerText = JSON.stringify(response, null, 2);
-                alert("สแกนสำเร็จ!");
-            } catch (err) {
-                alert("สแกนล้มเหลว: " + err.message);
-            }
-        };
+                if(!result || !result.value) return;
 
-        initApp();
+                const data = await callAPI('scanReceive', { 
+                    rawScan: result.value, 
+                    lineUserId: currentLineUserId 
+                });
+
+                if(!data || !data.ok) return showNotFoundView();
+                
+                receiveState.scanResult = data;
+                showResultView(data);
+            } catch(e) { alert("สแกนพลาด: " + e.message); }
+        }
+
+        // [จุดสำคัญ] ปรับแก้ saveReceiveData ให้ใช้ callAPI แทน google.script.run
+        async function saveReceiveData() {
+            var saveBtn = document.querySelector(".save-btn");
+            if (saveBtn) saveBtn.disabled = true;
+
+            var payload = {
+                mission: receiveState.scanResult.part.mission,
+                partName: receiveState.scanResult.part.partName,
+                partNumber: receiveState.scanResult.part.partNumber,
+                batch: receiveState.scanResult.parsed.batch,
+                total: receiveState.form.total,
+                ok: receiveState.form.ok,
+                ng: receiveState.form.ng,
+                tagType: receiveState.scanResult.parsed.tagType,
+                scanCode: receiveState.scanResult.parsed.scanCode,
+                rawScan: receiveState.scanResult.rawScan,
+                lineUserId: currentLineUserId
+            };
+
+            try {
+                await callAPI('saveReceive', { payload: payload });
+                showSuccessView();
+            } catch (err) {
+                if (saveBtn) saveBtn.disabled = false;
+                alert("บันทึกพลาด: " + err);
+            }
+        }
+
+        // --- คุณสามารถก๊อปปี้ฟังก์ชันเดิมของคุณที่เหลือมาแปะต่อตรงนี้ได้เลย! ---
+        // เช่น showResultView, updateQtyForm, showConfirmView, Icon ต่างๆ 
+        // ฟังก์ชันเหล่านี้ทำงานได้ปกติ ไม่ต้องแก้ไขอะไรครับ
+        
     </script>
 </body>
 </html>
