@@ -928,6 +928,7 @@ var receiveState = {
 };
 var homeHtmlCache = "";
 var currentLineUserId = "";
+var currentLineDisplayName = "";
 var currentEmployeeDisplayName = "";
 var liffReady_ = false;
 var partOptionsCache_ = null;
@@ -970,6 +971,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     var profile = await withTimeout_(liff.getProfile(), 15000);
     currentLineUserId = profile.userId;
+    currentLineDisplayName = profile.displayName;
   } catch (e) {
     console.log(e);
     alert("liff.getProfile() ล้มเหลว: " + (e && e.message ? e.message : e));
@@ -981,7 +983,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   loadInitialData();
 });
 function loadInitialData() {
-  api("getInitialData", { lineUserId: currentLineUserId })
+  api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName })
     .then(function(data) {
       var userName = document.getElementById("homeUserName");
       if (userName && data && data.employee) {
