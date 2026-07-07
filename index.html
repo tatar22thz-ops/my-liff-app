@@ -1012,6 +1012,7 @@ async function startScan() {
   try{
       const result = await liff.scanCodeV2();
       if(!result || !result.value) return;
+    alert("ค่าที่สแกนได้ (raw):\n" + result.value);
       api("scanReceive", { rawScan: result.value, lineUserId: currentLineUserId })
         .then(function(data){
             if(!data || !data.ok){
