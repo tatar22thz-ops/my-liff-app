@@ -40,6 +40,14 @@ body {
   display: flex;
   align-items: center;
 }
+.home-header {
+  position: relative;
+  height: 20vh;
+  background-image: url('home-banner.jpg');
+  background-size: cover;
+  background-position: center;
+  background-color: #0E4F8C;
+}
 .logo {
   width: 7.94vh;
   height: 4.27vh;
@@ -236,13 +244,13 @@ footer {
 }
 .scan-view {
   position: relative;
-  min-height: 98vh;
+  min-height: 93.48vh;
 }
 .manual-link-btn {
   position: absolute;
   left: 0;
   right: 0;
-  top: 94.2vh;
+  top: 88vh;
   text-align: center;
   background: none;
   border: none;
@@ -341,7 +349,7 @@ footer {
   position: absolute;
   left: 16px;
   right: 16px;
-  top: 82.11vh;
+  top: 76vh;
   height: 10.55vh;
   border: 0;
   border-radius: 16px;
@@ -817,16 +825,7 @@ footer {
 </head>
 <body>
   <main id="app" class="app">
-    <header class="top-header">
-      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
-        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
-        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
-        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
-        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
-        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
-      </svg>
-      <h1>Trigo Assistant</h1>
-    </header>
+    <header class="home-header"></header>
     <section class="user-bar">
       <div class="user-icon" aria-hidden="true">
         <svg viewBox="0 0 64 64">
@@ -913,13 +912,7 @@ footer {
     </button>
     <h1>รับงานเข้า</h1>
     <div class="header-logo">
-      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
-        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
-        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
-        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
-        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
-        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
-      </svg>
+      <img class="logo" src="logo.svg" alt="TRIGO">
     </div>
   </header>
   <div id="receiveContent"></div>
@@ -997,11 +990,10 @@ function loadInitialData() {
   api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName })
     .then(function(data) {
       var userName = document.getElementById("homeUserName");
-            if (userName && data && data.employee) {
+      if (userName && data && data.employee) {
         userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
         currentEmployeeDisplayName = data.employee.displayName || data.employee.name || "Unknown";
       }
-
       if (data && data.employee && !data.employee.employeeId) {
         showUnauthorizedView();
       }
@@ -1014,23 +1006,14 @@ function loadInitialData() {
       }
     });
 }
-  function showUnauthorizedView() {
+function showUnauthorizedView() {
   var app = document.getElementById("app");
-
   if (!app) return;
-
   app.innerHTML = `
     <header class="top-header">
-      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
-        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
-        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
-        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
-        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
-        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
-      </svg>
+      <img class="logo" src="logo.svg" alt="TRIGO">
       <h1>Trigo Assistant</h1>
     </header>
-
     <div class="error-view">
       <section class="error-card">
         ${bigXIcon()}
