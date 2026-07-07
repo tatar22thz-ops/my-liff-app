@@ -997,9 +997,13 @@ function loadInitialData() {
   api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName })
     .then(function(data) {
       var userName = document.getElementById("homeUserName");
-      if (userName && data && data.employee) {
+            if (userName && data && data.employee) {
         userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
         currentEmployeeDisplayName = data.employee.displayName || data.employee.name || "Unknown";
+      }
+
+      if (data && data.employee && !data.employee.employeeId) {
+        showUnauthorizedView();
       }
     })
     .catch(function(err) {
@@ -1009,6 +1013,35 @@ function loadInitialData() {
         userName.textContent = "Unknown";
       }
     });
+}
+  function showUnauthorizedView() {
+  var app = document.getElementById("app");
+
+  if (!app) return;
+
+  app.innerHTML = `
+    <header class="top-header">
+      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
+        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
+        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
+        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
+        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
+        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
+      </svg>
+      <h1>Trigo Assistant</h1>
+    </header>
+
+    <div class="error-view">
+      <section class="error-card">
+        ${bigXIcon()}
+        <h2 class="error-title">
+          ${smallXIcon()}
+          <span>ไม่ได้รับอนุญาต</span>
+        </h2>
+        <p class="error-text">บัญชี LINE นี้ยังไม่ได้ลงทะเบียน<br>เป็นพนักงานในระบบ<br>กรุณาติดต่อหัวหน้างาน</p>
+      </section>
+    </div>
+  `;
 }
 function openReceive() {
   var template = document.getElementById("receive-template");
