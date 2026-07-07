@@ -261,6 +261,16 @@ footer {
   height: 31.04vh;
   transform: translateX(-50%);
 }
+.scan-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #000000;
+}
 .scan-corner {
   position: absolute;
   width: 8.18vh;
@@ -916,6 +926,7 @@ footer {
 </section>
 </template>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <script>
 var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6iBeELosvSfsrm0oSGN7GfOeEyb8NVD2_2z7XMralNZdlA/exec";
 var receiveState = {
@@ -1005,6 +1016,7 @@ function openReceive() {
   showScanView();
 }
 function goHome() {
+  stopScanCamera_();
   var app = document.getElementById("app");
   if (app && homeHtmlCache) {
     app.innerHTML = homeHtmlCache;
@@ -1014,6 +1026,7 @@ function goHome() {
   window.location.href = window.location.href.split("?")[0];
 }
 function showScanView() {
+  stopScanCamera_();
   receiveState.scanResult = null;
   receiveState.isManual = false;
   receiveState.form = {
@@ -1041,34 +1054,76 @@ function showScanView() {
     </div>
   `;
 }
+var codeReader_ = null;
+var scanCancelledByUser_ = false;
 async function startScan() {
   if (!liffReady_) {
     alert("liff.init() ยังไม่สำเร็จ ไม่สามารถสแกนได้");
     return;
   }
-  try{
-      const result = await liff.scanCodeV2();
-      if(!result || !result.value) return;
-      api("scanReceive", { rawScan: result.value, lineUserId: currentLineUserId })
-        .then(function(data){
-            if(!data || !data.ok){
-                if (data && data.error) {
-                  alert(data.error);
-                  return;
-                }
-                showNotFoundView();
-                return;
-            }
-            receiveState.scanResult = data;
-            showResultView(data);
-        })
-        .catch(function(err){
-            alert(err);
-        });
-  }catch(e){
+  if (codeReader_) {
+    scanCancelledByUser_ = true;
+    stopScanCamera_();
+    showScanView();
+    return;
+  }
+  var frame = document.querySelector(".scan-frame");
+  var btnLabel = document.querySelector(".scan-button span");
+  if (!frame) return;
+  var video = document.createElement("video");
+  video.id = "scanVideo";
+  video.className = "scan-video";
+  video.setAttribute("muted", "");
+  video.setAttribute("playsinline", "");
+  frame.insertBefore(video, frame.firstChild);
+  if (btnLabel) btnLabel.textContent = "แตะเพื่อหยุดสแกน";
+  scanCancelledByUser_ = false;
+  try {
+    var hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.DATA_MATRIX
+    ]);
+    codeReader_ = new ZXing.BrowserMultiFormatReader(hints);
+    var result = await codeReader_.decodeOnceFromConstraints(
+      { video: { facingMode: "environment" } },
+      "scanVideo"
+    );
+    stopScanCamera_();
+    handleScanResult_(result.getText());
+  } catch (e) {
+    var wasCancelled = scanCancelledByUser_;
+    stopScanCamera_();
+    if (!wasCancelled) {
       console.log(e);
       alert("สแกนไม่สำเร็จ: " + (e && e.message ? e.message : e));
+      showScanView();
+    }
   }
+}
+function stopScanCamera_() {
+  if (codeReader_) {
+    try { codeReader_.reset(); } catch (e) {}
+    codeReader_ = null;
+  }
+}
+function handleScanResult_(rawValue) {
+  api("scanReceive", { rawScan: rawValue, lineUserId: currentLineUserId })
+    .then(function(data){
+        if(!data || !data.ok){
+            if (data && data.error) {
+              alert(data.error);
+              return;
+            }
+            showNotFoundView();
+            return;
+        }
+        receiveState.scanResult = data;
+        showResultView(data);
+    })
+    .catch(function(err){
+        alert(err);
+    });
 }
 async function showManualEntryView() {
   if (!partOptionsCache_) {
