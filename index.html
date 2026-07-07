@@ -1,119 +1,1325 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trigo Assistant</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        /* [เอา CSS เดิมของคุณมาแปะตรงนี้ได้เลยครับ] */
-        body { font-family: sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
-        #app { margin-top: 20px; }
-        .scan-button { padding: 15px; background: #00B900; color: white; border: none; border-radius: 5px; width: 100%; font-size: 16px; margin-top: 10px; }
-    </style>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trigo Assistant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap');
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #EEF2F7;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+body {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+.app {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    overflow: hidden;
+    background: #EEF2F7;
+    color: #000000;
+}
+.top-header {
+  position: relative;
+  height: 6.52vh;
+  background: #0E4F8C;
+  border-bottom: 1px solid rgba(255,255,255,.38);
+  display: flex;
+  align-items: center;
+}
+.logo {
+  width: 7.94vh;
+  height: 4.27vh;
+  display: block;
+}
+.top-header .logo {
+  margin-left: 13px;
+  flex: 0 0 auto;
+}
+.top-header h1 {
+  margin: 0 0 0 15px;
+  color: #ffffff;
+  font-size: 3.55vh;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .1px;
+  white-space: nowrap;
+}
+.user-bar {
+  height: 4.74vh;
+  background: #0E4F8C;
+  display: flex;
+  align-items: center;
+  padding-left: 102px;
+  gap: 15px;
+}
+.user-icon {
+  width: 3.44vh;
+  height: 3.44vh;
+  flex: 0 0 auto;
+}
+.user-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.user-name {
+  color: #ffffff;
+  font-size: 2.73vh;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: .1px;
+  padding-bottom: 1px;
+}
+.menu {
+  padding: 1.9vh 16px 0;
+}
+.menu-card {
+  width: 100%;
+  height: 8.53vh;
+  margin: 0 0 1.9vh;
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.menu-card-large {
+  height: 9.48vh;
+}
+.card-icon {
+  width: 8.53vh;
+  height: 8.53vh;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.card-icon svg {
+  display: block;
+  width: 5.92vh;
+  height: 5.92vh;
+}
+.icon-green {
+  color: #08A33A;
+}
+.icon-blue {
+  color: #1687F4;
+}
+.icon-red {
+  color: #FF0909;
+}
+.icon-orange {
+  color: #F39800;
+}
+.card-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 17px;
+  padding-bottom: 5px;
+  min-width: 0;
+}
+.card-copy-second {
+  margin-left: 17px;
+  padding-bottom: 0;
+}
+.card-copy-small {
+  margin-left: 17px;
+  padding-bottom: 1px;
+}
+.card-title {
+  display: block;
+  color: #000000;
+  font-size: 3.55vh;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.card-subtitle {
+  display: block;
+  margin-top: 0.71vh;
+  color: #333333;
+  font-size: 1.54vh;
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.menu-card-large .card-subtitle {
+  font-size: 1.54vh;
+  margin-top: 0.59vh;
+}
+footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3.32vh;
+  text-align: center;
+  color: #000000;
+  font-size: 1.18vh;
+  line-height: 1;
+  font-weight: 400;
+}
+.receive-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #EEF2F7;
+  position: relative;
+  overflow: hidden;
+}
+.receive-header {
+  height: 6.52vh;
+  background: #0E4F8C;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.receive-header h1 {
+  color: #ffffff;
+  font-size: 3.55vh;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
+.back-btn {
+  position: absolute;
+  left: 24px;
+  top: 0.71vh;
+  width: 4.74vh;
+  height: 5.33vh;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.back-btn svg {
+  width: 4.74vh;
+  height: 5.33vh;
+  display: block;
+}
+.header-logo {
+  position: absolute;
+  right: 7px;
+  top: 0.83vh;
+  width: 7.94vh;
+  height: 4.27vh;
+}
+.header-logo .logo {
+  position: static;
+  width: 7.94vh;
+  height: 4.27vh;
+  display: block;
+}
+.scan-view {
+  position: relative;
+  min-height: 93.48vh;
+}
+.scan-frame {
+  position: absolute;
+  left: 50%;
+  top: 17.30vh;
+  width: 31.04vh;
+  height: 31.04vh;
+  transform: translateX(-50%);
+}
+.scan-corner {
+  position: absolute;
+  width: 8.18vh;
+  height: 8.18vh;
+  border: 9px solid #08A33A;
+}
+.scan-corner.tl {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 4px 0 0 0;
+}
+.scan-corner.tr {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 0 4px 0 0;
+}
+.scan-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-radius: 0 0 0 4px;
+}
+.scan-corner.br {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 4px 0;
+}
+.qr-demo {
+  position: absolute;
+  left: 109px;
+  top: 10.78vh;
+  width: 5.21vh;
+  height: 5.21vh;
+  background: #000000;
+}
+.scan-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 55.09vh;
+  margin: 0;
+  text-align: center;
+  color: #000000;
+  font-size: 4.27vh;
+  line-height: 1;
+  font-weight: 800;
+}
+.scan-subtitle {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 59.95vh;
+  margin: 0;
+  color: #333333;
+  text-align: center;
+  font-size: 2.61vh;
+  line-height: 1.45;
+  font-weight: 400;
+}
+.scan-button {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 82.11vh;
+  height: 10.55vh;
+  border: 0;
+  border-radius: 16px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 4.38vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  cursor: pointer;
+}
+.scan-button svg {
+  width: 5.69vh;
+  height: 5.69vh;
+  flex: 0 0 auto;
+}
+.result-view {
+  position: relative;
+  min-height: 93.48vh;
+  padding-top: 2.73vh;
+}
+.scan-ok-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  color: #00A000;
+  font-size: 3.44vh;
+  line-height: 1;
+  font-weight: 800;
+  margin: 0 0 3.08vh;
+}
+.scan-ok-title svg {
+  width: 3.20vh;
+  height: 3.20vh;
+  flex: 0 0 auto;
+}
+.info-card {
+  width: 340px;
+  min-height: 17.89vh;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.01vh 12px;
+}
+.info-row {
+  display: grid;
+  grid-template-columns: 135px 1fr;
+  align-items: center;
+  min-height: 4.03vh;
+  color: #000000;
+  font-size: 2.13vh;
+  line-height: 1;
+  font-weight: 400;
+}
+.info-value {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.batch-panel {
+  width: 390px;
+  max-width: 100%;
+  height: 22.16vh;
+  margin: 0 auto;
+  padding: 1.9vh 24px 0;
+  background: #FFF8E5;
+  color: #000000;
+}
+.batch-panel.new {
+  width: 340px;
+  height: 17.77vh;
+  margin: 1.42vh auto 5.92vh;
+  background: #E9FFE3;
+  position: relative;
+  padding: 2.37vh 18px 0;
+}
+.batch-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: #FFB000;
+  font-size: 2.49vh;
+  line-height: 1;
+  font-weight: 400;
+  margin: 0 0 3.20vh;
+}
+.batch-title svg {
+  width: 3.91vh;
+  height: 3.91vh;
+  flex: 0 0 auto;
+}
+.batch-lines {
+  padding-left: 13px;
+  font-size: 2.13vh;
+  line-height: 1.9;
+  color: #000000;
+}
+.new-ribbon {
+  position: absolute;
+  left: 65px;
+  top: 1.66vh;
+  width: 5.33vh;
+  height: 5.33vh;
+  background: #00A000;
+  color: #ffffff;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.new-ribbon span {
+  transform: rotate(-45deg);
+  font-size: 1.18vh;
+  font-weight: 800;
+  line-height: 1;
+  margin-left: 9px;
+  margin-top: 0.83vh;
+}
+.new-title {
+  margin: 0.36vh 0 5.09vh;
+  color: #00A000;
+  text-align: center;
+  font-size: 2.73vh;
+  line-height: 1;
+  font-weight: 400;
+}
+.new-message {
+  margin: 0;
+  color: #000000;
+  text-align: center;
+  font-size: 2.49vh;
+  line-height: 1.2;
+  font-weight: 400;
+}
+.qty-form {
+  width: 340px;
+  margin: 3.44vh auto 0;
+}
+.qty-row {
+  display: grid;
+  grid-template-columns: 94px 246px;
+  align-items: center;
+  margin-bottom: 2.25vh;
+}
+.qty-row label {
+  color: #333333;
+  font-size: 3.67vh;
+  line-height: 1;
+  font-weight: 400;
+}
+.qty-row input {
+  width: 246px;
+  height: 4.27vh;
+  border: 2px solid #AEB4B8;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0 12px;
+  color: #000000;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.49vh;
+  line-height: 1;
+  outline: none;
+}
+.qty-row input::placeholder {
+  color: #AEB4B8;
+}
+.form-valid {
+  width: 340px;
+  height: 4.74vh;
+  margin: 6.04vh auto 2.61vh;
+  border-radius: 7px;
+  background: #DEF3D7;
+  color: #00A000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+}
+.form-valid svg {
+  width: 3.08vh;
+  height: 3.08vh;
+  flex: 0 0 auto;
+}
+.action-row {
+  width: 344px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+.action-btn {
+  height: 7.23vh;
+  border-radius: 7px;
+  padding: 0;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rescan-btn {
+  width: 157px;
+  border: 2px solid #AEB4B8;
+  background: #ffffff;
+  color: #000000;
+}
+.confirm-btn {
+  width: 157px;
+  border: 0;
+  background: #AEB4B8;
+  color: #777777;
+}
+.confirm-btn.ready {
+  background: #00A000;
+  color: #ffffff;
+}
+.action-btn svg {
+  width: 4.03vh;
+  height: 4.03vh;
+  flex: 0 0 auto;
+}
+.error-view {
+  position: relative;
+  min-height: 93.48vh;
+  padding-top: 12.80vh;
+}
+.error-card {
+  width: 322px;
+  height: 35.66vh;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: #FFDCDC;
+  text-align: center;
+  padding-top: 2.13vh;
+}
+.error-card .big-x {
+  width: 7.94vh;
+  height: 7.94vh;
+  margin-bottom: 6.75vh;
+}
+.error-title {
+  color: #FF1111;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  margin: 0 0 3.55vh;
+}
+.error-title svg {
+  width: 3.67vh;
+  height: 3.67vh;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.error-text {
+  color: #333333;
+  font-size: 2.73vh;
+  line-height: 1.4;
+  font-weight: 800;
+  margin: 0;
+}
+.error-scan-btn {
+  position: absolute;
+  left: 50%;
+  top: 68.96vh;
+  width: 319px;
+  height: 8.41vh;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 9px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 4.03vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.error-scan-btn svg,
+.error-home-btn svg {
+  width: 4.98vh;
+  height: 4.98vh;
+  flex: 0 0 auto;
+}
+.error-home-btn {
+  position: absolute;
+  left: 50%;
+  top: 80.81vh;
+  width: 319px;
+  height: 8.41vh;
+  transform: translateX(-50%);
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #000000;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.55vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+}
+.confirm-view {
+  position: relative;
+  min-height: 93.48vh;
+  padding-top: 4.38vh;
+}
+.confirm-heading {
+  margin: 0 0 1.30vh;
+  text-align: center;
+  color: #000000;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+}
+.confirm-card {
+  width: 340px;
+  min-height: 25.24vh;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.66vh 12px;
+}
+.confirm-card .info-row {
+  min-height: 4.03vh;
+}
+.confirm-qty {
+  width: 318px;
+  margin: 4.62vh auto 0;
+}
+.confirm-qty-row {
+  display: grid;
+  grid-template-columns: 1fr 95px;
+  align-items: center;
+  margin-bottom: 2.49vh;
+  color: #333333;
+  font-size: 3.67vh;
+  line-height: 1;
+  font-weight: 400;
+}
+.confirm-qty-row span:last-child {
+  text-align: right;
+}
+.save-btn {
+  width: 319px;
+  height: 8.41vh;
+  margin: 7.35vh auto 3.32vh;
+  border: 0;
+  border-radius: 9px;
+  background: #00A000;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 4.15vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+}
+.save-btn svg {
+  width: 3.32vh;
+  height: 3.32vh;
+  flex: 0 0 auto;
+}
+.edit-btn {
+  width: 319px;
+  height: 8.41vh;
+  margin: 0 auto;
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #FFB000;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.67vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+.edit-btn svg {
+  width: 3.91vh;
+  height: 3.91vh;
+  flex: 0 0 auto;
+}
+.success-view {
+  position: relative;
+  min-height: 93.48vh;
+  text-align: center;
+  padding-top: 10.19vh;
+}
+.success-icon {
+  width: 21.56vh;
+  height: 21.56vh;
+  margin: 0 auto 9.24vh;
+}
+.success-icon svg {
+  width: 21.56vh;
+  height: 21.56vh;
+  display: block;
+}
+.success-title {
+  margin: 0 0 1.42vh;
+  color: #000000;
+  font-size: 4.50vh;
+  line-height: 1;
+  font-weight: 800;
+}
+.success-text {
+  margin: 0;
+  color: #333333;
+  font-size: 2.96vh;
+  line-height: 1.35;
+  font-weight: 800;
+}
+.success-home-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 11.49vh;
+  width: 319px;
+  height: 8.41vh;
+  transform: translateX(-50%);
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.67vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.success-home-btn svg {
+  width: 4.98vh;
+  height: 4.98vh;
+  flex: 0 0 auto;
+}
+</style>
 </head>
 <body>
-
-    <div id="app">
-        <h1 id="homeUserName">กำลังโหลด...</h1>
-        <div id="receiveContent">
-            <button class="scan-button" type="button" onclick="startScan()">เริ่มสแกน QR Code</button>
-        </div>
+  <main id="app" class="app">
+    <header class="top-header">
+      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
+        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
+        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
+        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
+        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
+        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
+      </svg>
+      <h1>Trigo Assistant</h1>
+    </header>
+    <section class="user-bar">
+      <div class="user-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#ffffff" stroke-width="3"></circle>
+          <circle cx="32" cy="24" r="13" fill="#ffffff"></circle>
+          <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#ffffff"></path>
+        </svg>
+      </div>
+      <div id="homeUserName" class="user-name">Loading...</div>
+    </section>
+    <section class="menu">
+      <button class="menu-card menu-card-large" type="button" onclick="openReceive()">
+        <span class="card-icon icon-green">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <path d="M30 10H66V44H85L48 80L11 44H30V10Z" fill="currentColor"></path>
+            <rect x="10" y="82" width="76" height="14" rx="7" fill="currentColor"></rect>
+          </svg>
+        </span>
+        <span class="card-copy">
+          <span class="card-title">รับงานเข้า</span>
+          <span class="card-subtitle">Scan QR บันทึกยอดงาน</span>
+        </span>
+      </button>
+      <button class="menu-card menu-card-large" type="button">
+        <span class="card-icon icon-blue">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <path d="M31 86H65V46H85L48 10L11 46H31V86Z" fill="currentColor"></path>
+            <path d="M8 70H14V82H82V70H88V90H8V70Z" fill="currentColor"></path>
+          </svg>
+        </span>
+        <span class="card-copy card-copy-second">
+          <span class="card-title">เบิกงานออก</span>
+          <span class="card-subtitle">บันทึกข้อมูลการเบิกงาน</span>
+        </span>
+      </button>
+      <button class="menu-card" type="button">
+        <span class="card-icon icon-red">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <path d="M34 18L8 34L34 50V39H54C68 39 78 49 78 63C78 73 72 82 63 86V93C77 89 88 77 88 63C88 43 74 29 54 29H34V18Z" fill="currentColor"></path>
+          </svg>
+        </span>
+        <span class="card-copy card-copy-small">
+          <span class="card-title">ส่งคืน NG</span>
+          <span class="card-subtitle">ส่งคืนงาน NG</span>
+        </span>
+      </button>
+      <button class="menu-card" type="button">
+        <span class="card-icon icon-orange">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round">
+              <path d="M40 12H56V28H40Z"></path>
+              <path d="M29 32H45V48H29Z"></path>
+              <path d="M51 32H67V48H51Z"></path>
+              <path d="M18 52H34V68H18Z"></path>
+              <path d="M40 52H56V68H40Z"></path>
+              <path d="M62 52H78V68H62Z"></path>
+              <path d="M16 74H80"></path>
+            </g>
+            <g fill="currentColor">
+              <rect x="46" y="15" width="4" height="4"></rect>
+              <rect x="35" y="35" width="4" height="4"></rect>
+              <rect x="57" y="35" width="4" height="4"></rect>
+              <rect x="24" y="55" width="4" height="4"></rect>
+              <rect x="46" y="55" width="4" height="4"></rect>
+              <rect x="68" y="55" width="4" height="4"></rect>
+            </g>
+          </svg>
+        </span>
+        <span class="card-copy card-copy-small">
+          <span class="card-title">เช็คสต็อก</span>
+          <span class="card-subtitle">ตรวจสอบจำนวนงานคงเหลือ</span>
+        </span>
+      </button>
+    </section>
+    <footer>Version 0.1 Beta</footer>
+</main>
+<template id="receive-template">
+<section class="receive-page">
+  <header class="receive-header">
+    <button class="back-btn" type="button" onclick="goHome()" aria-label="Back">
+      <svg viewBox="0 0 64 64">
+        <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <h1>รับงานเข้า</h1>
+    <div class="header-logo">
+      <svg class="logo" viewBox="0 0 67 36" role="img" aria-label="TRIGO">
+        <text x="0" y="14" fill="#ffffff" font-size="10.8" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="1.9">TRIGO</text>
+        <text x="2" y="21" fill="#ffffff" font-size="2.8" font-family="Segoe UI, Arial, sans-serif" font-weight="500">GLOBAL QUALITY SOLUTIONS</text>
+        <path d="M50.5 5.5 L61.8 1.9 L61.8 6.2 L50.5 9.8 Z" fill="#8CC63F"></path>
+        <path d="M50.5 11.2 L61.8 7.6 L61.8 11.9 L50.5 15.5 Z" fill="#8CC63F"></path>
+        <path d="M50.5 16.9 L61.8 13.3 L61.8 17.6 L50.5 21.2 Z" fill="#8CC63F"></path>
+      </svg>
     </div>
-
-    <script>
-        // --- ส่วนที่ปรับปรุงเพื่อ GitHub ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyyaGZo9-K642kXn78lE96Qq-kezdynJHk-sF5qcoIADEXXLXHrSsNO2SVTYSw_XChQGA/exec';
-        const LIFF_ID = '2010604851-K7e6kZ3m';
-        
-        async function callAPI(action, payload = {}) {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action, ...payload })
-            });
-            return await response.json();
-        }
-
-        // --- ส่วน Logic ของคุณ (ที่คุณเคยเขียนไว้) ---
-        var receiveState = { scanResult: null, form: { total: "", ok: "", ng: "" } };
-        var currentLineUserId = "";
-        var liffReady_ = false;
-
-        document.addEventListener("DOMContentLoaded", async function () {
-            await liff.init({ liffId: LIFF_ID });
-            liffReady_ = true;
-            if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                currentLineUserId = profile.userId;
-                loadInitialData();
-            } else {
-                liff.login();
-            }
-        });
-
-        // [จุดสำคัญ] ปรับแก้ loadInitialData ให้ใช้ callAPI แทน google.script.run
-        async function loadInitialData() {
-            try {
-                const data = await callAPI('getInitialData', { lineUserId: currentLineUserId });
-                var userName = document.getElementById("homeUserName");
-                if (userName && data.employee) {
-                    userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
+  </header>
+  <div id="receiveContent"></div>
+</section>
+</template>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6iBeELosvSfsrm0oSGN7GfOeEyb8NVD2_2z7XMralNZdlA/exec";
+var receiveState = {
+  scanResult: null,
+  form: {
+    total: "",
+    ok: "",
+    ng: ""
+  }
+};
+var homeHtmlCache = "";
+var currentLineUserId = "";
+var liffReady_ = false;
+function withTimeout_(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(function (resolve, reject) {
+      setTimeout(function () { reject(new Error("timeout")); }, ms);
+    })
+  ]);
+}
+async function api(action, extra) {
+  var body = Object.assign({ action: action }, extra || {});
+  var res = await fetch(GAS_API, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+document.addEventListener("DOMContentLoaded", async function () {
+  try {
+    await withTimeout_(liff.init({
+        liffId: "2010604851-K7e6kZ3m"
+    }), 15000);
+    liffReady_ = true;
+  } catch (e) {
+    alert(
+      "liff.init() ล้มเหลว:\n" +
+      "message: " + (e && e.message) + "\n" +
+      "code: " + (e && e.code) + "\n" +
+      "raw: " + JSON.stringify(e)
+    );
+    return;
+  }
+  if (!liff.isLoggedIn() && !liff.isInClient()) {
+    liff.login();
+    return;
+  }
+  try {
+    var profile = await withTimeout_(liff.getProfile(), 15000);
+    currentLineUserId = profile.userId;
+  } catch (e) {
+    console.log(e);
+    alert("liff.getProfile() ล้มเหลว: " + (e && e.message ? e.message : e));
+  }
+  var app = document.getElementById("app");
+  if (app) {
+    homeHtmlCache = app.innerHTML;
+  }
+  loadInitialData();
+});
+function loadInitialData() {
+  api("getInitialData", { lineUserId: currentLineUserId })
+    .then(function(data) {
+      var userName = document.getElementById("homeUserName");
+      if (userName && data && data.employee) {
+        userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
+      }
+    })
+    .catch(function(err) {
+      console.log(err);
+      var userName = document.getElementById("homeUserName");
+      if (userName) {
+        userName.textContent = "Unknown";
+      }
+    });
+}
+function openReceive() {
+  var template = document.getElementById("receive-template");
+  document.getElementById("app").innerHTML = template.innerHTML;
+  showScanView();
+}
+function goHome() {
+  var app = document.getElementById("app");
+  if (app && homeHtmlCache) {
+    app.innerHTML = homeHtmlCache;
+    loadInitialData();
+    return;
+  }
+  window.location.href = window.location.href.split("?")[0];
+}
+function showScanView() {
+  receiveState.scanResult = null;
+  receiveState.form = {
+    total: "",
+    ok: "",
+    ng: ""
+  };
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="scan-view">
+      <div class="scan-frame">
+        <span class="scan-corner tl"></span>
+        <span class="scan-corner tr"></span>
+        <span class="scan-corner bl"></span>
+        <span class="scan-corner br"></span>
+      </div>
+      <h2 class="scan-title">สแกน QR Code</h2>
+      <p class="scan-subtitle">สแกน QR Code ที่กล่องงาน<br>หรือ Tag ข้างPallet</p>
+      <button class="scan-button" type="button" onclick="startScan()">
+        ${cameraIcon()}
+        <span>เริ่มสแกน</span>
+      </button>
+    </div>
+  `;
+}
+async function startScan() {
+  if (!liffReady_) {
+    alert("liff.init() ยังไม่สำเร็จ ไม่สามารถสแกนได้");
+    return;
+  }
+  try{
+      const result = await liff.scanCodeV2();
+      if(!result || !result.value) return;
+      api("scanReceive", { rawScan: result.value, lineUserId: currentLineUserId })
+        .then(function(data){
+            if(!data || !data.ok){
+                if (data && data.error) {
+                  alert(data.error);
+                  return;
                 }
-            } catch(e) { console.log(e); }
-        }
-
-        // [จุดสำคัญ] ปรับแก้ startScan ให้ใช้ callAPI แทน google.script.run
-        async function startScan() {
-            if (!liffReady_) return alert("LIFF ยังไม่พร้อม");
-            try {
-                const result = await liff.scanCodeV2();
-                if(!result || !result.value) return;
-
-                const data = await callAPI('scanReceive', { 
-                    rawScan: result.value, 
-                    lineUserId: currentLineUserId 
-                });
-
-                if(!data || !data.ok) return showNotFoundView();
-                
-                receiveState.scanResult = data;
-                showResultView(data);
-            } catch(e) { alert("สแกนพลาด: " + e.message); }
-        }
-
-        // [จุดสำคัญ] ปรับแก้ saveReceiveData ให้ใช้ callAPI แทน google.script.run
-        async function saveReceiveData() {
-            var saveBtn = document.querySelector(".save-btn");
-            if (saveBtn) saveBtn.disabled = true;
-
-            var payload = {
-                mission: receiveState.scanResult.part.mission,
-                partName: receiveState.scanResult.part.partName,
-                partNumber: receiveState.scanResult.part.partNumber,
-                batch: receiveState.scanResult.parsed.batch,
-                total: receiveState.form.total,
-                ok: receiveState.form.ok,
-                ng: receiveState.form.ng,
-                tagType: receiveState.scanResult.parsed.tagType,
-                scanCode: receiveState.scanResult.parsed.scanCode,
-                rawScan: receiveState.scanResult.rawScan,
-                lineUserId: currentLineUserId
-            };
-
-            try {
-                await callAPI('saveReceive', { payload: payload });
-                showSuccessView();
-            } catch (err) {
-                if (saveBtn) saveBtn.disabled = false;
-                alert("บันทึกพลาด: " + err);
+                showNotFoundView();
+                return;
             }
-        }
-
-        // --- คุณสามารถก๊อปปี้ฟังก์ชันเดิมของคุณที่เหลือมาแปะต่อตรงนี้ได้เลย! ---
-        // เช่น showResultView, updateQtyForm, showConfirmView, Icon ต่างๆ 
-        // ฟังก์ชันเหล่านี้ทำงานได้ปกติ ไม่ต้องแก้ไขอะไรครับ
-        
-    </script>
+            receiveState.scanResult = data;
+            showResultView(data);
+        })
+        .catch(function(err){
+            alert(err);
+        });
+  }catch(e){
+      console.log(e);
+      alert("สแกนไม่สำเร็จ: " + (e && e.message ? e.message : e));
+  }
+}
+function showResultView(result) {
+  var batchHtml = "";
+  if (result.state === "BATCH_EXISTS") {
+    batchHtml = `
+      <section class="batch-panel">
+        <h3 class="batch-title">
+          ${warningIcon()}
+          <span>Batch นี้เคยบันทึกแล้ว</span>
+        </h3>
+        <div class="batch-lines">
+          <div>ครั้งที่&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: ${result.batchInfo.count}</div>
+          <div>OK สะสม&nbsp;: ${result.batchInfo.ok}</div>
+          <div>NG สะสม : ${result.batchInfo.ng}</div>
+        </div>
+      </section>
+    `;
+  } else {
+    batchHtml = `
+      <section class="batch-panel new">
+        <div class="new-ribbon"><span>NEW</span></div>
+        <h3 class="new-title">Batch ใหม่</h3>
+        <p class="new-message">ยังไม่เคยบันทึกข้อมูลของ Batch นี้</p>
+      </section>
+    `;
+  }
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        ${checkCircleIcon()}
+        <span>สแกนสำเร็จ</span>
+      </h2>
+      ${partInfoCard(result.part, result.parsed.batch)}
+      ${batchHtml}
+      <section class="qty-form">
+        <div class="qty-row">
+          <label>Total</label>
+          <input id="totalInput" type="number" inputmode="numeric" placeholder="ใส่จำนวนตัวเลข" oninput="updateQtyForm()">
+        </div>
+        <div class="qty-row">
+          <label>OK</label>
+          <input id="okInput" type="number" inputmode="numeric" placeholder="ใส่จำนวนตัวเลข" oninput="updateQtyForm()">
+        </div>
+        <div class="qty-row">
+          <label>NG</label>
+          <input id="ngInput" type="number" inputmode="numeric" placeholder="ใส่จำนวนตัวเลข" oninput="updateQtyForm()">
+        </div>
+      </section>
+      <div class="form-valid">
+        ${checkCircleIcon()}
+        <span>OK + NG = Total</span>
+      </div>
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="showScanView()">
+          ${refreshIcon()}
+          <span>สแกนใหม่</span>
+        </button>
+        <button id="confirmBtn" class="action-btn confirm-btn" type="button" onclick="showConfirmView()" disabled>
+          ${downloadIcon()}
+          <span>ยืนยัน</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+function updateQtyForm() {
+  var total = Number(document.getElementById("totalInput").value || 0);
+  var ok = Number(document.getElementById("okInput").value || 0);
+  var ng = Number(document.getElementById("ngInput").value || 0);
+  var confirmBtn = document.getElementById("confirmBtn");
+  receiveState.form = {
+    total: total,
+    ok: ok,
+    ng: ng
+  };
+  if (total > 0 && ok >= 0 && ng >= 0 && ok + ng === total) {
+    confirmBtn.disabled = false;
+    confirmBtn.classList.add("ready");
+  } else {
+    confirmBtn.disabled = true;
+    confirmBtn.classList.remove("ready");
+  }
+}
+function showNotFoundView() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="error-view">
+      <section class="error-card">
+        ${bigXIcon()}
+        <h2 class="error-title">
+          ${smallXIcon()}
+          <span>ไม่พบข้อมูล</span>
+        </h2>
+        <p class="error-text">ไม่พบข้อมูล Part นี้<br>กรุณาตรวจสอบ QR Code<br>หรือติดต่อหัวหน้างาน</p>
+      </section>
+      <button class="error-scan-btn" type="button" onclick="showScanView()">
+        ${refreshWhiteIcon()}
+        <span>Scan ใหม่</span>
+      </button>
+      <button class="error-home-btn" type="button" onclick="goHome()">
+        ${homeBlackIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+    </div>
+  `;
+}
+function showConfirmView() {
+  var result = receiveState.scanResult;
+  var form = receiveState.form;
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนกดยืนยัน</h2>
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้บันทึก</span>
+          <span class="info-value">${escapeHtml(result.employee.displayName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(result.part.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(result.part.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(result.part.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(result.parsed.batch)}</span>
+        </div>
+      </section>
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>Total</span>
+          <span>${form.total}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>OK</span>
+          <span>${form.ok}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>NG</span>
+          <span>${form.ng}</span>
+        </div>
+      </section>
+      <button class="save-btn" type="button" onclick="saveReceiveData()">
+        ${checkCircleWhiteIcon()}
+        <span>ยืนยัน</span>
+      </button>
+      <button class="edit-btn" type="button" onclick="showResultView(receiveState.scanResult)">
+        ${editIcon()}
+        <span>แก้ไขข้อมูล</span>
+      </button>
+    </div>
+  `;
+}
+function saveReceiveData() {
+  var saveBtn = document.querySelector(".save-btn");
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
+  var result = receiveState.scanResult;
+  var form = receiveState.form;
+  var payload = {
+    mission: result.part.mission,
+    partName: result.part.partName,
+    partNumber: result.part.partNumber,
+    batch: result.parsed.batch,
+    total: form.total,
+    ok: form.ok,
+    ng: form.ng,
+    tagType: result.parsed.tagType,
+    scanCode: result.parsed.scanCode,
+    rawScan: result.rawScan,
+    lineUserId: currentLineUserId
+  };
+  api("saveReceive", { payload: payload })
+    .then(function(data) {
+      if (data && data.ok) {
+        showSuccessView();
+        return;
+      }
+      if (saveBtn) saveBtn.disabled = false;
+      alert((data && data.error) || "บันทึกไม่สำเร็จ");
+    })
+    .catch(function(error) {
+      if (saveBtn) saveBtn.disabled = false;
+      alert(error.message || error);
+    });
+}
+function showSuccessView() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="success-view">
+      <div class="success-icon">${successBigIcon()}</div>
+      <h2 class="success-title">บันทึกสำเร็จ</h2>
+      <p class="success-text">ข้อมูลถูกบันทึก<br>เรียบร้อยแล้ว</p>
+      <button class="success-home-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+    </div>
+  `;
+}
+function partInfoCard(part, batch) {
+  return `
+    <section class="info-card">
+      <div class="info-row">
+        <span>Mission</span>
+        <span class="info-value">${escapeHtml(part.mission)}</span>
+      </div>
+      <div class="info-row">
+        <span>Part Name</span>
+        <span class="info-value">${escapeHtml(part.partName)}</span>
+      </div>
+      <div class="info-row">
+        <span>Part No.</span>
+        <span class="info-value">${escapeHtml(part.partNumber)}</span>
+      </div>
+      <div class="info-row">
+        <span>Batch</span>
+        <span class="info-value">${escapeHtml(batch)}</span>
+      </div>
+    </section>
+  `;
+}
+function formatNow() {
+  var d = new Date();
+  var day = String(d.getDate()).padStart(2, "0");
+  var month = String(d.getMonth() + 1).padStart(2, "0");
+  var year = d.getFullYear();
+  var hour = String(d.getHours()).padStart(2, "0");
+  var minute = String(d.getMinutes()).padStart(2, "0");
+  return day + "/" + month + "/" + year + " " + hour + ":" + minute;
+}
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+function cameraIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 20H27L31 15H41L45 20H50C53 20 56 23 56 26V48C56 51 53 54 50 54H14C11 54 8 51 8 48V26C8 23 11 20 14 20H18Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></path><circle cx="32" cy="37" r="11" fill="none" stroke="#ffffff" stroke-width="4"></circle><circle cx="18" cy="28" r="3" fill="#ffffff"></circle></svg>`;
+}
+function checkCircleIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#00A000"></circle><path d="M18 32L28 42L47 21" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+}
+function checkCircleWhiteIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#ffffff"></circle><path d="M18 32L28 42L47 21" fill="none" stroke="#00A000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+}
+function warningIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 7L60 57H4L32 7Z" fill="#FFB000"></path><rect x="29" y="22" width="6" height="21" rx="3" fill="#ffffff"></rect><circle cx="32" cy="50" r="3" fill="#ffffff"></circle></svg>`;
+}
+function refreshIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M51 20A22 22 0 0 0 14 26" fill="none" stroke="#000000" stroke-width="6"></path><path d="M15 13V27H29" fill="none" stroke="#000000" stroke-width="6"></path><path d="M13 44A22 22 0 0 0 50 38" fill="none" stroke="#000000" stroke-width="6"></path><path d="M49 51V37H35" fill="none" stroke="#000000" stroke-width="6"></path></svg>`;
+}
+function refreshWhiteIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M51 20A22 22 0 0 0 14 26" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M15 13V27H29" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M13 44A22 22 0 0 0 50 38" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M49 51V37H35" fill="none" stroke="#ffffff" stroke-width="6"></path></svg>`;
+}
+function downloadIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 10V39" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"></path><path d="M19 28L32 41L45 28" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 39V53H52V39" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+}
+function bigXIcon() {
+  return `<svg class="big-x" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M18 18L46 46M46 18L18 46" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>`;
+}
+function smallXIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>`;
+}
+function homeBlackIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#000000"></circle><path d="M16 33L32 18L48 33H43V49H35V38H29V49H21V33H16Z" fill="#ffffff"></path></svg>`;
+}
+function homeWhiteIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#ffffff"></circle><path d="M16 33L32 18L48 33H43V49H35V38H29V49H21V33H16Z" fill="#0E4F8C"></path></svg>`;
+}
+function editIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FFB000"></circle><path d="M19 43L21 33L42 12L52 22L31 43L19 45Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></path><path d="M38 16L48 26" stroke="#ffffff" stroke-width="4"></path></svg>`;
+}
+function successBigIcon() {
+  return `<svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="105" fill="#00A000"></circle><path d="M64 109L95 140L162 73" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"></path><path d="M101 149L168 82" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="18" stroke-linecap="round"></path></svg>`;
+}
+</script>
 </body>
 </html>
