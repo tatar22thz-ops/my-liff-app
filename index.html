@@ -4,12 +4,30 @@
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trigo Assistant</title>
+  <title>Trigo Yusen Hub</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
+}
+
+button {
+  transition: transform 0.1s ease;
+}
+
+.menu-card:active,
+.scan-button:active,
+.action-btn:active,
+.save-btn:active,
+.edit-btn:active,
+.error-scan-btn:active,
+.error-home-btn:active,
+.success-home-btn:active,
+.static-primary-btn:active,
+.static-secondary-btn:active,
+.picker-item:active {
+  transform: scale(0.97);
 }
 
 html,
@@ -102,17 +120,17 @@ body {
 }
 
 .user-bar {
-  height: 4.74vh;
+  height: 8vh;
   background: #0E4F8C;
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  padding: 0 16px;
   gap: 10px;
 }
 
 .user-icon {
-  width: 3.44vh;
-  height: 3.44vh;
+  width: 4.2vh;
+  height: 4.2vh;
   flex: 0 0 auto;
 }
 
@@ -122,13 +140,42 @@ body {
   height: 100%;
 }
 
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3vh;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .user-name {
   color: #ffffff;
-  font-size: 2.73vh;
-  line-height: 1;
-  font-weight: 400;
+  font-size: 2.3vh;
+  line-height: 1.1;
+  font-weight: 700;
   letter-spacing: .1px;
-  padding-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-sub {
+  color: #ffffff;
+  opacity: 0.75;
+  font-size: 1.6vh;
+  line-height: 1.1;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
 .status-dot {
@@ -141,12 +188,25 @@ body {
 }
 
 .status-text {
-  color: #ffffff;
+  color: #00E676;
   font-size: 1.8vh;
-  font-weight: 400;
-  opacity: 0.85;
+  font-weight: 700;
   white-space: nowrap;
   display: none;
+}
+
+.spinner {
+  width: 2.6vh;
+  height: 2.6vh;
+  border: 2.5px solid rgba(255,255,255,0.25);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  animation: spin_ 0.8s linear infinite;
+}
+
+@keyframes spin_ {
+  to { transform: rotate(360deg); }
 }
 
 .menu {
@@ -259,9 +319,20 @@ footer {
   bottom: 3.32vh;
   text-align: center;
   color: #000000;
+}
+
+.footer-brand {
+  font-size: 1.6vh;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5vh;
+}
+
+.footer-meta {
   font-size: 1.18vh;
-  line-height: 1;
   font-weight: 400;
+  color: #555555;
+  line-height: 1.6;
 }
 
 .receive-page {
@@ -1254,9 +1325,15 @@ footer {
           <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#ffffff"></path>
         </svg>
       </div>
-      <div id="homeUserName" class="user-name">Loading...</div>
-      <span class="status-dot"></span>
-      <span class="status-text">(พร้อมใช้งาน)</span>
+      <div class="user-info">
+        <div id="homeUserName" class="user-name">Loading...</div>
+        <div id="homeUserSub" class="user-sub">กำลังโหลดข้อมูล กรุณารอสักครู่</div>
+      </div>
+      <div class="user-status">
+        <div id="userSpinner" class="spinner"></div>
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText" class="status-text">พร้อมใช้งาน</span>
+      </div>
     </section>
 
     <section class="menu">
@@ -1327,7 +1404,10 @@ footer {
       </button>
     </section>
 
-    <footer>Version 0.1 Beta</footer>
+    <footer>
+      <div class="footer-brand">TRIGO YUSEN HUB</div>
+      <div class="footer-meta">Version 1.0.0<br>&copy; 2026 TRIGO</div>
+    </footer>
 </main>
 
 <template id="receive-template">
@@ -1439,17 +1519,23 @@ function loadInitialData() {
   api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName })
     .then(function(data) {
       var userName = document.getElementById("homeUserName");
+      var userSub = document.getElementById("homeUserSub");
 
       if (userName && data && data.employee) {
-        userName.textContent = data.employee.displayName || data.employee.name || "Unknown";
+        userName.textContent = data.employee.name || "Unknown";
         currentEmployeeDisplayName = data.employee.displayName || data.employee.name || "Unknown";
       }
 
       if (data && data.employee && !data.employee.employeeId) {
         showUnauthorizedView();
       } else if (data && data.employee && data.employee.employeeId) {
-        var statusDot = document.querySelector(".status-dot");
-        var statusText = document.querySelector(".status-text");
+        if (userSub) userSub.textContent = data.employee.employeeId;
+
+        var spinner = document.getElementById("userSpinner");
+        var statusDot = document.getElementById("statusDot");
+        var statusText = document.getElementById("statusText");
+
+        if (spinner) spinner.style.display = "none";
         if (statusDot) statusDot.style.display = "block";
         if (statusText) statusText.style.display = "inline";
       }
@@ -1457,10 +1543,12 @@ function loadInitialData() {
     .catch(function(err) {
       console.log(err);
       var userName = document.getElementById("homeUserName");
+      var userSub = document.getElementById("homeUserSub");
+      var spinner = document.getElementById("userSpinner");
 
-      if (userName) {
-        userName.textContent = "Unknown";
-      }
+      if (userName) userName.textContent = "Unknown";
+      if (userSub) userSub.textContent = "";
+      if (spinner) spinner.style.display = "none";
     });
 }
 
@@ -1472,7 +1560,7 @@ function showUnauthorizedView() {
   app.innerHTML = `
     <header class="top-header">
       <img class="logo" src="logo.svg" alt="TRIGO">
-      <h1>Trigo Assistant</h1>
+      <h1>Trigo Yusen Hub</h1>
     </header>
 
     <div class="error-view">
