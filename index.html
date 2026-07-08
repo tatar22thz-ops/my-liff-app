@@ -719,6 +719,202 @@ footer {
   flex: 0 0 auto;
 }
 
+.picker-page {
+  padding: 2.4vh 16px 0;
+}
+
+.picker-context {
+  color: #000000;
+  font-size: 2.4vh;
+  font-weight: 400;
+  margin: 0 0 1.2vh;
+}
+
+.picker-heading {
+  color: #000000;
+  font-size: 3.55vh;
+  font-weight: 800;
+  margin: 0 0 1.6vh;
+}
+
+.picker-search {
+  position: relative;
+  margin-bottom: 1.9vh;
+}
+
+.picker-search input {
+  width: 100%;
+  height: 5.5vh;
+  border: 2px solid #333333;
+  border-radius: 10px;
+  padding: 0 44px 0 16px;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.4vh;
+  color: #000000;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.picker-search svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.6vh;
+  height: 2.6vh;
+}
+
+.picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  padding-bottom: 3vh;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 7vh;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 0 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+.picker-item.selected {
+  border-color: #00A000;
+  background: #E9FFE3;
+}
+
+.picker-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+
+.picker-item-title {
+  font-size: 2.6vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.picker-item.selected .picker-item-title {
+  color: #00A000;
+}
+
+.picker-item-sub {
+  font-size: 1.8vh;
+  font-weight: 400;
+  color: #777777;
+}
+
+.picker-item svg {
+  width: 2.4vh;
+  height: 2.4vh;
+  flex: 0 0 auto;
+  color: #000000;
+}
+
+.qty-label-full {
+  color: #333333;
+  font-size: 2.6vh;
+  font-weight: 400;
+  margin: 0 auto 1vh;
+  width: 340px;
+  display: block;
+}
+
+.qty-input-full {
+  width: 340px;
+  display: block;
+  margin: 0 auto 2vh;
+  height: 5.2vh;
+  border: 2px solid #AEB4B8;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.6vh;
+  color: #000000;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.qty-input-full::placeholder {
+  color: #AEB4B8;
+}
+
+.stock-box {
+  width: 340px;
+  margin: 2vh auto;
+  padding: 2vh 0;
+  border-radius: 10px;
+  background: #E9FFE3;
+  text-align: center;
+}
+
+.stock-box-label {
+  color: #777777;
+  font-size: 2.2vh;
+}
+
+.stock-box-value {
+  color: #00A000;
+  font-size: 3.5vh;
+  font-weight: 800;
+}
+
+.warn-box {
+  width: 340px;
+  margin: 2vh auto 3vh;
+  padding: 1.5vh 0;
+  border-radius: 8px;
+  background: #FFF3D6;
+  color: #E08A00;
+  text-align: center;
+  font-size: 2vh;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.stat-row {
+  width: 340px;
+  margin: 0 auto 1.5vh;
+  min-height: 6vh;
+  border: 2px solid #AEB4B8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 2.6vh;
+  font-weight: 800;
+  color: #000000;
+}
+
+.stat-row.stat-ng {
+  color: #FF1111;
+}
+
+.stat-row.stat-returned {
+  color: #F39800;
+}
+
+.stat-row.stat-issue {
+  color: #1687F4;
+}
+
+.stat-row.stat-ok {
+  background: #E9FFE3;
+  border-color: #00A000;
+  color: #00A000;
+}
+
 .error-view {
   position: relative;
   min-height: 93.48vh;
@@ -826,6 +1022,75 @@ footer {
   font-size: 2.84vh;
   line-height: 1;
   font-weight: 800;
+}
+
+.confirm-heading-success {
+  margin: 0 0 1.30vh;
+  text-align: center;
+  color: #00A000;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.confirm-heading-success svg {
+  width: 3.2vh;
+  height: 3.2vh;
+  flex: 0 0 auto;
+}
+
+.static-primary-btn {
+  width: 319px;
+  height: 8.41vh;
+  margin: 3vh auto 1.5vh;
+  border: 0;
+  border-radius: 9px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.67vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.static-primary-btn svg {
+  width: 4.98vh;
+  height: 4.98vh;
+  flex: 0 0 auto;
+}
+
+.static-secondary-btn {
+  width: 319px;
+  height: 8.41vh;
+  margin: 0 auto;
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #555555;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.05vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.static-secondary-btn svg {
+  width: 3.67vh;
+  height: 3.67vh;
+  flex: 0 0 auto;
 }
 
 .confirm-card {
@@ -1008,7 +1273,7 @@ footer {
         </span>
       </button>
 
-      <button class="menu-card menu-card-large" type="button">
+      <button class="menu-card menu-card-large" type="button" onclick="openWithdraw()">
         <span class="card-icon icon-blue">
           <svg viewBox="0 0 96 96" aria-hidden="true">
             <path d="M31 86H65V46H85L48 10L11 46H31V86Z" fill="currentColor"></path>
@@ -1021,7 +1286,7 @@ footer {
         </span>
       </button>
 
-      <button class="menu-card" type="button">
+      <button class="menu-card" type="button" onclick="openReturnNG()">
         <span class="card-icon icon-red">
           <svg viewBox="0 0 96 96" aria-hidden="true">
             <path d="M34 18L8 34L34 50V39H54C68 39 78 49 78 63C78 73 72 82 63 86V93C77 89 88 77 88 63C88 43 74 29 54 29H34V18Z" fill="currentColor"></path>
@@ -1033,7 +1298,7 @@ footer {
         </span>
       </button>
 
-      <button class="menu-card" type="button">
+      <button class="menu-card" type="button" onclick="openCheckStock()">
         <span class="card-icon icon-orange">
           <svg viewBox="0 0 96 96" aria-hidden="true">
             <g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round">
@@ -1223,9 +1488,15 @@ function showUnauthorizedView() {
   `;
 }
 
-function openReceive() {
+function openFeaturePage_(titleText) {
   var template = document.getElementById("receive-template");
   document.getElementById("app").innerHTML = template.innerHTML;
+  var h1 = document.querySelector(".receive-header h1");
+  if (h1) h1.textContent = titleText;
+}
+
+function openReceive() {
+  openFeaturePage_("รับงานเข้า");
   showScanView();
 }
 
@@ -1811,6 +2082,829 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+var pickerItemsCache_ = [];
+
+function renderPicker_(opts) {
+  var contextHtml = (opts.context || []).map(function(c) {
+    return '<p class="picker-context">' + escapeHtml(c.label) + ' : ' + escapeHtml(c.value) + '</p>';
+  }).join("");
+
+  var listHtml = opts.items.map(function(item, idx) {
+    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
+      '<span class="picker-item-text">' +
+        '<span class="picker-item-title">' + escapeHtml(item.title) + '</span>' +
+        (item.sub ? '<span class="picker-item-sub">' + escapeHtml(item.sub) + '</span>' : '') +
+      '</span>' +
+      chevronIcon() +
+    '</button>';
+  }).join("");
+
+  document.getElementById("receiveContent").innerHTML =
+    '<div class="picker-page">' +
+      contextHtml +
+      '<h2 class="picker-heading">' + escapeHtml(opts.heading) + '</h2>' +
+      '<div class="picker-search">' +
+        '<input type="text" id="pickerSearchInput" placeholder="' + escapeHtml(opts.searchPlaceholder) + '" oninput="filterPickerList_()">' +
+        searchIcon() +
+      '</div>' +
+      '<div class="picker-list" id="pickerList">' + listHtml + '</div>' +
+    '</div>';
+
+  pickerItemsCache_ = opts.items;
+
+  document.querySelectorAll(".picker-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var idx = Number(btn.getAttribute("data-idx"));
+      opts.onSelect(pickerItemsCache_[idx]);
+    });
+  });
+}
+
+function filterPickerList_() {
+  var q = String(document.getElementById("pickerSearchInput").value || "").toLowerCase();
+  var buttons = document.querySelectorAll(".picker-item");
+
+  buttons.forEach(function(btn, idx) {
+    var item = pickerItemsCache_[idx];
+    var haystack = ((item.title || "") + " " + (item.sub || "")).toLowerCase();
+    btn.style.display = haystack.indexOf(q) !== -1 ? "flex" : "none";
+  });
+}
+
+function showBatchNotFoundView_() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="error-view">
+      <section class="error-card">
+        ${bigXIcon()}
+        <h2 class="error-title">
+          ${smallXIcon()}
+          <span>ไม่พบข้อมูล</span>
+        </h2>
+        <p class="error-text">ไม่พบ Batch นี้ในระบบ<br>กรุณาตรวจสอบข้อมูล<br>หรือติดต่อหัวหน้างาน</p>
+      </section>
+
+      <button class="error-home-btn" type="button" onclick="goHome()">
+        ${homeBlackIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+    </div>
+  `;
+}
+
+function showNoStockView_(message) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="error-view">
+      <section class="error-card">
+        ${bigXIcon()}
+        <h2 class="error-title">
+          ${smallXIcon()}
+          <span>ไม่มีของคงเหลือ</span>
+        </h2>
+        <p class="error-text">${escapeHtml(message)}<br>กรุณาตรวจสอบข้อมูล<br>หรือติดต่อหัวหน้างาน</p>
+      </section>
+
+      <button class="error-home-btn" type="button" onclick="goHome()">
+        ${homeBlackIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+    </div>
+  `;
+}
+
+var withdrawState = {};
+
+function openWithdraw() {
+  withdrawState = { mission: "", partNumber: "", partName: "", batch: "", available: 0, qty: 0 };
+  openFeaturePage_("เบิกงานออก");
+  showWithdrawMissionPicker();
+}
+
+async function showWithdrawMissionPicker() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูล Part ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+
+  var missions = [];
+  var seen = {};
+
+  partOptionsCache_.forEach(function(opt) {
+    var m = opt.mission || "";
+    if (!m || seen[m]) return;
+    seen[m] = true;
+    missions.push(m);
+  });
+
+  renderPicker_({
+    context: [],
+    heading: "เลือก Mission",
+    searchPlaceholder: "ค้นหา Mission",
+    items: missions.map(function(m) { return { title: m, value: m }; }),
+    onSelect: function(item) {
+      withdrawState.mission = item.value;
+      showWithdrawPartPicker();
+    }
+  });
+}
+
+function showWithdrawPartPicker() {
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === withdrawState.mission;
+  });
+
+  renderPicker_({
+    context: [{ label: "Mission", value: withdrawState.mission }],
+    heading: "เลือก Part",
+    searchPlaceholder: "ค้นหา Part",
+    items: parts.map(function(p) {
+      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
+    }),
+    onSelect: function(item) {
+      withdrawState.partNumber = item.value;
+      withdrawState.partName = item.partName;
+      showWithdrawBatchPicker();
+    }
+  });
+}
+
+async function showWithdrawBatchPicker() {
+  var res;
+
+  try {
+    res = await api("getBatchOptions", { partNumber: withdrawState.partNumber });
+  } catch (e) {
+    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
+    res = { ok: false, options: [] };
+  }
+
+  var batches = (res && res.ok && res.options) ? res.options : [];
+
+  if (batches.length === 0) {
+    showBatchNotFoundView_();
+    return;
+  }
+
+  renderPicker_({
+    context: [
+      { label: "Mission", value: withdrawState.mission },
+      { label: "Part No.", value: withdrawState.partNumber }
+    ],
+    heading: "เลือก Batch",
+    searchPlaceholder: "ค้นหา Batch",
+    items: batches.map(function(b) {
+      return { title: b.batch, sub: "Available : " + b.available, value: b.batch, available: b.available };
+    }),
+    onSelect: function(item) {
+      withdrawState.batch = item.value;
+      withdrawState.available = item.available;
+
+      if (item.available <= 0) {
+        showNoStockView_("Batch นี้ไม่มีงานคงเหลือ");
+        return;
+      }
+
+      showWithdrawQtyEntry();
+    }
+  });
+}
+
+function showWithdrawQtyEntry() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <p class="picker-context">Mission : ${escapeHtml(withdrawState.mission)}</p>
+      <p class="picker-context">Part No. : ${escapeHtml(withdrawState.partNumber)}</p>
+      <p class="picker-context">Batch No. : ${escapeHtml(withdrawState.batch)}</p>
+
+      <div class="stock-box">
+        <div class="stock-box-label">Available</div>
+        <div class="stock-box-value">${withdrawState.available} Pcs</div>
+      </div>
+
+      <label class="qty-label-full">จำนวนที่เบิก (ชิ้น)</label>
+      <input id="withdrawQtyInput" class="qty-input-full" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateWithdrawQtyForm_()">
+
+      <div class="warn-box">ห้ามเกินจำนวนคงเหลือ</div>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="showWithdrawBatchPicker()">
+          <span>ย้อนกลับ</span>
+        </button>
+        <button id="withdrawNextBtn" class="action-btn confirm-btn" type="button" onclick="showWithdrawConfirm()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function updateWithdrawQtyForm_() {
+  var qty = Number(document.getElementById("withdrawQtyInput").value || 0);
+  var btn = document.getElementById("withdrawNextBtn");
+  var valid = qty > 0 && qty <= withdrawState.available;
+
+  if (valid) {
+    btn.disabled = false;
+    btn.classList.add("ready");
+  } else {
+    btn.disabled = true;
+    btn.classList.remove("ready");
+  }
+}
+
+function showWithdrawConfirm() {
+  var qty = Number(document.getElementById("withdrawQtyInput").value || 0);
+  withdrawState.qty = qty;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนกดยืนยัน</h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้เบิก</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(withdrawState.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(withdrawState.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(withdrawState.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(withdrawState.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนที่เบิก</span>
+          <span>${qty}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวนคงเหลือ</span>
+          <span>${withdrawState.available - qty}</span>
+        </div>
+      </section>
+
+      <button class="save-btn" type="button" onclick="saveWithdraw_()">
+        ${checkCircleWhiteIcon()}
+        <span>ยืนยัน</span>
+      </button>
+
+      <button class="edit-btn" type="button" onclick="showWithdrawQtyEntry()">
+        ${editIcon()}
+        <span>แก้ไขข้อมูล</span>
+      </button>
+    </div>
+  `;
+}
+
+function saveWithdraw_() {
+  var saveBtn = document.querySelector(".save-btn");
+
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
+
+  api("withdrawStock", {
+    payload: {
+      partNumber: withdrawState.partNumber,
+      batch: withdrawState.batch,
+      qty: withdrawState.qty,
+      lineUserId: currentLineUserId
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      showWithdrawSuccess_(data);
+      return;
+    }
+    if (saveBtn) saveBtn.disabled = false;
+    alert((data && data.error) || "บันทึกไม่สำเร็จ");
+  }).catch(function(err) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+function showWithdrawSuccess_(data) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading-success">
+        ${checkCircleIcon()}
+        <span>เบิกงานเรียบร้อย</span>
+      </h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้เบิก</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(data.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(data.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(data.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(data.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนที่เบิก</span>
+          <span>${data.qty}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวนคงเหลือ</span>
+          <span>${data.availableAfter}</span>
+        </div>
+      </section>
+
+      <button class="static-primary-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+
+      <button class="static-secondary-btn" type="button" onclick="openWithdraw()">
+        ${refreshIcon()}
+        <span>เบิกงานเพิ่ม</span>
+      </button>
+    </div>
+  `;
+}
+
+var returnNGState = {};
+
+function openReturnNG() {
+  returnNGState = { mission: "", partNumber: "", partName: "", batch: "", ngOnHand: 0, qty: 0 };
+  openFeaturePage_("ส่งคืน NG");
+  showReturnNGMissionPicker();
+}
+
+async function showReturnNGMissionPicker() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูล Part ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+
+  var missions = [];
+  var seen = {};
+
+  partOptionsCache_.forEach(function(opt) {
+    var m = opt.mission || "";
+    if (!m || seen[m]) return;
+    seen[m] = true;
+    missions.push(m);
+  });
+
+  renderPicker_({
+    context: [],
+    heading: "เลือก Mission",
+    searchPlaceholder: "ค้นหา Mission",
+    items: missions.map(function(m) { return { title: m, value: m }; }),
+    onSelect: function(item) {
+      returnNGState.mission = item.value;
+      showReturnNGPartPicker();
+    }
+  });
+}
+
+function showReturnNGPartPicker() {
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === returnNGState.mission;
+  });
+
+  renderPicker_({
+    context: [{ label: "Mission", value: returnNGState.mission }],
+    heading: "เลือก Part",
+    searchPlaceholder: "ค้นหา Part",
+    items: parts.map(function(p) {
+      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
+    }),
+    onSelect: function(item) {
+      returnNGState.partNumber = item.value;
+      returnNGState.partName = item.partName;
+      showReturnNGBatchPicker();
+    }
+  });
+}
+
+async function showReturnNGBatchPicker() {
+  var res;
+
+  try {
+    res = await api("getBatchOptions", { partNumber: returnNGState.partNumber });
+  } catch (e) {
+    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
+    res = { ok: false, options: [] };
+  }
+
+  var batches = (res && res.ok && res.options) ? res.options : [];
+
+  if (batches.length === 0) {
+    showBatchNotFoundView_();
+    return;
+  }
+
+  renderPicker_({
+    context: [
+      { label: "Mission", value: returnNGState.mission },
+      { label: "Part No.", value: returnNGState.partNumber }
+    ],
+    heading: "เลือก Batch",
+    searchPlaceholder: "ค้นหา Batch",
+    items: batches.map(function(b) {
+      return { title: b.batch, sub: "NG คงเหลือ : " + b.ngOnHand, value: b.batch, ngOnHand: b.ngOnHand };
+    }),
+    onSelect: function(item) {
+      returnNGState.batch = item.value;
+      returnNGState.ngOnHand = item.ngOnHand;
+
+      if (item.ngOnHand <= 0) {
+        showNoStockView_("ไม่มีงาน NG คงเหลือ");
+        return;
+      }
+
+      showReturnNGQtyEntry();
+    }
+  });
+}
+
+function showReturnNGQtyEntry() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <p class="picker-context">Mission : ${escapeHtml(returnNGState.mission)}</p>
+      <p class="picker-context">Part No. : ${escapeHtml(returnNGState.partNumber)}</p>
+      <p class="picker-context">Batch No. : ${escapeHtml(returnNGState.batch)}</p>
+
+      <div class="stock-box">
+        <div class="stock-box-label">NG คงเหลือ</div>
+        <div class="stock-box-value">${returnNGState.ngOnHand} Pcs</div>
+      </div>
+
+      <label class="qty-label-full">จำนวนที่ส่งคืน (ชิ้น)</label>
+      <input id="returnNGQtyInput" class="qty-input-full" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateReturnNGQtyForm_()">
+
+      <div class="warn-box">ห้ามเกินจำนวน NG คงเหลือ</div>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="showReturnNGBatchPicker()">
+          <span>ย้อนกลับ</span>
+        </button>
+        <button id="returnNGNextBtn" class="action-btn confirm-btn" type="button" onclick="showReturnNGConfirm()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function updateReturnNGQtyForm_() {
+  var qty = Number(document.getElementById("returnNGQtyInput").value || 0);
+  var btn = document.getElementById("returnNGNextBtn");
+  var valid = qty > 0 && qty <= returnNGState.ngOnHand;
+
+  if (valid) {
+    btn.disabled = false;
+    btn.classList.add("ready");
+  } else {
+    btn.disabled = true;
+    btn.classList.remove("ready");
+  }
+}
+
+function showReturnNGConfirm() {
+  var qty = Number(document.getElementById("returnNGQtyInput").value || 0);
+  returnNGState.qty = qty;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนกดยืนยัน</h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้ส่งคืน</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(returnNGState.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(returnNGState.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(returnNGState.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(returnNGState.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนที่ส่งคืน</span>
+          <span>${qty}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>NG คงเหลือ</span>
+          <span>${returnNGState.ngOnHand - qty}</span>
+        </div>
+      </section>
+
+      <button class="save-btn" type="button" onclick="saveReturnNG_()">
+        ${checkCircleWhiteIcon()}
+        <span>ยืนยัน</span>
+      </button>
+
+      <button class="edit-btn" type="button" onclick="showReturnNGQtyEntry()">
+        ${editIcon()}
+        <span>แก้ไขข้อมูล</span>
+      </button>
+    </div>
+  `;
+}
+
+function saveReturnNG_() {
+  var saveBtn = document.querySelector(".save-btn");
+
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
+
+  api("returnNGStock", {
+    payload: {
+      partNumber: returnNGState.partNumber,
+      batch: returnNGState.batch,
+      qty: returnNGState.qty,
+      lineUserId: currentLineUserId
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      showReturnNGSuccess_(data);
+      return;
+    }
+    if (saveBtn) saveBtn.disabled = false;
+    alert((data && data.error) || "บันทึกไม่สำเร็จ");
+  }).catch(function(err) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+function showReturnNGSuccess_(data) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading-success">
+        ${checkCircleIcon()}
+        <span>ส่งคืน NG เรียบร้อย</span>
+      </h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้ส่งคืน</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(data.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(data.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(data.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(data.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนที่ส่งคืน</span>
+          <span>${data.qty}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>NG คงเหลือ</span>
+          <span>${data.ngOnHandAfter}</span>
+        </div>
+      </section>
+
+      <button class="static-primary-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+
+      <button class="static-secondary-btn" type="button" onclick="openReturnNG()">
+        ${refreshIcon()}
+        <span>ส่งคืนเพิ่ม</span>
+      </button>
+    </div>
+  `;
+}
+
+var checkStockState = {};
+
+function openCheckStock() {
+  checkStockState = { mission: "", partNumber: "", partName: "", batch: "" };
+  openFeaturePage_("เช็คสต็อก");
+  showCheckStockMissionPicker();
+}
+
+async function showCheckStockMissionPicker() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูล Part ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+
+  var missions = [];
+  var seen = {};
+
+  partOptionsCache_.forEach(function(opt) {
+    var m = opt.mission || "";
+    if (!m || seen[m]) return;
+    seen[m] = true;
+    missions.push(m);
+  });
+
+  renderPicker_({
+    context: [],
+    heading: "เลือก Mission",
+    searchPlaceholder: "ค้นหา Mission",
+    items: missions.map(function(m) { return { title: m, value: m }; }),
+    onSelect: function(item) {
+      checkStockState.mission = item.value;
+      showCheckStockPartPicker();
+    }
+  });
+}
+
+function showCheckStockPartPicker() {
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === checkStockState.mission;
+  });
+
+  renderPicker_({
+    context: [{ label: "Mission", value: checkStockState.mission }],
+    heading: "เลือก Part",
+    searchPlaceholder: "ค้นหา Part",
+    items: parts.map(function(p) {
+      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
+    }),
+    onSelect: function(item) {
+      checkStockState.partNumber = item.value;
+      checkStockState.partName = item.partName;
+      showCheckStockBatchPicker();
+    }
+  });
+}
+
+async function showCheckStockBatchPicker() {
+  var res;
+
+  try {
+    res = await api("getBatchOptions", { partNumber: checkStockState.partNumber });
+  } catch (e) {
+    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
+    res = { ok: false, options: [] };
+  }
+
+  var batches = (res && res.ok && res.options) ? res.options : [];
+
+  if (batches.length === 0) {
+    showBatchNotFoundView_();
+    return;
+  }
+
+  renderPicker_({
+    context: [
+      { label: "Mission", value: checkStockState.mission },
+      { label: "Part No.", value: checkStockState.partNumber }
+    ],
+    heading: "เลือก Batch",
+    searchPlaceholder: "ค้นหา Batch",
+    items: batches.map(function(b) {
+      return { title: b.batch, sub: "OK คงเหลือ : " + b.available, value: b.batch };
+    }),
+    onSelect: function(item) {
+      checkStockState.batch = item.value;
+      loadCheckStockResult_();
+    }
+  });
+}
+
+function loadCheckStockResult_() {
+  api("checkStock", { partNumber: checkStockState.partNumber, batch: checkStockState.batch })
+    .then(function(data) {
+      if (!data || !data.ok) {
+        showBatchNotFoundView_();
+        return;
+      }
+      showCheckStockResult_(data);
+    })
+    .catch(function(err) {
+      alert(err.message || err);
+    });
+}
+
+function showCheckStockResult_(data) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <p class="picker-context">Mission : ${escapeHtml(data.mission)}</p>
+      <p class="picker-context">Part No. : ${escapeHtml(data.partNumber)}</p>
+      <p class="picker-context">Batch No. : ${escapeHtml(data.batch)}</p>
+
+      <div class="stat-row">
+        <span>ยอดงานทั้งหมด</span>
+        <span>${data.total}</span>
+      </div>
+      <div class="stat-row stat-ng">
+        <span>NG คงเหลือ</span>
+        <span>${data.ngOnHand}</span>
+      </div>
+      <div class="stat-row stat-returned">
+        <span>NG ส่งกลับแล้ว</span>
+        <span>${data.ngReturned}</span>
+      </div>
+      <div class="stat-row stat-issue">
+        <span>เบิกแล้ว</span>
+        <span>${data.issue}</span>
+      </div>
+      <div class="stat-row stat-ok">
+        <span>OK คงเหลือ</span>
+        <span>${data.available}</span>
+      </div>
+
+      <button class="static-primary-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+
+      <button class="static-secondary-btn" type="button" onclick="openCheckStock()">
+        ${refreshIcon()}
+        <span>เช็ค Batch ใหม่</span>
+      </button>
+    </div>
+  `;
+}
+
 function cameraIcon() {
   return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 20H27L31 15H41L45 20H50C53 20 56 23 56 26V48C56 51 53 54 50 54H14C11 54 8 51 8 48V26C8 23 11 20 14 20H18Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></path><circle cx="32" cy="37" r="11" fill="none" stroke="#ffffff" stroke-width="4"></circle><circle cx="18" cy="28" r="3" fill="#ffffff"></circle></svg>`;
 }
@@ -1861,6 +2955,14 @@ function editIcon() {
 
 function successBigIcon() {
   return `<svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="105" fill="#00A000"></circle><path d="M64 109L95 140L162 73" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"></path><path d="M101 149L168 82" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="18" stroke-linecap="round"></path></svg>`;
+}
+
+function chevronIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 12L44 32L24 52" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+}
+
+function searchIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="27" cy="27" r="17" fill="none" stroke="#555555" stroke-width="5"></circle><path d="M40 40L54 54" fill="none" stroke="#555555" stroke-width="5" stroke-linecap="round"></path></svg>`;
 }
 </script>
 </body>
