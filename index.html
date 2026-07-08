@@ -72,13 +72,6 @@ body {
   text-align: center;
 }
 
-.home-subtitle .underline {
-  width: 60px;
-  height: 3px;
-  margin: 0 auto 0.7vh;
-  background: #8CC63F;
-}
-
 .home-subtitle span {
   color: #ffffff;
   font-family: "Kanit", "Segoe UI", sans-serif;
@@ -113,8 +106,8 @@ body {
   background: #0E4F8C;
   display: flex;
   align-items: center;
-  padding-left: 102px;
-  gap: 15px;
+  padding-left: 16px;
+  gap: 10px;
 }
 
 .user-icon {
@@ -136,6 +129,22 @@ body {
   font-weight: 400;
   letter-spacing: .1px;
   padding-bottom: 1px;
+}
+
+.status-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 50%;
+  background: #00E676;
+  flex: 0 0 auto;
+}
+
+.status-text {
+  color: #ffffff;
+  font-size: 1.8vh;
+  font-weight: 400;
+  opacity: 0.85;
+  white-space: nowrap;
 }
 
 .menu {
@@ -966,7 +975,6 @@ footer {
     <header class="home-header">
       <img class="home-logo" src="logo.svg" alt="TRIGO">
       <div class="home-subtitle">
-        <div class="underline"></div>
         <span>Inventory &bull; Sorting &bull; Operations</span>
       </div>
     </header>
@@ -980,6 +988,8 @@ footer {
         </svg>
       </div>
       <div id="homeUserName" class="user-name">Loading...</div>
+      <span class="status-dot"></span>
+      <span class="status-text">(พร้อมใช้งาน)</span>
     </section>
 
     <section class="menu">
