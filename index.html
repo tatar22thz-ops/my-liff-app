@@ -137,6 +137,7 @@ body {
   border-radius: 50%;
   background: #00E676;
   flex: 0 0 auto;
+  display: none;
 }
 
 .status-text {
@@ -145,6 +146,7 @@ body {
   font-weight: 400;
   opacity: 0.85;
   white-space: nowrap;
+  display: none;
 }
 
 .menu {
@@ -1180,6 +1182,11 @@ function loadInitialData() {
 
       if (data && data.employee && !data.employee.employeeId) {
         showUnauthorizedView();
+      } else if (data && data.employee && data.employee.employeeId) {
+        var statusDot = document.querySelector(".status-dot");
+        var statusText = document.querySelector(".status-text");
+        if (statusDot) statusDot.style.display = "block";
+        if (statusText) statusText.style.display = "inline";
       }
     })
     .catch(function(err) {
