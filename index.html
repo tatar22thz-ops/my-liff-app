@@ -1574,7 +1574,7 @@ footer {
 <template id="receive-template">
 <section class="receive-page">
   <header class="receive-header">
-    <button class="back-btn" type="button" onclick="goHome()" aria-label="Back">
+    <button class="back-btn" type="button" onclick="goBackStep_()" aria-label="Back">
       <svg viewBox="0 0 64 64">
         <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
@@ -1786,13 +1786,33 @@ function openFeaturePage_(titleText) {
   if (h1) h1.textContent = titleText;
 }
 
+var navStack_ = [];
+
+function goto_(fn) {
+  navStack_.push(fn);
+  fn();
+}
+
+function goBackStep_() {
+  if (navStack_.length <= 1) {
+    navStack_ = [];
+    goHome();
+    return;
+  }
+  navStack_.pop();
+  var prevFn = navStack_[navStack_.length - 1];
+  prevFn();
+}
+
 function openReceive() {
   openFeaturePage_("รับงานเข้า");
-  showScanView();
+  navStack_ = [];
+  goto_(showScanView);
 }
 
 function goHome() {
   stopScanCamera_();
+  navStack_ = [];
   var app = document.getElementById("app");
 
   if (app && homeHtmlCache) {
@@ -1806,6 +1826,8 @@ function goHome() {
 
 function showScanView() {
   stopScanCamera_();
+  activeScanHandler_ = handleScanResult_;
+  activeScanView_ = showScanView;
   receiveState.scanResult = null;
   receiveState.isManual = false;
   receiveState.form = {
@@ -1829,7 +1851,7 @@ function showScanView() {
         <span>เริ่มสแกน</span>
       </button>
 
-      <button class="manual-link-btn" type="button" onclick="showManualEntryView()">
+      <button class="manual-link-btn" type="button" onclick="goto_(showManualEntryView)">
         กรอกข้อมูลด้วยตัวเอง
       </button>
     </div>
@@ -1838,6 +1860,8 @@ function showScanView() {
 
 var codeReader_ = null;
 var scanCancelledByUser_ = false;
+var activeScanHandler_ = null;
+var activeScanView_ = null;
 
 async function startScan() {
 
@@ -1849,7 +1873,7 @@ async function startScan() {
   if (codeReader_) {
     scanCancelledByUser_ = true;
     stopScanCamera_();
-    showScanView();
+    (activeScanView_ || showScanView)();
     return;
   }
 
@@ -1885,7 +1909,7 @@ async function startScan() {
     );
 
     stopScanCamera_();
-    handleScanResult_(result.getText());
+    (activeScanHandler_ || handleScanResult_)(result.getText());
 
   } catch (e) {
 
@@ -1895,7 +1919,7 @@ async function startScan() {
     if (!wasCancelled) {
       console.log(e);
       alert("สแกนไม่สำเร็จ: " + (e && e.message ? e.message : e));
-      showScanView();
+      (activeScanView_ || showScanView)();
     }
 
   }
@@ -1918,12 +1942,12 @@ function handleScanResult_(rawValue) {
               alert(data.error);
               return;
             }
-            showNotFoundView();
+            goto_(showNotFoundView);
             return;
         }
 
         receiveState.scanResult = data;
-        showResultView(data);
+        goto_(function() { showResultView(data); });
 
     })
     .catch(function(err){
@@ -1990,7 +2014,7 @@ async function showManualEntryView() {
       </section>
 
       <div class="action-row">
-        <button class="action-btn rescan-btn" type="button" onclick="showScanView()">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
           <span>ยกเลิก</span>
         </button>
         <button id="manualNextBtn" class="action-btn confirm-btn" type="button" onclick="submitManualEntry()" disabled>
@@ -2069,7 +2093,7 @@ function submitManualEntry() {
   };
   receiveState.form = { total: total };
 
-  showConfirmView();
+  goto_(showConfirmView);
 }
 
 function showResultView(result) {
@@ -2117,11 +2141,11 @@ function showResultView(result) {
       </section>
 
       <div class="action-row">
-        <button class="action-btn rescan-btn" type="button" onclick="showScanView()">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
           ${refreshIcon()}
           <span>สแกนใหม่</span>
         </button>
-        <button id="confirmBtn" class="action-btn confirm-btn" type="button" onclick="showConfirmView()" disabled>
+        <button id="confirmBtn" class="action-btn confirm-btn" type="button" onclick="goto_(showConfirmView)" disabled>
           ${downloadIcon()}
           <span>ยืนยัน</span>
         </button>
@@ -2159,7 +2183,7 @@ function showNotFoundView() {
         <p class="error-text">ไม่พบข้อมูล Part นี้<br>กรุณาตรวจสอบ QR Code<br>หรือติดต่อหัวหน้างาน</p>
       </section>
 
-      <button class="error-scan-btn" type="button" onclick="showScanView()">
+      <button class="error-scan-btn" type="button" onclick="goBackStep_()">
         ${refreshWhiteIcon()}
         <span>Scan ใหม่</span>
       </button>
@@ -2219,7 +2243,7 @@ function showConfirmView() {
         <span>ยืนยัน</span>
       </button>
 
-      <button class="edit-btn" type="button" onclick="showResultView(receiveState.scanResult)">
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
         ${editIcon()}
         <span>แก้ไขข้อมูล</span>
       </button>
@@ -2255,7 +2279,7 @@ function saveReceiveData() {
   api(action, { payload: payload })
     .then(function(data) {
       if (data && data.ok) {
-        showSuccessView();
+        goto_(showSuccessView);
         return;
       }
 
@@ -2420,7 +2444,8 @@ var withdrawState = {};
 function openWithdraw() {
   withdrawState = { mission: "", partNumber: "", partName: "", batch: "", available: 0, qty: 0 };
   openFeaturePage_("เบิกงานออก");
-  showWithdrawMissionPicker();
+  navStack_ = [];
+  goto_(showWithdrawMissionPicker);
 }
 
 async function showWithdrawMissionPicker() {
@@ -2451,7 +2476,7 @@ async function showWithdrawMissionPicker() {
     items: missions.map(function(m) { return { title: m, value: m }; }),
     onSelect: function(item) {
       withdrawState.mission = item.value;
-      showWithdrawPartPicker();
+      goto_(showWithdrawPartPicker);
     }
   });
 }
@@ -2471,7 +2496,7 @@ function showWithdrawPartPicker() {
     onSelect: function(item) {
       withdrawState.partNumber = item.value;
       withdrawState.partName = item.partName;
-      showWithdrawBatchPicker();
+      goto_(showWithdrawBatchPicker);
     }
   });
 }
@@ -2489,7 +2514,7 @@ async function showWithdrawBatchPicker() {
   var batches = (res && res.ok && res.options) ? res.options : [];
 
   if (batches.length === 0) {
-    showBatchNotFoundView_();
+    goto_(showBatchNotFoundView_);
     return;
   }
 
@@ -2508,11 +2533,11 @@ async function showWithdrawBatchPicker() {
       withdrawState.available = item.available;
 
       if (item.available <= 0) {
-        showNoStockView_("Batch นี้ไม่มีงานคงเหลือ");
+        goto_(function() { showNoStockView_("Batch นี้ไม่มีงานคงเหลือ"); });
         return;
       }
 
-      showWithdrawQtyEntry();
+      goto_(showWithdrawQtyEntry);
     }
   });
 }
@@ -2535,10 +2560,10 @@ function showWithdrawQtyEntry() {
       <div class="warn-box">ห้ามเกินจำนวนคงเหลือ</div>
 
       <div class="action-row">
-        <button class="action-btn rescan-btn" type="button" onclick="showWithdrawBatchPicker()">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
           <span>ย้อนกลับ</span>
         </button>
-        <button id="withdrawNextBtn" class="action-btn confirm-btn" type="button" onclick="showWithdrawConfirm()" disabled>
+        <button id="withdrawNextBtn" class="action-btn confirm-btn" type="button" onclick="goto_(showWithdrawConfirm)" disabled>
           ${downloadIcon()}
           <span>ถัดไป</span>
         </button>
@@ -2612,7 +2637,7 @@ function showWithdrawConfirm() {
         <span>ยืนยัน</span>
       </button>
 
-      <button class="edit-btn" type="button" onclick="showWithdrawQtyEntry()">
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
         ${editIcon()}
         <span>แก้ไขข้อมูล</span>
       </button>
@@ -2637,7 +2662,7 @@ function saveWithdraw_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      showWithdrawSuccess_(data);
+      goto_(function() { showWithdrawSuccess_(data); });
       return;
     }
     if (saveBtn) saveBtn.disabled = false;
@@ -2712,102 +2737,207 @@ var dailyWorkState = {};
 function openDailyWork() {
   dailyWorkState = { mission: "", partNumber: "", partName: "", batch: "", receivedTotal: 0, remaining: 0, ok: 0, ng: 0 };
   openFeaturePage_("เพิ่มงานรายวัน");
-  showDailyWorkMissionPicker();
+  navStack_ = [];
+  goto_(showDailyWorkScanView);
 }
 
-async function showDailyWorkMissionPicker() {
+function showDailyWorkScanView() {
+  stopScanCamera_();
+  activeScanHandler_ = handleDailyWorkScanResult_;
+  activeScanView_ = showDailyWorkScanView;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="scan-view">
+      <div class="scan-frame">
+        <span class="scan-corner tl"></span>
+        <span class="scan-corner tr"></span>
+        <span class="scan-corner bl"></span>
+        <span class="scan-corner br"></span>
+      </div>
+
+      <h2 class="scan-title">สแกน QR Code</h2>
+      <p class="scan-subtitle">สแกน QR Code ที่กล่องงาน<br>หรือ Tag ข้างPallet</p>
+
+      <button class="scan-button" type="button" onclick="startScan()">
+        ${cameraIcon()}
+        <span>เริ่มสแกน</span>
+      </button>
+
+      <button class="manual-link-btn" type="button" onclick="goto_(showDailyWorkManualEntryView)">
+        กรอกข้อมูลด้วยตัวเอง
+      </button>
+    </div>
+  `;
+}
+
+function handleDailyWorkScanResult_(rawValue) {
+  api("scanLookup", { rawScan: rawValue })
+    .then(function(data) {
+      if (!data || !data.ok) {
+        goto_(showBatchNotFoundView_);
+        return;
+      }
+
+      dailyWorkState.mission = data.mission;
+      dailyWorkState.partNumber = data.partNumber;
+      dailyWorkState.partName = data.partName;
+      dailyWorkState.batch = data.batch;
+      dailyWorkState.receivedTotal = data.receivedTotal;
+      dailyWorkState.remaining = data.remaining;
+
+      if (data.remaining <= 0) {
+        goto_(function() { showNoStockView_("Batch นี้ทำครบแล้ว ไม่มีงานคงเหลือ"); });
+        return;
+      }
+
+      goto_(showDailyWorkQtyEntry);
+    })
+    .catch(function(err) {
+      alert(err.message || err);
+    });
+}
+
+async function showDailyWorkManualEntryView() {
   if (!partOptionsCache_) {
     try {
       var res = await api("getPartOptions", {});
       partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
     } catch (e) {
+      console.log(e);
       alert("โหลดข้อมูล Part ไม่สำเร็จ");
       partOptionsCache_ = [];
     }
   }
 
   var missions = [];
-  var seen = {};
+  var seenMission = {};
 
   partOptionsCache_.forEach(function(opt) {
     var m = opt.mission || "";
-    if (!m || seen[m]) return;
-    seen[m] = true;
+    if (!m || seenMission[m]) return;
+    seenMission[m] = true;
     missions.push(m);
   });
 
-  renderPicker_({
-    context: [],
-    heading: "เลือก Mission",
-    searchPlaceholder: "ค้นหา Mission",
-    items: missions.map(function(m) { return { title: m, value: m }; }),
-    onSelect: function(item) {
-      dailyWorkState.mission = item.value;
-      showDailyWorkPartPicker();
-    }
-  });
+  var missionOptionsHtml = '<option value="">เลือก Mission</option>' +
+    missions.map(function(m) {
+      return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+    }).join("");
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        <span>กรอกข้อมูลด้วยตัวเอง</span>
+      </h2>
+
+      <section class="qty-form">
+        <div class="qty-row">
+          <label>Mission</label>
+          <select id="dwManualMission" onchange="onDailyWorkManualMissionChange()">
+            ${missionOptionsHtml}
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Part No</label>
+          <select id="dwManualPartNumber" onchange="updateDailyWorkManualForm()" disabled>
+            <option value="">เลือก Mission ก่อน</option>
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Batch</label>
+          <input id="dwManualBatch" type="text" placeholder="กรอก Batch" oninput="updateDailyWorkManualForm()">
+        </div>
+        <div class="qty-row">
+          <label>OK</label>
+          <input id="dwManualOk" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateDailyWorkManualForm()">
+        </div>
+        <div class="qty-row">
+          <label>NG</label>
+          <input id="dwManualNg" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateDailyWorkManualForm()">
+        </div>
+      </section>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
+          <span>ยกเลิก</span>
+        </button>
+        <button id="dwManualNextBtn" class="action-btn confirm-btn" type="button" onclick="submitDailyWorkManualEntry()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
-function showDailyWorkPartPicker() {
-  var parts = partOptionsCache_.filter(function(opt) {
-    return (opt.mission || "") === dailyWorkState.mission;
-  });
+function onDailyWorkManualMissionChange() {
+  var mission = document.getElementById("dwManualMission").value;
+  var partSelect = document.getElementById("dwManualPartNumber");
 
-  renderPicker_({
-    context: [{ label: "Mission", value: dailyWorkState.mission }],
-    heading: "เลือก Part",
-    searchPlaceholder: "ค้นหา Part",
-    items: parts.map(function(p) {
-      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
-    }),
-    onSelect: function(item) {
-      dailyWorkState.partNumber = item.value;
-      dailyWorkState.partName = item.partName;
-      showDailyWorkBatchPicker();
-    }
-  });
-}
-
-async function showDailyWorkBatchPicker() {
-  var res;
-
-  try {
-    res = await api("getBatchOptions", { partNumber: dailyWorkState.partNumber });
-  } catch (e) {
-    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
-    res = { ok: false, options: [] };
-  }
-
-  var batches = (res && res.ok && res.options) ? res.options : [];
-
-  if (batches.length === 0) {
-    showBatchNotFoundView_();
+  if (!mission) {
+    partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
+    partSelect.disabled = true;
+    updateDailyWorkManualForm();
     return;
   }
 
-  renderPicker_({
-    context: [
-      { label: "Mission", value: dailyWorkState.mission },
-      { label: "Part No.", value: dailyWorkState.partNumber }
-    ],
-    heading: "เลือก Batch",
-    searchPlaceholder: "ค้นหา Batch",
-    items: batches.map(function(b) {
-      return { title: b.batch, sub: "เหลือต้องทำ : " + b.remaining, value: b.batch, receivedTotal: b.receivedTotal, remaining: b.remaining };
-    }),
-    onSelect: function(item) {
-      dailyWorkState.batch = item.value;
-      dailyWorkState.receivedTotal = item.receivedTotal;
-      dailyWorkState.remaining = item.remaining;
-
-      if (item.remaining <= 0) {
-        showNoStockView_("Batch นี้ทำครบแล้ว ไม่มีงานคงเหลือ");
-        return;
-      }
-
-      showDailyWorkQtyEntry();
-    }
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === mission;
   });
+
+  partSelect.innerHTML = '<option value="">เลือก Part No</option>' +
+    parts.map(function(p) {
+      var label = (p.partNumber || "") + " - " + (p.partName || "");
+      return '<option value="' + escapeHtml(p.partNumber) + '">' + escapeHtml(label) + '</option>';
+    }).join("");
+  partSelect.disabled = false;
+
+  updateDailyWorkManualForm();
+}
+
+function updateDailyWorkManualForm() {
+  var mission = document.getElementById("dwManualMission").value;
+  var partNumber = document.getElementById("dwManualPartNumber").value;
+  var batch = document.getElementById("dwManualBatch").value.trim();
+  var ok = Number(document.getElementById("dwManualOk").value || 0);
+  var ng = Number(document.getElementById("dwManualNg").value || 0);
+  var nextBtn = document.getElementById("dwManualNextBtn");
+
+  var valid = mission && partNumber && batch && ok >= 0 && ng >= 0 && (ok + ng) > 0;
+
+  if (valid) {
+    nextBtn.disabled = false;
+    nextBtn.classList.add("ready");
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("ready");
+  }
+}
+
+function submitDailyWorkManualEntry() {
+  var mission = document.getElementById("dwManualMission").value;
+  var partNumber = document.getElementById("dwManualPartNumber").value;
+  var batch = document.getElementById("dwManualBatch").value.trim();
+  var ok = Number(document.getElementById("dwManualOk").value || 0);
+  var ng = Number(document.getElementById("dwManualNg").value || 0);
+
+  var part = partOptionsCache_.find(function(opt) {
+    return (opt.mission || "") === mission && (opt.partNumber || "") === partNumber;
+  });
+
+  if (!part) {
+    alert("ไม่พบข้อมูล Part นี้");
+    return;
+  }
+
+  dailyWorkState.mission = mission;
+  dailyWorkState.partNumber = partNumber;
+  dailyWorkState.partName = part.partName;
+  dailyWorkState.batch = batch;
+  dailyWorkState.ok = ok;
+  dailyWorkState.ng = ng;
+
+  goto_(showDailyWorkConfirm);
 }
 
 function showDailyWorkQtyEntry() {
@@ -2831,10 +2961,10 @@ function showDailyWorkQtyEntry() {
       <div class="warn-box">OK + NG ห้ามเกินยอดคงเหลือ</div>
 
       <div class="action-row">
-        <button class="action-btn rescan-btn" type="button" onclick="showDailyWorkBatchPicker()">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
           <span>ย้อนกลับ</span>
         </button>
-        <button id="dailyWorkNextBtn" class="action-btn confirm-btn" type="button" onclick="showDailyWorkConfirm()" disabled>
+        <button id="dailyWorkNextBtn" class="action-btn confirm-btn" type="button" onclick="goto_(showDailyWorkConfirm)" disabled>
           ${downloadIcon()}
           <span>ถัดไป</span>
         </button>
@@ -2859,8 +2989,10 @@ function updateDailyWorkQtyForm_() {
 }
 
 function showDailyWorkConfirm() {
-  var ok = Number(document.getElementById("dailyWorkOkInput").value || 0);
-  var ng = Number(document.getElementById("dailyWorkNgInput").value || 0);
+  var okInput = document.getElementById("dailyWorkOkInput");
+  var ngInput = document.getElementById("dailyWorkNgInput");
+  var ok = okInput ? Number(okInput.value || 0) : dailyWorkState.ok;
+  var ng = ngInput ? Number(ngInput.value || 0) : dailyWorkState.ng;
   dailyWorkState.ok = ok;
   dailyWorkState.ng = ng;
 
@@ -2915,7 +3047,7 @@ function showDailyWorkConfirm() {
         <span>ยืนยัน</span>
       </button>
 
-      <button class="edit-btn" type="button" onclick="showDailyWorkQtyEntry()">
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
         ${editIcon()}
         <span>แก้ไขข้อมูล</span>
       </button>
@@ -2941,7 +3073,7 @@ function saveDailyWork_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      showDailyWorkSuccess_(data);
+      goto_(function() { showDailyWorkSuccess_(data); });
       return;
     }
     if (saveBtn) saveBtn.disabled = false;
@@ -3020,101 +3152,199 @@ var returnNGState = {};
 function openReturnNG() {
   returnNGState = { mission: "", partNumber: "", partName: "", batch: "", ngOnHand: 0, qty: 0 };
   openFeaturePage_("ส่งคืน NG");
-  showReturnNGMissionPicker();
+  navStack_ = [];
+  goto_(showReturnNGScanView);
 }
 
-async function showReturnNGMissionPicker() {
+function showReturnNGScanView() {
+  stopScanCamera_();
+  activeScanHandler_ = handleReturnNGScanResult_;
+  activeScanView_ = showReturnNGScanView;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="scan-view">
+      <div class="scan-frame">
+        <span class="scan-corner tl"></span>
+        <span class="scan-corner tr"></span>
+        <span class="scan-corner bl"></span>
+        <span class="scan-corner br"></span>
+      </div>
+
+      <h2 class="scan-title">สแกน QR Code</h2>
+      <p class="scan-subtitle">สแกน QR Code ที่กล่องงาน<br>หรือ Tag ข้างPallet</p>
+
+      <button class="scan-button" type="button" onclick="startScan()">
+        ${cameraIcon()}
+        <span>เริ่มสแกน</span>
+      </button>
+
+      <button class="manual-link-btn" type="button" onclick="goto_(showReturnNGManualEntryView)">
+        กรอกข้อมูลด้วยตัวเอง
+      </button>
+    </div>
+  `;
+}
+
+function handleReturnNGScanResult_(rawValue) {
+  api("scanLookup", { rawScan: rawValue })
+    .then(function(data) {
+      if (!data || !data.ok) {
+        goto_(showBatchNotFoundView_);
+        return;
+      }
+
+      returnNGState.mission = data.mission;
+      returnNGState.partNumber = data.partNumber;
+      returnNGState.partName = data.partName;
+      returnNGState.batch = data.batch;
+      returnNGState.ngOnHand = data.ngOnHand;
+
+      if (data.ngOnHand <= 0) {
+        goto_(function() { showNoStockView_("ไม่มีงาน NG คงเหลือ"); });
+        return;
+      }
+
+      goto_(showReturnNGQtyEntry);
+    })
+    .catch(function(err) {
+      alert(err.message || err);
+    });
+}
+
+async function showReturnNGManualEntryView() {
   if (!partOptionsCache_) {
     try {
       var res = await api("getPartOptions", {});
       partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
     } catch (e) {
+      console.log(e);
       alert("โหลดข้อมูล Part ไม่สำเร็จ");
       partOptionsCache_ = [];
     }
   }
 
   var missions = [];
-  var seen = {};
+  var seenMission = {};
 
   partOptionsCache_.forEach(function(opt) {
     var m = opt.mission || "";
-    if (!m || seen[m]) return;
-    seen[m] = true;
+    if (!m || seenMission[m]) return;
+    seenMission[m] = true;
     missions.push(m);
   });
 
-  renderPicker_({
-    context: [],
-    heading: "เลือก Mission",
-    searchPlaceholder: "ค้นหา Mission",
-    items: missions.map(function(m) { return { title: m, value: m }; }),
-    onSelect: function(item) {
-      returnNGState.mission = item.value;
-      showReturnNGPartPicker();
-    }
-  });
+  var missionOptionsHtml = '<option value="">เลือก Mission</option>' +
+    missions.map(function(m) {
+      return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+    }).join("");
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        <span>กรอกข้อมูลด้วยตัวเอง</span>
+      </h2>
+
+      <section class="qty-form">
+        <div class="qty-row">
+          <label>Mission</label>
+          <select id="ngManualMission" onchange="onReturnNGManualMissionChange()">
+            ${missionOptionsHtml}
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Part No</label>
+          <select id="ngManualPartNumber" onchange="updateReturnNGManualForm()" disabled>
+            <option value="">เลือก Mission ก่อน</option>
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Batch</label>
+          <input id="ngManualBatch" type="text" placeholder="กรอก Batch" oninput="updateReturnNGManualForm()">
+        </div>
+        <div class="qty-row">
+          <label>จำนวนที่ส่งคืน</label>
+          <input id="ngManualQty" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateReturnNGManualForm()">
+        </div>
+      </section>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
+          <span>ยกเลิก</span>
+        </button>
+        <button id="ngManualNextBtn" class="action-btn confirm-btn" type="button" onclick="submitReturnNGManualEntry()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
-function showReturnNGPartPicker() {
-  var parts = partOptionsCache_.filter(function(opt) {
-    return (opt.mission || "") === returnNGState.mission;
-  });
+function onReturnNGManualMissionChange() {
+  var mission = document.getElementById("ngManualMission").value;
+  var partSelect = document.getElementById("ngManualPartNumber");
 
-  renderPicker_({
-    context: [{ label: "Mission", value: returnNGState.mission }],
-    heading: "เลือก Part",
-    searchPlaceholder: "ค้นหา Part",
-    items: parts.map(function(p) {
-      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
-    }),
-    onSelect: function(item) {
-      returnNGState.partNumber = item.value;
-      returnNGState.partName = item.partName;
-      showReturnNGBatchPicker();
-    }
-  });
-}
-
-async function showReturnNGBatchPicker() {
-  var res;
-
-  try {
-    res = await api("getBatchOptions", { partNumber: returnNGState.partNumber });
-  } catch (e) {
-    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
-    res = { ok: false, options: [] };
-  }
-
-  var batches = (res && res.ok && res.options) ? res.options : [];
-
-  if (batches.length === 0) {
-    showBatchNotFoundView_();
+  if (!mission) {
+    partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
+    partSelect.disabled = true;
+    updateReturnNGManualForm();
     return;
   }
 
-  renderPicker_({
-    context: [
-      { label: "Mission", value: returnNGState.mission },
-      { label: "Part No.", value: returnNGState.partNumber }
-    ],
-    heading: "เลือก Batch",
-    searchPlaceholder: "ค้นหา Batch",
-    items: batches.map(function(b) {
-      return { title: b.batch, sub: "NG คงเหลือ : " + b.ngOnHand, value: b.batch, ngOnHand: b.ngOnHand };
-    }),
-    onSelect: function(item) {
-      returnNGState.batch = item.value;
-      returnNGState.ngOnHand = item.ngOnHand;
-
-      if (item.ngOnHand <= 0) {
-        showNoStockView_("ไม่มีงาน NG คงเหลือ");
-        return;
-      }
-
-      showReturnNGQtyEntry();
-    }
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === mission;
   });
+
+  partSelect.innerHTML = '<option value="">เลือก Part No</option>' +
+    parts.map(function(p) {
+      var label = (p.partNumber || "") + " - " + (p.partName || "");
+      return '<option value="' + escapeHtml(p.partNumber) + '">' + escapeHtml(label) + '</option>';
+    }).join("");
+  partSelect.disabled = false;
+
+  updateReturnNGManualForm();
+}
+
+function updateReturnNGManualForm() {
+  var mission = document.getElementById("ngManualMission").value;
+  var partNumber = document.getElementById("ngManualPartNumber").value;
+  var batch = document.getElementById("ngManualBatch").value.trim();
+  var qty = Number(document.getElementById("ngManualQty").value || 0);
+  var nextBtn = document.getElementById("ngManualNextBtn");
+
+  var valid = mission && partNumber && batch && qty > 0;
+
+  if (valid) {
+    nextBtn.disabled = false;
+    nextBtn.classList.add("ready");
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("ready");
+  }
+}
+
+function submitReturnNGManualEntry() {
+  var mission = document.getElementById("ngManualMission").value;
+  var partNumber = document.getElementById("ngManualPartNumber").value;
+  var batch = document.getElementById("ngManualBatch").value.trim();
+  var qty = Number(document.getElementById("ngManualQty").value || 0);
+
+  var part = partOptionsCache_.find(function(opt) {
+    return (opt.mission || "") === mission && (opt.partNumber || "") === partNumber;
+  });
+
+  if (!part) {
+    alert("ไม่พบข้อมูล Part นี้");
+    return;
+  }
+
+  returnNGState.mission = mission;
+  returnNGState.partNumber = partNumber;
+  returnNGState.partName = part.partName;
+  returnNGState.batch = batch;
+  returnNGState.qty = qty;
+
+  goto_(showReturnNGConfirm);
 }
 
 function showReturnNGQtyEntry() {
@@ -3135,10 +3365,10 @@ function showReturnNGQtyEntry() {
       <div class="warn-box">ห้ามเกินจำนวน NG คงเหลือ</div>
 
       <div class="action-row">
-        <button class="action-btn rescan-btn" type="button" onclick="showReturnNGBatchPicker()">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
           <span>ย้อนกลับ</span>
         </button>
-        <button id="returnNGNextBtn" class="action-btn confirm-btn" type="button" onclick="showReturnNGConfirm()" disabled>
+        <button id="returnNGNextBtn" class="action-btn confirm-btn" type="button" onclick="goto_(showReturnNGConfirm)" disabled>
           ${downloadIcon()}
           <span>ถัดไป</span>
         </button>
@@ -3162,7 +3392,8 @@ function updateReturnNGQtyForm_() {
 }
 
 function showReturnNGConfirm() {
-  var qty = Number(document.getElementById("returnNGQtyInput").value || 0);
+  var qtyInput = document.getElementById("returnNGQtyInput");
+  var qty = qtyInput ? Number(qtyInput.value || 0) : returnNGState.qty;
   returnNGState.qty = qty;
 
   document.getElementById("receiveContent").innerHTML = `
@@ -3212,7 +3443,7 @@ function showReturnNGConfirm() {
         <span>ยืนยัน</span>
       </button>
 
-      <button class="edit-btn" type="button" onclick="showReturnNGQtyEntry()">
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
         ${editIcon()}
         <span>แก้ไขข้อมูล</span>
       </button>
@@ -3237,7 +3468,7 @@ function saveReturnNG_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      showReturnNGSuccess_(data);
+      goto_(function() { showReturnNGSuccess_(data); });
       return;
     }
     if (saveBtn) saveBtn.disabled = false;
@@ -3312,104 +3543,196 @@ var checkStockState = {};
 function openCheckStock() {
   checkStockState = { mission: "", partNumber: "", partName: "", batch: "" };
   openFeaturePage_("เช็คสต็อก");
-  showCheckStockMissionPicker();
+  navStack_ = [];
+  goto_(showCheckStockScanView);
 }
 
-async function showCheckStockMissionPicker() {
+function showCheckStockScanView() {
+  stopScanCamera_();
+  activeScanHandler_ = handleCheckStockScanResult_;
+  activeScanView_ = showCheckStockScanView;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="scan-view">
+      <div class="scan-frame">
+        <span class="scan-corner tl"></span>
+        <span class="scan-corner tr"></span>
+        <span class="scan-corner bl"></span>
+        <span class="scan-corner br"></span>
+      </div>
+
+      <h2 class="scan-title">สแกน QR Code</h2>
+      <p class="scan-subtitle">สแกน QR Code ที่กล่องงาน<br>หรือ Tag ข้างPallet</p>
+
+      <button class="scan-button" type="button" onclick="startScan()">
+        ${cameraIcon()}
+        <span>เริ่มสแกน</span>
+      </button>
+
+      <button class="manual-link-btn" type="button" onclick="goto_(showCheckStockManualEntryView)">
+        กรอกข้อมูลด้วยตัวเอง
+      </button>
+    </div>
+  `;
+}
+
+function handleCheckStockScanResult_(rawValue) {
+  api("scanLookup", { rawScan: rawValue })
+    .then(function(data) {
+      if (!data || !data.ok) {
+        goto_(showBatchNotFoundView_);
+        return;
+      }
+
+      checkStockState.mission = data.mission;
+      checkStockState.partNumber = data.partNumber;
+      checkStockState.partName = data.partName;
+      checkStockState.batch = data.batch;
+
+      goto_(function() { showCheckStockResult_(data); });
+    })
+    .catch(function(err) {
+      alert(err.message || err);
+    });
+}
+
+async function showCheckStockManualEntryView() {
   if (!partOptionsCache_) {
     try {
       var res = await api("getPartOptions", {});
       partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
     } catch (e) {
+      console.log(e);
       alert("โหลดข้อมูล Part ไม่สำเร็จ");
       partOptionsCache_ = [];
     }
   }
 
   var missions = [];
-  var seen = {};
+  var seenMission = {};
 
   partOptionsCache_.forEach(function(opt) {
     var m = opt.mission || "";
-    if (!m || seen[m]) return;
-    seen[m] = true;
+    if (!m || seenMission[m]) return;
+    seenMission[m] = true;
     missions.push(m);
   });
 
-  renderPicker_({
-    context: [],
-    heading: "เลือก Mission",
-    searchPlaceholder: "ค้นหา Mission",
-    items: missions.map(function(m) { return { title: m, value: m }; }),
-    onSelect: function(item) {
-      checkStockState.mission = item.value;
-      showCheckStockPartPicker();
-    }
-  });
+  var missionOptionsHtml = '<option value="">เลือก Mission</option>' +
+    missions.map(function(m) {
+      return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+    }).join("");
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        <span>กรอกข้อมูลด้วยตัวเอง</span>
+      </h2>
+
+      <section class="qty-form">
+        <div class="qty-row">
+          <label>Mission</label>
+          <select id="csManualMission" onchange="onCheckStockManualMissionChange()">
+            ${missionOptionsHtml}
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Part No</label>
+          <select id="csManualPartNumber" onchange="updateCheckStockManualForm()" disabled>
+            <option value="">เลือก Mission ก่อน</option>
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Batch</label>
+          <input id="csManualBatch" type="text" placeholder="กรอก Batch" oninput="updateCheckStockManualForm()">
+        </div>
+      </section>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
+          <span>ยกเลิก</span>
+        </button>
+        <button id="csManualNextBtn" class="action-btn confirm-btn" type="button" onclick="submitCheckStockManualEntry()" disabled>
+          ${downloadIcon()}
+          <span>ดูผล</span>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
-function showCheckStockPartPicker() {
-  var parts = partOptionsCache_.filter(function(opt) {
-    return (opt.mission || "") === checkStockState.mission;
-  });
+function onCheckStockManualMissionChange() {
+  var mission = document.getElementById("csManualMission").value;
+  var partSelect = document.getElementById("csManualPartNumber");
 
-  renderPicker_({
-    context: [{ label: "Mission", value: checkStockState.mission }],
-    heading: "เลือก Part",
-    searchPlaceholder: "ค้นหา Part",
-    items: parts.map(function(p) {
-      return { title: p.partNumber, sub: p.partName, value: p.partNumber, partName: p.partName };
-    }),
-    onSelect: function(item) {
-      checkStockState.partNumber = item.value;
-      checkStockState.partName = item.partName;
-      showCheckStockBatchPicker();
-    }
-  });
-}
-
-async function showCheckStockBatchPicker() {
-  var res;
-
-  try {
-    res = await api("getBatchOptions", { partNumber: checkStockState.partNumber });
-  } catch (e) {
-    alert("โหลดข้อมูล Batch ไม่สำเร็จ");
-    res = { ok: false, options: [] };
-  }
-
-  var batches = (res && res.ok && res.options) ? res.options : [];
-
-  if (batches.length === 0) {
-    showBatchNotFoundView_();
+  if (!mission) {
+    partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
+    partSelect.disabled = true;
+    updateCheckStockManualForm();
     return;
   }
 
-  renderPicker_({
-    context: [
-      { label: "Mission", value: checkStockState.mission },
-      { label: "Part No.", value: checkStockState.partNumber }
-    ],
-    heading: "เลือก Batch",
-    searchPlaceholder: "ค้นหา Batch",
-    items: batches.map(function(b) {
-      return { title: b.batch, sub: "OK คงเหลือ : " + b.available, value: b.batch };
-    }),
-    onSelect: function(item) {
-      checkStockState.batch = item.value;
-      loadCheckStockResult_();
-    }
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === mission;
   });
+
+  partSelect.innerHTML = '<option value="">เลือก Part No</option>' +
+    parts.map(function(p) {
+      var label = (p.partNumber || "") + " - " + (p.partName || "");
+      return '<option value="' + escapeHtml(p.partNumber) + '">' + escapeHtml(label) + '</option>';
+    }).join("");
+  partSelect.disabled = false;
+
+  updateCheckStockManualForm();
+}
+
+function updateCheckStockManualForm() {
+  var mission = document.getElementById("csManualMission").value;
+  var partNumber = document.getElementById("csManualPartNumber").value;
+  var batch = document.getElementById("csManualBatch").value.trim();
+  var nextBtn = document.getElementById("csManualNextBtn");
+
+  var valid = mission && partNumber && batch;
+
+  if (valid) {
+    nextBtn.disabled = false;
+    nextBtn.classList.add("ready");
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("ready");
+  }
+}
+
+function submitCheckStockManualEntry() {
+  var mission = document.getElementById("csManualMission").value;
+  var partNumber = document.getElementById("csManualPartNumber").value;
+  var batch = document.getElementById("csManualBatch").value.trim();
+
+  var part = partOptionsCache_.find(function(opt) {
+    return (opt.mission || "") === mission && (opt.partNumber || "") === partNumber;
+  });
+
+  if (!part) {
+    alert("ไม่พบข้อมูล Part นี้");
+    return;
+  }
+
+  checkStockState.mission = mission;
+  checkStockState.partNumber = partNumber;
+  checkStockState.partName = part.partName;
+  checkStockState.batch = batch;
+
+  loadCheckStockResult_();
 }
 
 function loadCheckStockResult_() {
   api("checkStock", { partNumber: checkStockState.partNumber, batch: checkStockState.batch })
     .then(function(data) {
       if (!data || !data.ok) {
-        showBatchNotFoundView_();
+        goto_(showBatchNotFoundView_);
         return;
       }
-      showCheckStockResult_(data);
+      goto_(function() { showCheckStockResult_(data); });
     })
     .catch(function(err) {
       alert(err.message || err);
