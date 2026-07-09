@@ -81,6 +81,29 @@ body {
   display: block;
 }
 
+.back-btn {
+  position: absolute;
+  left: 12px;
+  top: 0.71vh;
+  width: 4.74vh;
+  height: 5.33vh;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+}
+
+.back-btn.show {
+  display: block;
+}
+
+.back-btn svg {
+  width: 4.74vh;
+  height: 5.33vh;
+  display: block;
+}
+
 .loading-overlay {
   display: none;
   position: fixed;
@@ -248,6 +271,13 @@ body {
   margin: 0 0 2.5vh;
 }
 
+.error-title svg {
+  width: 3.4vh;
+  height: 3.4vh;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
 .error-text {
   color: #333333;
   font-size: 2.3vh;
@@ -274,6 +304,12 @@ body {
   justify-content: center;
   gap: 14px;
   cursor: pointer;
+}
+
+.static-primary-btn svg {
+  width: 4vh;
+  height: 4vh;
+  flex: 0 0 auto;
 }
 
 .static-secondary-btn {
@@ -459,6 +495,11 @@ body {
 <body>
   <main id="app" class="app">
     <header class="top-header">
+      <button class="back-btn" id="headerBackBtn" type="button" onclick="goBack_()" aria-label="Back">
+        <svg viewBox="0 0 64 64">
+          <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </button>
       <h1>สร้างใบงาน</h1>
       <div class="header-logo">
         <img src="logo.svg" alt="TRIGO">
@@ -562,8 +603,40 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
-  showMissionPicker();
+  goto_(showMissionPicker);
 });
+
+var navStack_ = [];
+
+function goto_(fn) {
+  navStack_.push(fn);
+  fn();
+  updateBackBtnVisibility_();
+}
+
+function goBack_() {
+  if (navStack_.length <= 1) {
+    if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
+      liff.closeWindow();
+    }
+    return;
+  }
+  navStack_.pop();
+  var prevFn = navStack_[navStack_.length - 1];
+  prevFn();
+  updateBackBtnVisibility_();
+}
+
+function resetNav_(fn) {
+  navStack_ = [];
+  goto_(fn);
+}
+
+function updateBackBtnVisibility_() {
+  var btn = document.getElementById("headerBackBtn");
+  if (!btn) return;
+  btn.classList.toggle("show", navStack_.length > 1);
+}
 
 function showUnauthorizedView() {
   document.getElementById("content").innerHTML =
@@ -674,7 +747,7 @@ async function showMissionPicker() {
     items: missions.map(function(m) { return { title: m, value: m }; }),
     onSelect: function(item) {
       reportState.mission = item.value;
-      showDatePicker();
+      goto_(showDatePicker);
     }
   });
 }
@@ -718,7 +791,7 @@ async function loadPreview_() {
   }
 
   if (!res || !res.ok || !res.hasData) {
-    showNoDataView_();
+    goto_(showNoDataView_);
     return;
   }
 
@@ -735,7 +808,7 @@ async function loadPreview_() {
     };
   });
 
-  showEmployeeSelectView_();
+  goto_(showEmployeeSelectView_);
 }
 
 function showNoDataView_() {
@@ -746,7 +819,7 @@ function showNoDataView_() {
         '<h2 class="error-title">' + smallXIcon() + '<span>ไม่พบข้อมูล</span></h2>' +
         '<p class="error-text">ไม่พบข้อมูลการลงงานของ<br>Mission นี้ในวันที่เลือก<br>กรุณาตรวจสอบข้อมูล</p>' +
       '</section>' +
-      '<button class="static-primary-btn" type="button" onclick="showMissionPicker()">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
+      '<button class="static-primary-btn" type="button" onclick="resetNav_(showMissionPicker)">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
     '</div>';
 }
 
@@ -774,9 +847,22 @@ function showEmployeeSelectView_() {
       '<p class="picker-context">Part : ' + escapeHtml(partNames) + '</p>' +
       '<h2 class="picker-heading">เลือกพนักงาน + เวลาทำงาน</h2>' +
       '<div class="emp-list">' + rowsHtml + '</div>' +
-      '<button class="static-primary-btn" type="button" onclick="showConfirmView_()">' + downloadIcon() + '<span>ถัดไป</span></button>' +
-      '<button class="static-secondary-btn" type="button" onclick="showMissionPicker()">' + '<span>ย้อนกลับ</span></button>' +
+      '<button class="static-primary-btn" type="button" onclick="onProceedToConfirm_()">' + downloadIcon() + '<span>ถัดไป</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="goBack_()">' + '<span>ย้อนกลับ</span></button>' +
     '</div>';
+}
+
+function onProceedToConfirm_() {
+  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
+    return reportState.selected[id].checked;
+  });
+
+  if (chosenIds.length === 0) {
+    alert("กรุณาเลือกพนักงานอย่างน้อย 1 คน");
+    return;
+  }
+
+  goto_(showConfirmView_);
 }
 
 function toggleEmployee_(employeeId, checked) {
@@ -793,11 +879,6 @@ function showConfirmView_() {
   var chosenIds = Object.keys(reportState.selected).filter(function(id) {
     return reportState.selected[id].checked;
   });
-
-  if (chosenIds.length === 0) {
-    alert("กรุณาเลือกพนักงานอย่างน้อย 1 คน");
-    return;
-  }
 
   var empListHtml = chosenIds.map(function(id) {
     var e = reportState.selected[id];
@@ -819,7 +900,7 @@ function showConfirmView_() {
         '<ul class="emp-summary-list">' + empListHtml + '</ul>' +
       '</section>' +
       '<button class="static-primary-btn" type="button" onclick="submitReport_()">' + checkCircleWhiteIcon() + '<span>สร้างใบงาน</span></button>' +
-      '<button class="static-secondary-btn" type="button" onclick="showEmployeeSelectView_()">' + '<span>แก้ไขข้อมูล</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="goBack_()">' + '<span>แก้ไขข้อมูล</span></button>' +
     '</div>';
 }
 
@@ -845,7 +926,7 @@ function submitReport_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      showSuccessView_(data);
+      goto_(function() { showSuccessView_(data); });
       return;
     }
     if (btn) btn.disabled = false;
@@ -864,7 +945,7 @@ function showSuccessView_(data) {
         '<div class="info-row"><span>ชื่อไฟล์</span><span class="info-value">' + escapeHtml(data.fileName) + '</span></div>' +
       '</section>' +
       '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบงาน</a></div>' +
-      '<button class="static-primary-btn" type="button" onclick="showMissionPicker()">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
+      '<button class="static-primary-btn" type="button" onclick="resetNav_(showMissionPicker)">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
     '</div>';
 }
 
