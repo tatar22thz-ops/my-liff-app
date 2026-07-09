@@ -373,6 +373,93 @@ footer {
   font-weight: 700;
 }
 
+.credits-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 5, 19, .65);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.credits-overlay.show {
+  display: flex;
+}
+
+.credits-card {
+  position: relative;
+  width: 340px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 4vh 20px 3vh;
+  text-align: center;
+}
+
+.credits-close-btn {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 3.2vh;
+  height: 3.2vh;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.credits-close-btn svg {
+  width: 3.2vh;
+  height: 3.2vh;
+  display: block;
+}
+
+.credits-logo {
+  width: 7.94vh;
+  height: 4.27vh;
+  margin: 0 auto 1.4vh;
+  display: block;
+}
+
+.credits-title {
+  color: #0E4F8C;
+  font-size: 2.4vh;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+.credits-version {
+  color: #777777;
+  font-size: 1.6vh;
+  margin-top: 0.3vh;
+}
+
+.credits-divider {
+  width: 60px;
+  height: 2px;
+  background: #E0E0E0;
+  margin: 1.9vh auto;
+}
+
+.credits-text {
+  margin: 0;
+  color: #333333;
+  font-size: 1.7vh;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.credits-date {
+  margin-top: 1.9vh;
+  color: #999999;
+  font-size: 1.4vh;
+  line-height: 1.6;
+}
+
 .receive-page {
   width: 100%;
   min-height: 100vh;
@@ -1459,13 +1546,29 @@ footer {
 
     <footer>
       <div class="footer-brand">TRIGO YUSEN HUB</div>
-      <div class="footer-meta">Version 1.1.0<br>&copy; 2026 TRIGO</div>
+      <div class="footer-meta" onclick="handleCreditTap_()">Version 1.1.0<br>&copy; 2026 TRIGO</div>
     </footer>
 </main>
 
 <div id="loadingOverlay" class="loading-overlay">
   <div class="loading-overlay-spinner"></div>
   <p class="loading-overlay-text">กำลังโหลด<br>กรุณารอสักครู่...</p>
+</div>
+
+<div id="creditsOverlay" class="credits-overlay">
+  <div class="credits-card">
+    <button class="credits-close-btn" type="button" onclick="hideCreditsPopup_()" aria-label="Close">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>
+    </button>
+    <img class="credits-logo" src="logo.svg" alt="TRIGO">
+    <div class="credits-title">TRIGO YUSEN HUB</div>
+    <div class="credits-version">Version 1.1.0</div>
+    <div class="credits-divider"></div>
+    <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538)<br>เพื่อใช้ในการบันทึกข้อมูลงาน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
+    <div class="credits-divider"></div>
+    <p class="credits-text">This application was developed by Lon Banjong (TRIGO538)<br>For use in recording work data at Site Yusen LCBTH only<br>Unauthorized copying, editing, or modification is strictly prohibited</p>
+    <div class="credits-date">เริ่มพัฒนา / Development started: 6 กรกฎาคม 2026 (July 6, 2026)</div>
+  </div>
 </div>
 
 <template id="receive-template">
@@ -1524,6 +1627,34 @@ function showLoadingOverlay_() {
 
 function hideLoadingOverlay_() {
   var overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.classList.remove("show");
+}
+
+var creditTapCount_ = 0;
+var creditTapTimer_ = null;
+
+function handleCreditTap_() {
+  creditTapCount_++;
+
+  if (creditTapTimer_) clearTimeout(creditTapTimer_);
+  creditTapTimer_ = setTimeout(function() {
+    creditTapCount_ = 0;
+  }, 2000);
+
+  if (creditTapCount_ >= 5) {
+    creditTapCount_ = 0;
+    clearTimeout(creditTapTimer_);
+    showCreditsPopup_();
+  }
+}
+
+function showCreditsPopup_() {
+  var overlay = document.getElementById("creditsOverlay");
+  if (overlay) overlay.classList.add("show");
+}
+
+function hideCreditsPopup_() {
+  var overlay = document.getElementById("creditsOverlay");
   if (overlay) overlay.classList.remove("show");
 }
 
