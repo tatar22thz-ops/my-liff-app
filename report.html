@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trigo Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  transition: transform 0.1s ease;
+}
+
+.menu-card:active,
+.action-btn:active,
+.save-btn:active,
+.static-primary-btn:active,
+.static-secondary-btn:active,
+.picker-item:active,
+.emp-row-check:active {
+  transform: scale(0.97);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #EEF2F7;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.app {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  background: #EEF2F7;
+  color: #000000;
+}
+
+.top-header {
+  height: 6.52vh;
+  background: #0E4F8C;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-header h1 {
+  color: #ffffff;
+  font-size: 3.05vh;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
+
+.header-logo {
+  position: absolute;
+  right: 12px;
+  top: 0.83vh;
+  width: 7.94vh;
+  height: 4.27vh;
+}
+
+.header-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 5, 19, .55);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.9vh;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.loading-overlay-spinner {
+  width: 5.69vh;
+  height: 5.69vh;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin_ 0.8s linear infinite;
+}
+
+@keyframes spin_ {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay-text {
+  margin: 0;
+  color: #ffffff;
+  text-align: center;
+  font-size: 2.13vh;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.picker-page {
+  padding: 2.4vh 16px 4vh;
+}
+
+.picker-context {
+  color: #000000;
+  font-size: 2.4vh;
+  font-weight: 400;
+  margin: 0 0 1.2vh;
+}
+
+.picker-heading {
+  color: #000000;
+  font-size: 3.55vh;
+  font-weight: 800;
+  margin: 0 0 1.6vh;
+}
+
+.picker-search {
+  position: relative;
+  margin-bottom: 1.9vh;
+}
+
+.picker-search input {
+  width: 100%;
+  height: 5.5vh;
+  border: 2px solid #333333;
+  border-radius: 10px;
+  padding: 0 44px 0 16px;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.4vh;
+  color: #000000;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.picker-search svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.6vh;
+  height: 2.6vh;
+}
+
+.picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  padding-bottom: 3vh;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 7vh;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 0 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+.picker-item.selected {
+  border-color: #00A000;
+  background: #E9FFE3;
+}
+
+.picker-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+
+.picker-item-title {
+  font-size: 2.6vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.picker-item-sub {
+  font-size: 1.8vh;
+  font-weight: 400;
+  color: #777777;
+}
+
+.picker-item svg {
+  width: 2.4vh;
+  height: 2.4vh;
+  flex: 0 0 auto;
+  color: #000000;
+}
+
+.error-view {
+  position: relative;
+  min-height: 80vh;
+  padding-top: 12.80vh;
+}
+
+.error-card {
+  width: 322px;
+  max-width: calc(100% - 32px);
+  min-height: 25vh;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: #FFDCDC;
+  text-align: center;
+  padding: 3vh 16px;
+}
+
+.error-card .big-x {
+  width: 7.94vh;
+  height: 7.94vh;
+  margin-bottom: 3vh;
+}
+
+.error-title {
+  color: #FF1111;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  margin: 0 0 2.5vh;
+}
+
+.error-text {
+  color: #333333;
+  font-size: 2.3vh;
+  line-height: 1.4;
+  font-weight: 800;
+  margin: 0;
+}
+
+.static-primary-btn {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  height: 8.41vh;
+  margin: 4vh auto 1.5vh;
+  border: 0;
+  border-radius: 9px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.4vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.static-secondary-btn {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  height: 8.41vh;
+  margin: 0 auto;
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #555555;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.05vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.emp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vh;
+  padding-bottom: 2vh;
+}
+
+.emp-row {
+  border: 2px solid #AEB4B8;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 1.4vh 14px;
+}
+
+.emp-row.checked {
+  border-color: #00A000;
+  background: #E9FFE3;
+}
+
+.emp-row-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.emp-row-check input[type="checkbox"] {
+  width: 2.6vh;
+  height: 2.6vh;
+  flex: 0 0 auto;
+  accent-color: #00A000;
+}
+
+.emp-row-name {
+  font-size: 2.3vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.emp-row-times {
+  display: none;
+  gap: 10px;
+  margin-top: 1.2vh;
+}
+
+.emp-row.checked .emp-row-times {
+  display: flex;
+}
+
+.emp-time-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.emp-time-field label {
+  display: block;
+  color: #777777;
+  font-size: 1.5vh;
+  margin-bottom: 0.4vh;
+}
+
+.emp-time-field input[type="time"] {
+  width: 100%;
+  height: 4.6vh;
+  border: 2px solid #AEB4B8;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.1vh;
+  color: #000000;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.confirm-view {
+  position: relative;
+  padding-top: 2.5vh;
+  min-height: 80vh;
+}
+
+.confirm-heading {
+  margin: 0 0 2vh;
+  text-align: center;
+  color: #000000;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.confirm-heading-success {
+  margin: 0 0 2vh;
+  text-align: center;
+  color: #00A000;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.confirm-heading-success svg {
+  width: 3.2vh;
+  height: 3.2vh;
+  flex: 0 0 auto;
+}
+
+.confirm-card {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 2vh;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.66vh 16px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 4.03vh;
+  color: #000000;
+  font-size: 2.13vh;
+  line-height: 1.3;
+  font-weight: 400;
+  gap: 12px;
+}
+
+.info-value {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.emp-summary-list {
+  margin: 0.5vh 0 1.5vh;
+  padding-left: 20px;
+  font-size: 1.9vh;
+  line-height: 1.9;
+  color: #333333;
+}
+
+.link-box {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 2vh;
+  padding: 2vh 16px;
+  border-radius: 10px;
+  background: #E9FFE3;
+  text-align: center;
+  word-break: break-all;
+}
+
+.link-box a {
+  color: #0E4F8C;
+  font-weight: 700;
+  font-size: 1.9vh;
+}
+</style>
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="top-header">
+      <h1>สร้างใบงาน</h1>
+      <div class="header-logo">
+        <img src="logo.svg" alt="TRIGO">
+      </div>
+    </header>
+
+    <div id="content"></div>
+  </main>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay-spinner"></div>
+    <p class="loading-overlay-text">กำลังโหลด<br>กรุณารอสักครู่...</p>
+  </div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<script>
+var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6iBeELosvSfsrm0oSGN7GfOeEyb8NVD2_2z7XMralNZdlA/exec";
+
+var currentLineUserId = "";
+var currentEmployeeDisplayName = "";
+var partOptionsCache_ = null;
+
+var reportState = {
+  mission: "",
+  dateStr: "",
+  dateLabel: "",
+  employees: [],
+  parts: [],
+  selected: {}
+};
+
+function withTimeout_(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(function (resolve, reject) {
+      setTimeout(function () { reject(new Error("timeout")); }, ms);
+    })
+  ]);
+}
+
+function showLoadingOverlay_() {
+  var overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.classList.add("show");
+}
+
+function hideLoadingOverlay_() {
+  var overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.classList.remove("show");
+}
+
+async function api(action, extra) {
+  var body = Object.assign({ action: action }, extra || {});
+
+  showLoadingOverlay_();
+
+  try {
+    var res = await fetch(GAS_API, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(body)
+    });
+
+    return await res.json();
+  } finally {
+    hideLoadingOverlay_();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  try {
+    await withTimeout_(liff.init({ liffId: "2010604851-XLOzNTOl" }), 15000);
+  } catch (e) {
+    alert("liff.init() ล้มเหลว: " + (e && e.message ? e.message : e));
+    return;
+  }
+
+  if (!liff.isLoggedIn() && !liff.isInClient()) {
+    liff.login();
+    return;
+  }
+
+  try {
+    var profile = await withTimeout_(liff.getProfile(), 15000);
+    currentLineUserId = profile.userId;
+  } catch (e) {
+    alert("liff.getProfile() ล้มเหลว: " + (e && e.message ? e.message : e));
+  }
+
+  try {
+    var initData = await api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: "" });
+
+    if (!initData || !initData.employee || !initData.employee.employeeId) {
+      showUnauthorizedView();
+      return;
+    }
+
+    currentEmployeeDisplayName = initData.employee.displayName || initData.employee.name;
+  } catch (e) {
+    alert("โหลดข้อมูลผู้ใช้ไม่สำเร็จ: " + (e && e.message ? e.message : e));
+    return;
+  }
+
+  showMissionPicker();
+});
+
+function showUnauthorizedView() {
+  document.getElementById("content").innerHTML =
+    '<div class="error-view">' +
+      '<section class="error-card">' +
+        bigXIcon() +
+        '<h2 class="error-title">' + smallXIcon() + '<span>ไม่ได้รับอนุญาต</span></h2>' +
+        '<p class="error-text">บัญชี LINE นี้ยังไม่ได้ลงทะเบียน<br>เป็นพนักงานในระบบ<br>กรุณาติดต่อหัวหน้างาน</p>' +
+      '</section>' +
+    '</div>';
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function pad2_(n) {
+  return n < 10 ? "0" + n : String(n);
+}
+
+function formatDateForApi_(d) {
+  return pad2_(d.getDate()) + "/" + pad2_(d.getMonth() + 1) + "/" + d.getFullYear();
+}
+
+var THAI_DAYS = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+
+function formatDateLabel_(d, tag) {
+  return tag + " (วัน" + THAI_DAYS[d.getDay()] + " " + formatDateForApi_(d) + ")";
+}
+
+var pickerItemsCache_ = [];
+
+function renderPicker_(opts) {
+  var contextHtml = (opts.context || []).map(function(c) {
+    return '<p class="picker-context">' + escapeHtml(c.label) + ' : ' + escapeHtml(c.value) + '</p>';
+  }).join("");
+
+  var listHtml = opts.items.map(function(item, idx) {
+    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
+      '<span class="picker-item-text">' +
+        '<span class="picker-item-title">' + escapeHtml(item.title) + '</span>' +
+        (item.sub ? '<span class="picker-item-sub">' + escapeHtml(item.sub) + '</span>' : '') +
+      '</span>' +
+      chevronIcon() +
+    '</button>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      contextHtml +
+      '<h2 class="picker-heading">' + escapeHtml(opts.heading) + '</h2>' +
+      (opts.showSearch ? '<div class="picker-search"><input type="text" id="pickerSearchInput" placeholder="' + escapeHtml(opts.searchPlaceholder || "ค้นหา") + '" oninput="filterPickerList_()">' + searchIcon() + '</div>' : '') +
+      '<div class="picker-list" id="pickerList">' + listHtml + '</div>' +
+    '</div>';
+
+  pickerItemsCache_ = opts.items;
+
+  document.querySelectorAll(".picker-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var idx = Number(btn.getAttribute("data-idx"));
+      opts.onSelect(pickerItemsCache_[idx]);
+    });
+  });
+}
+
+function filterPickerList_() {
+  var q = String(document.getElementById("pickerSearchInput").value || "").toLowerCase();
+  var buttons = document.querySelectorAll(".picker-item");
+
+  buttons.forEach(function(btn, idx) {
+    var item = pickerItemsCache_[idx];
+    var haystack = ((item.title || "") + " " + (item.sub || "")).toLowerCase();
+    btn.style.display = haystack.indexOf(q) !== -1 ? "flex" : "none";
+  });
+}
+
+async function showMissionPicker() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูล Mission ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+
+  var missions = [];
+  var seen = {};
+
+  partOptionsCache_.forEach(function(opt) {
+    var m = opt.mission || "";
+    if (!m || seen[m]) return;
+    seen[m] = true;
+    missions.push(m);
+  });
+
+  renderPicker_({
+    context: [],
+    heading: "เลือก Mission",
+    showSearch: true,
+    searchPlaceholder: "ค้นหา Mission",
+    items: missions.map(function(m) { return { title: m, value: m }; }),
+    onSelect: function(item) {
+      reportState.mission = item.value;
+      showDatePicker();
+    }
+  });
+}
+
+function showDatePicker() {
+  var today = new Date();
+  var yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  var dayBefore = new Date(today);
+  dayBefore.setDate(today.getDate() - 2);
+
+  var options = [
+    { d: today, tag: "วันนี้" },
+    { d: yesterday, tag: "เมื่อวาน" },
+    { d: dayBefore, tag: "เมื่อวานซืน" }
+  ];
+
+  renderPicker_({
+    context: [{ label: "Mission", value: reportState.mission }],
+    heading: "เลือกวันที่",
+    showSearch: false,
+    items: options.map(function(o) {
+      return { title: formatDateLabel_(o.d, o.tag), value: formatDateForApi_(o.d) };
+    }),
+    onSelect: function(item) {
+      reportState.dateStr = item.value;
+      reportState.dateLabel = item.title;
+      loadPreview_();
+    }
+  });
+}
+
+async function loadPreview_() {
+  var res;
+
+  try {
+    res = await api("getReportPreview", { mission: reportState.mission, dateStr: reportState.dateStr });
+  } catch (e) {
+    alert("โหลดข้อมูลไม่สำเร็จ: " + (e && e.message ? e.message : e));
+    return;
+  }
+
+  if (!res || !res.ok || !res.hasData) {
+    showNoDataView_();
+    return;
+  }
+
+  reportState.employees = res.employees;
+  reportState.parts = res.parts;
+  reportState.selected = {};
+
+  res.employees.forEach(function(emp) {
+    reportState.selected[emp.employeeId] = {
+      employeeName: emp.employeeName,
+      checked: true,
+      start: "08:00",
+      end: "17:00"
+    };
+  });
+
+  showEmployeeSelectView_();
+}
+
+function showNoDataView_() {
+  document.getElementById("content").innerHTML =
+    '<div class="error-view">' +
+      '<section class="error-card">' +
+        bigXIcon() +
+        '<h2 class="error-title">' + smallXIcon() + '<span>ไม่พบข้อมูล</span></h2>' +
+        '<p class="error-text">ไม่พบข้อมูลการลงงานของ<br>Mission นี้ในวันที่เลือก<br>กรุณาตรวจสอบข้อมูล</p>' +
+      '</section>' +
+      '<button class="static-primary-btn" type="button" onclick="showMissionPicker()">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
+    '</div>';
+}
+
+function showEmployeeSelectView_() {
+  var partNames = reportState.parts.map(function(p) { return p.partNumber; }).join(" / ");
+
+  var rowsHtml = reportState.employees.map(function(emp) {
+    var sel = reportState.selected[emp.employeeId];
+    return '<div class="emp-row' + (sel.checked ? ' checked' : '') + '" id="empRow_' + emp.employeeId + '">' +
+      '<label class="emp-row-check">' +
+        '<input type="checkbox" ' + (sel.checked ? "checked" : "") + ' onchange="toggleEmployee_(\'' + emp.employeeId + '\', this.checked)">' +
+        '<span class="emp-row-name">' + escapeHtml(emp.employeeName) + ' / ' + escapeHtml(emp.employeeId) + '</span>' +
+      '</label>' +
+      '<div class="emp-row-times">' +
+        '<div class="emp-time-field"><label>เริ่มงาน</label><input type="time" value="' + sel.start + '" onchange="updateEmployeeTime_(\'' + emp.employeeId + '\', \'start\', this.value)"></div>' +
+        '<div class="emp-time-field"><label>จบงาน</label><input type="time" value="' + sel.end + '" onchange="updateEmployeeTime_(\'' + emp.employeeId + '\', \'end\', this.value)"></div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">Mission : ' + escapeHtml(reportState.mission) + '</p>' +
+      '<p class="picker-context">วันที่ : ' + escapeHtml(reportState.dateLabel) + '</p>' +
+      '<p class="picker-context">Part : ' + escapeHtml(partNames) + '</p>' +
+      '<h2 class="picker-heading">เลือกพนักงาน + เวลาทำงาน</h2>' +
+      '<div class="emp-list">' + rowsHtml + '</div>' +
+      '<button class="static-primary-btn" type="button" onclick="showConfirmView_()">' + downloadIcon() + '<span>ถัดไป</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="showMissionPicker()">' + '<span>ย้อนกลับ</span></button>' +
+    '</div>';
+}
+
+function toggleEmployee_(employeeId, checked) {
+  reportState.selected[employeeId].checked = checked;
+  var row = document.getElementById("empRow_" + employeeId);
+  if (row) row.classList.toggle("checked", checked);
+}
+
+function updateEmployeeTime_(employeeId, field, value) {
+  reportState.selected[employeeId][field] = value;
+}
+
+function showConfirmView_() {
+  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
+    return reportState.selected[id].checked;
+  });
+
+  if (chosenIds.length === 0) {
+    alert("กรุณาเลือกพนักงานอย่างน้อย 1 คน");
+    return;
+  }
+
+  var empListHtml = chosenIds.map(function(id) {
+    var e = reportState.selected[id];
+    return '<li>' + escapeHtml(e.employeeName) + ' / ' + escapeHtml(id) + ' &nbsp; (' + e.start + ' - ' + e.end + ')</li>';
+  }).join("");
+
+  var partNames = reportState.parts.map(function(p) { return p.partNumber; }).join(" / ");
+
+  document.getElementById("content").innerHTML =
+    '<div class="confirm-view">' +
+      '<h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนสร้างใบงาน</h2>' +
+      '<section class="confirm-card">' +
+        '<div class="info-row"><span>Mission</span><span class="info-value">' + escapeHtml(reportState.mission) + '</span></div>' +
+        '<div class="info-row"><span>วันที่</span><span class="info-value">' + escapeHtml(reportState.dateLabel) + '</span></div>' +
+        '<div class="info-row"><span>Part</span><span class="info-value">' + escapeHtml(partNames) + '</span></div>' +
+      '</section>' +
+      '<section class="confirm-card">' +
+        '<div class="info-row"><span>พนักงานที่เลือก (' + chosenIds.length + ' คน)</span></div>' +
+        '<ul class="emp-summary-list">' + empListHtml + '</ul>' +
+      '</section>' +
+      '<button class="static-primary-btn" type="button" onclick="submitReport_()">' + checkCircleWhiteIcon() + '<span>สร้างใบงาน</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="showEmployeeSelectView_()">' + '<span>แก้ไขข้อมูล</span></button>' +
+    '</div>';
+}
+
+function submitReport_() {
+  var btn = document.querySelector(".static-primary-btn");
+  if (btn) btn.disabled = true;
+
+  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
+    return reportState.selected[id].checked;
+  });
+
+  var employees = chosenIds.map(function(id) {
+    var e = reportState.selected[id];
+    return { employeeId: id, employeeName: e.employeeName, start: e.start, end: e.end };
+  });
+
+  api("createMissionReport", {
+    payload: {
+      mission: reportState.mission,
+      dateStr: reportState.dateStr,
+      employees: employees,
+      lineUserId: currentLineUserId
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      showSuccessView_(data);
+      return;
+    }
+    if (btn) btn.disabled = false;
+    alert((data && data.error) || "สร้างใบงานไม่สำเร็จ");
+  }).catch(function(err) {
+    if (btn) btn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+function showSuccessView_(data) {
+  document.getElementById("content").innerHTML =
+    '<div class="confirm-view">' +
+      '<h2 class="confirm-heading-success">' + checkCircleIcon() + '<span>สร้างใบงานสำเร็จ</span></h2>' +
+      '<section class="confirm-card">' +
+        '<div class="info-row"><span>ชื่อไฟล์</span><span class="info-value">' + escapeHtml(data.fileName) + '</span></div>' +
+      '</section>' +
+      '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบงาน</a></div>' +
+      '<button class="static-primary-btn" type="button" onclick="showMissionPicker()">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
+    '</div>';
+}
+
+function chevronIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 12L44 32L24 52" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function searchIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="27" cy="27" r="17" fill="none" stroke="#555555" stroke-width="5"></circle><path d="M40 40L54 54" fill="none" stroke="#555555" stroke-width="5" stroke-linecap="round"></path></svg>';
+}
+
+function downloadIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 10V39" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"></path><path d="M19 28L32 41L45 28" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 39V53H52V39" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function bigXIcon() {
+  return '<svg class="big-x" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M18 18L46 46M46 18L18 46" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>';
+}
+
+function smallXIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>';
+}
+
+function refreshWhiteIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M51 20A22 22 0 0 0 14 26" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M15 13V27H29" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M13 44A22 22 0 0 0 50 38" fill="none" stroke="#ffffff" stroke-width="6"></path><path d="M49 51V37H35" fill="none" stroke="#ffffff" stroke-width="6"></path></svg>';
+}
+
+function checkCircleIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#00A000"></circle><path d="M18 32L28 42L47 21" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function checkCircleWhiteIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#ffffff"></circle><path d="M18 32L28 42L47 21" fill="none" stroke="#00A000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+</script>
+</body>
+</html>
