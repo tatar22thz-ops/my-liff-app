@@ -787,6 +787,11 @@ function resetNav_(fn) {
   goto_(fn);
 }
 
+function goFromHome_(fn) {
+  navStack_ = [showHomeChoice_];
+  goto_(fn);
+}
+
 function updateBackBtnVisibility_() {
   var btn = document.getElementById("headerBackBtn");
   if (!btn) return;
@@ -883,11 +888,11 @@ function showHomeChoice_() {
 
   document.getElementById("content").innerHTML =
     '<div class="home-menu">' +
-      '<button type="button" class="home-menu-card" onclick="resetNav_(showMissionPicker)">' +
+      '<button type="button" class="home-menu-card" onclick="goFromHome_(showMissionPicker)">' +
         '<span class="home-menu-card-title">สร้างใบงาน</span>' +
         chevronIcon() +
       '</button>' +
-      '<button type="button" class="home-menu-card" onclick="resetNav_(showPresenceDatePicker_)">' +
+      '<button type="button" class="home-menu-card" onclick="goFromHome_(showPresenceDatePicker_)">' +
         '<span class="home-menu-card-title">สร้างใบลงชื่อ</span>' +
         chevronIcon() +
       '</button>' +
@@ -997,7 +1002,7 @@ function showNoDataView_() {
         '<h2 class="error-title">' + smallXIcon() + '<span>ไม่พบข้อมูล</span></h2>' +
         '<p class="error-text">ไม่พบข้อมูลการลงงานของ<br>Mission นี้ในวันที่เลือก<br>กรุณาตรวจสอบข้อมูล</p>' +
       '</section>' +
-      '<button class="static-primary-btn" type="button" onclick="resetNav_(showMissionPicker)">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
+      '<button class="static-primary-btn" type="button" onclick="goFromHome_(showMissionPicker)">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
     '</div>';
 }
 
@@ -1123,7 +1128,7 @@ function showSuccessView_(data) {
         '<div class="info-row"><span>ชื่อไฟล์</span><span class="info-value">' + escapeHtml(data.fileName) + '</span></div>' +
       '</section>' +
       '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบงาน</a></div>' +
-      '<button class="static-primary-btn" type="button" onclick="resetNav_(showMissionPicker)">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
+      '<button class="static-primary-btn" type="button" onclick="goFromHome_(showMissionPicker)">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
     '</div>';
 }
 
@@ -1403,7 +1408,7 @@ function showPresenceSuccessView_(data) {
 
 function resetPresenceAndGoto_() {
   presenceState = { dateStr: "", dateLabel: "", employees: [] };
-  resetNav_(showPresenceDatePicker_);
+  goFromHome_(showPresenceDatePicker_);
 }
 
 function chevronIcon() {
