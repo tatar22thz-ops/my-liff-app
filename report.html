@@ -146,6 +146,31 @@ body {
   padding: 2.4vh 16px 4vh;
 }
 
+.picker-page.has-sticky-footer {
+  padding-bottom: 19vh;
+}
+
+.multi-picker-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: #ffffff;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.12);
+  padding: 1.6vh 16px calc(1.6vh + env(safe-area-inset-bottom, 0px));
+}
+
+.multi-picker-footer .static-primary-btn,
+.multi-picker-footer .static-secondary-btn {
+  margin: 0 auto 1.2vh;
+  height: 6.2vh;
+}
+
+.multi-picker-footer .static-secondary-btn {
+  margin-bottom: 0;
+}
+
 .picker-context {
   color: #000000;
   font-size: 2.4vh;
@@ -1420,10 +1445,12 @@ function renderMultiPicker_(opts) {
   }).join("");
 
   document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
+    '<div class="picker-page has-sticky-footer">' +
       '<h2 class="picker-heading">' + escapeHtml(opts.heading) + '</h2>' +
       '<div class="picker-search"><input type="text" id="pickerSearchInput" placeholder="' + escapeHtml(opts.searchPlaceholder || "ค้นหา") + '" oninput="filterPickerList_()">' + searchIcon() + '</div>' +
       '<div class="picker-list" id="pickerList">' + listHtml + '</div>' +
+    '</div>' +
+    '<div class="multi-picker-footer">' +
       '<button class="static-primary-btn" type="button" id="multiConfirmBtn" onclick="onMultiPickerConfirm_()">' + checkCircleWhiteIcon() + '<span>เพิ่มที่เลือก (<span id="multiCount">0</span>)</span></button>' +
       '<button class="static-secondary-btn" type="button" onclick="goBack_()"><span>ยกเลิก</span></button>' +
     '</div>';
@@ -1443,6 +1470,12 @@ function renderMultiPicker_(opts) {
       } else {
         presencePendingSelection_[item.value] = item;
         btn.classList.add("multi-selected");
+
+        var searchInput = document.getElementById("pickerSearchInput");
+        if (searchInput && searchInput.value) {
+          searchInput.value = "";
+          filterPickerList_();
+        }
       }
 
       document.getElementById("multiCount").textContent = Object.keys(presencePendingSelection_).length;
