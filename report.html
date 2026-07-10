@@ -1385,9 +1385,11 @@ async function showPresenceAddEmployeeView_() {
 
   renderMultiPicker_({
     heading: "เลือกพนักงาน (เลือกได้หลายคน)",
-    searchPlaceholder: "ค้นหาชื่อพนักงาน",
+    searchPlaceholder: "ค้นหาชื่อ หรือ Pass",
     items: available.map(function(e) {
-      return { title: e.name, sub: presenceEmployeeTeam_(e.site), value: e.employeeId, raw: e };
+      var subParts = [presenceEmployeeTeam_(e.site)];
+      if (e.pass) subParts.push("Pass: " + e.pass);
+      return { title: e.name, sub: subParts.join(" · "), value: e.employeeId, raw: e };
     }),
     onConfirm: function(selectedItems) {
       selectedItems.forEach(function(item) {
