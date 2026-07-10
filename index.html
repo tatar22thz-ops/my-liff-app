@@ -1078,6 +1078,62 @@ footer {
   line-height: 1.4;
 }
 
+.defect-section {
+  width: 340px;
+  margin: 1vh auto 2vh;
+  padding: 1.6vh 16px;
+  border-radius: 10px;
+  background: #FFF6F6;
+  border: 2px solid #FFD0D0;
+}
+
+.defect-section-label {
+  color: #C00000;
+  font-size: 2.2vh;
+  font-weight: 800;
+  margin: 0 0 1.4vh;
+}
+
+.defect-field-row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.2vh;
+}
+
+.defect-field-row label {
+  color: #333333;
+  font-size: 2.1vh;
+}
+
+.defect-field-row input {
+  height: 4.2vh;
+  border: 2px solid #AEB4B8;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.1vh;
+  color: #000000;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.defect-sum-status {
+  margin-top: 0.5vh;
+  font-size: 1.9vh;
+  font-weight: 700;
+  text-align: center;
+}
+
+.defect-sum-status.ok {
+  color: #00A000;
+}
+
+.defect-sum-status.bad {
+  color: #FF1111;
+}
+
 .stat-row {
   width: 340px;
   margin: 0 auto 1.5vh;
@@ -2733,12 +2789,70 @@ function showWithdrawSuccess_(data) {
 }
 
 var dailyWorkState = {};
+var dwManualDefects_ = [];
 
 function openDailyWork() {
-  dailyWorkState = { mission: "", partNumber: "", partName: "", batch: "", receivedTotal: 0, remaining: 0, ok: 0, ng: 0 };
+  dailyWorkState = { mission: "", partNumber: "", partName: "", batch: "", receivedTotal: 0, remaining: 0, ok: 0, ng: 0, defects: undefined, defectBreakdown: {} };
+  dwManualDefects_ = [];
   openFeaturePage_("เพิ่มงานรายวัน");
   navStack_ = [];
   goto_(showDailyWorkScanView);
+}
+
+function renderDefectSectionHtml_(defects) {
+  if (!defects || defects.length === 0) return "";
+
+  var rows = defects.map(function(name) {
+    return '<div class="defect-field-row">' +
+      '<label>' + escapeHtml(name) + '</label>' +
+      '<input type="number" inputmode="numeric" class="defect-input" data-defect="' + escapeHtml(name) + '" placeholder="0" oninput="onDefectFieldInput_()">' +
+    '</div>';
+  }).join("");
+
+  return '<div class="defect-section" id="defectSection">' +
+    '<p class="defect-section-label">แยกประเภท NG</p>' +
+    rows +
+    '<p class="defect-sum-status" id="defectSumStatus"></p>' +
+  '</div>';
+}
+
+function getDefectBreakdownFromInputs_() {
+  var inputs = document.querySelectorAll(".defect-input");
+  var breakdown = {};
+  var sum = 0;
+
+  inputs.forEach(function(input) {
+    var val = Number(input.value || 0);
+    if (val > 0) breakdown[input.getAttribute("data-defect")] = val;
+    sum += val;
+  });
+
+  return { breakdown: breakdown, sum: sum };
+}
+
+function updateDefectSumStatus_(ngValue) {
+  var statusEl = document.getElementById("defectSumStatus");
+  if (!statusEl) return true;
+
+  var result = getDefectBreakdownFromInputs_();
+
+  if (result.sum === ngValue) {
+    statusEl.textContent = "ยอดรวม " + result.sum + " / " + ngValue + " ถูกต้อง";
+    statusEl.className = "defect-sum-status ok";
+    return true;
+  }
+
+  statusEl.textContent = "ยอดรวม " + result.sum + " / " + ngValue + " (ต้องเท่ากับ NG)";
+  statusEl.className = "defect-sum-status bad";
+  return false;
+}
+
+function onDefectFieldInput_() {
+  if (document.getElementById("dailyWorkNgInput")) {
+    updateDailyWorkQtyForm_();
+  } else if (document.getElementById("dwManualNg")) {
+    updateDailyWorkManualForm();
+  }
 }
 
 function showDailyWorkScanView() {
@@ -2784,6 +2898,8 @@ function handleDailyWorkScanResult_(rawValue) {
       dailyWorkState.batch = data.batch;
       dailyWorkState.receivedTotal = data.receivedTotal;
       dailyWorkState.remaining = data.remaining;
+      dailyWorkState.defects = undefined;
+      dailyWorkState.defectBreakdown = {};
 
       if (data.remaining <= 0) {
         goto_(function() { showNoStockView_("Batch นี้ทำครบแล้ว ไม่มีงานคงเหลือ"); });
@@ -2839,7 +2955,7 @@ async function showDailyWorkManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Part No</label>
-          <select id="dwManualPartNumber" onchange="updateDailyWorkManualForm()" disabled>
+          <select id="dwManualPartNumber" onchange="onDailyWorkManualPartChange_()" disabled>
             <option value="">เลือก Mission ก่อน</option>
           </select>
         </div>
@@ -2856,6 +2972,8 @@ async function showDailyWorkManualEntryView() {
           <input id="dwManualNg" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateDailyWorkManualForm()">
         </div>
       </section>
+
+      <div id="defectSectionWrap" style="display:none"></div>
 
       <div class="action-row">
         <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
@@ -2877,7 +2995,7 @@ function onDailyWorkManualMissionChange() {
   if (!mission) {
     partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
     partSelect.disabled = true;
-    updateDailyWorkManualForm();
+    onDailyWorkManualPartChange_();
     return;
   }
 
@@ -2892,6 +3010,29 @@ function onDailyWorkManualMissionChange() {
     }).join("");
   partSelect.disabled = false;
 
+  onDailyWorkManualPartChange_();
+}
+
+async function onDailyWorkManualPartChange_() {
+  var partNumber = document.getElementById("dwManualPartNumber").value;
+  var wrap = document.getElementById("defectSectionWrap");
+
+  dwManualDefects_ = [];
+  if (wrap) {
+    wrap.innerHTML = "";
+    wrap.style.display = "none";
+  }
+
+  if (partNumber) {
+    try {
+      var res = await api("getPartDefects", { partNumber: partNumber });
+      dwManualDefects_ = (res && res.ok && res.defects) ? res.defects : [];
+    } catch (e) {
+      dwManualDefects_ = [];
+    }
+    if (wrap) wrap.innerHTML = renderDefectSectionHtml_(dwManualDefects_);
+  }
+
   updateDailyWorkManualForm();
 }
 
@@ -2903,7 +3044,21 @@ function updateDailyWorkManualForm() {
   var ng = Number(document.getElementById("dwManualNg").value || 0);
   var nextBtn = document.getElementById("dwManualNextBtn");
 
-  var valid = mission && partNumber && batch && ok >= 0 && ng >= 0 && (ok + ng) > 0;
+  var wrap = document.getElementById("defectSectionWrap");
+  var hasDefects = dwManualDefects_ && dwManualDefects_.length > 0;
+  var defectValid = true;
+
+  if (wrap) {
+    if (hasDefects && ng > 0) {
+      wrap.style.display = "block";
+      defectValid = updateDefectSumStatus_(ng);
+    } else {
+      wrap.style.display = "none";
+      defectValid = true;
+    }
+  }
+
+  var valid = mission && partNumber && batch && ok >= 0 && ng >= 0 && (ok + ng) > 0 && defectValid;
 
   if (valid) {
     nextBtn.disabled = false;
@@ -2940,7 +3095,16 @@ function submitDailyWorkManualEntry() {
   goto_(showDailyWorkConfirm);
 }
 
-function showDailyWorkQtyEntry() {
+async function showDailyWorkQtyEntry() {
+  if (dailyWorkState.defects === undefined) {
+    try {
+      var res = await api("getPartDefects", { partNumber: dailyWorkState.partNumber });
+      dailyWorkState.defects = (res && res.ok && res.defects) ? res.defects : [];
+    } catch (e) {
+      dailyWorkState.defects = [];
+    }
+  }
+
   document.getElementById("receiveContent").innerHTML = `
     <div class="result-view">
       <p class="picker-context">Mission : ${escapeHtml(dailyWorkState.mission)}</p>
@@ -2957,6 +3121,8 @@ function showDailyWorkQtyEntry() {
 
       <label class="qty-label-full">NG วันนี้ (ชิ้น)</label>
       <input id="dailyWorkNgInput" class="qty-input-full" type="number" inputmode="numeric" placeholder="ใส่จำนวน" oninput="updateDailyWorkQtyForm_()">
+
+      <div id="defectSectionWrap" style="display:none">${renderDefectSectionHtml_(dailyWorkState.defects)}</div>
 
       <div class="warn-box">OK + NG ห้ามเกินยอดคงเหลือ</div>
 
@@ -2977,7 +3143,22 @@ function updateDailyWorkQtyForm_() {
   var ok = Number(document.getElementById("dailyWorkOkInput").value || 0);
   var ng = Number(document.getElementById("dailyWorkNgInput").value || 0);
   var btn = document.getElementById("dailyWorkNextBtn");
-  var valid = ok >= 0 && ng >= 0 && ok + ng > 0 && ok + ng <= dailyWorkState.remaining;
+
+  var wrap = document.getElementById("defectSectionWrap");
+  var hasDefects = dailyWorkState.defects && dailyWorkState.defects.length > 0;
+  var defectValid = true;
+
+  if (wrap) {
+    if (hasDefects && ng > 0) {
+      wrap.style.display = "block";
+      defectValid = updateDefectSumStatus_(ng);
+    } else {
+      wrap.style.display = "none";
+      defectValid = true;
+    }
+  }
+
+  var valid = ok >= 0 && ng >= 0 && ok + ng > 0 && ok + ng <= dailyWorkState.remaining && defectValid;
 
   if (valid) {
     btn.disabled = false;
@@ -2995,6 +3176,18 @@ function showDailyWorkConfirm() {
   var ng = ngInput ? Number(ngInput.value || 0) : dailyWorkState.ng;
   dailyWorkState.ok = ok;
   dailyWorkState.ng = ng;
+
+  var defectInputs = document.querySelectorAll(".defect-input");
+  if (defectInputs.length > 0) {
+    dailyWorkState.defectBreakdown = getDefectBreakdownFromInputs_().breakdown;
+  }
+
+  var defectBreakdown = dailyWorkState.defectBreakdown || {};
+  var defectSummaryHtml = Object.keys(defectBreakdown).length > 0
+    ? '<div class="confirm-qty-row"><span>แยกประเภท NG</span><span>' +
+        Object.keys(defectBreakdown).map(function(k) { return escapeHtml(k) + " " + defectBreakdown[k]; }).join(", ") +
+      '</span></div>'
+    : "";
 
   document.getElementById("receiveContent").innerHTML = `
     <div class="confirm-view">
@@ -3036,6 +3229,7 @@ function showDailyWorkConfirm() {
           <span>NG</span>
           <span>${ng}</span>
         </div>
+        ${defectSummaryHtml}
         <div class="confirm-qty-row">
           <span>เหลือหลังบันทึก</span>
           <span>${dailyWorkState.remaining - ok - ng}</span>
@@ -3069,6 +3263,7 @@ function saveDailyWork_() {
       batch: dailyWorkState.batch,
       ok: dailyWorkState.ok,
       ng: dailyWorkState.ng,
+      defectBreakdown: dailyWorkState.defectBreakdown || {},
       lineUserId: currentLineUserId
     }
   }).then(function(data) {
