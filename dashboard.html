@@ -50,8 +50,7 @@ body {
 
 .top-header {
   height: 6.52vh;
-  background: #ffffff;
-  border-bottom: 1px solid #E5E9F0;
+  background: #0E4F8C;
   position: relative;
   display: flex;
   align-items: center;
@@ -59,7 +58,7 @@ body {
 }
 
 .top-header h1 {
-  color: #0E1F33;
+  color: #ffffff;
   font-size: 3.05vh;
   font-weight: 800;
   margin: 0;
@@ -397,6 +396,12 @@ body {
   cursor: pointer;
 }
 
+.static-secondary-btn svg {
+  width: 3.6vh;
+  height: 3.6vh;
+  flex: 0 0 auto;
+}
+
 .dash-date-row {
   width: 340px;
   max-width: calc(100% - 32px);
@@ -433,36 +438,47 @@ body {
 }
 
 .dash-tab {
-  border: 2px solid #000000;
-  border-radius: 12px;
+  border: 1px solid #E5E9F0;
+  border-radius: 14px;
   background: #ffffff;
-  min-height: 9vh;
-  padding: 1.2vh 12px;
+  min-height: 11.5vh;
+  padding: 1.4vh 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5vh;
+  gap: 0.9vh;
   cursor: pointer;
   font-family: "Kanit", "Segoe UI", sans-serif;
 }
 
-.dash-tab.disabled {
-  opacity: 0.45;
+.dash-tab-icon {
+  width: 5.4vh;
+  height: 5.4vh;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.dash-tab-icon svg {
+  width: 3vh;
+  height: 3vh;
+  display: block;
 }
 
 .dash-tab-title {
-  font-size: 2.1vh;
-  font-weight: 800;
+  font-size: 2vh;
+  font-weight: 700;
   color: #000000;
   text-align: center;
 }
 
-.dash-tab-value {
-  font-size: 1.6vh;
-  font-weight: 500;
-  color: #555555;
-}
+.dash-tab-green .dash-tab-icon { background: #E3F7E9; color: #08A33A; }
+.dash-tab-purple .dash-tab-icon { background: #F1ECFF; color: #7C4DFF; }
+.dash-tab-blue .dash-tab-icon { background: #E7F1FE; color: #1687F4; }
+.dash-tab-red .dash-tab-icon { background: #FFEAEA; color: #FF0909; }
 
 .dash-section {
   width: 340px;
@@ -481,62 +497,34 @@ body {
   margin: 0 0 1.6vh;
 }
 
-.dash-bar-row {
-  margin-bottom: 1.6vh;
+.dash-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.dash-bar-row:last-child {
-  margin-bottom: 0;
-}
-
-.dash-bar-label {
-  font-size: 1.7vh;
-  font-weight: 600;
-  color: #333333;
-  margin-bottom: 0.5vh;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dash-bar-track {
-  height: 1.9vh;
-  border-radius: 5px;
-  background: #F0F2F5;
-  overflow: hidden;
+.dash-summary-tile {
+  border-radius: 12px;
+  padding: 1.4vh 12px;
   display: flex;
+  flex-direction: column;
+  gap: 0.5vh;
 }
 
-.dash-bar-ok {
-  background: #2FA84F;
-  height: 100%;
-}
-
-.dash-bar-ng {
-  background: #E23B3B;
-  height: 100%;
-}
-
-.dash-bar-legend {
-  display: flex;
-  gap: 16px;
-  margin-top: 1.4vh;
+.dash-summary-label {
   font-size: 1.5vh;
-  color: #555555;
+  font-weight: 600;
 }
 
-.dash-bar-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.dash-summary-value {
+  font-size: 2vh;
+  font-weight: 700;
 }
 
-.dash-legend-dot {
-  width: 1.2vh;
-  height: 1.2vh;
-  border-radius: 3px;
-  display: inline-block;
-}
+.dash-tile-green { background: #E3F7E9; color: #08A33A; }
+.dash-tile-purple { background: #F1ECFF; color: #7C4DFF; }
+.dash-tile-blue { background: #E7F1FE; color: #1687F4; }
+.dash-tile-red { background: #FFEAEA; color: #FF0909; }
 
 .dash-empty-text {
   color: #777777;
@@ -865,7 +853,7 @@ body {
     <header class="top-header">
       <button class="back-btn" id="headerBackBtn" type="button" onclick="goBack_()" aria-label="Back">
         <svg viewBox="0 0 64 64">
-          <path d="M42 8L18 32L42 56" fill="none" stroke="#0E1F33" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
       </button>
       <h1 id="pageTitle">Trigo Dashboard</h1>
@@ -930,8 +918,16 @@ var currentEmployeeDisplayName = "";
 var dashState = {
   dateStr: "",
   dateLabel: "",
-  dailyWork: null,
+  tabData: {},
+  currentTab: null,
   currentMission: null
+};
+
+var TAB_CONFIG = {
+  receive: { label: "รับงาน", action: "getDashboardReceive", valueType: "qty", unit: "ชิ้น", icon: "receiveIcon", colorClass: "green" },
+  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true },
+  issue: { label: "เบิกงาน", action: "getDashboardIssue", valueType: "qty", unit: "ชิ้น", icon: "issueIcon", colorClass: "blue" },
+  ngreturn: { label: "ส่งคืน NG", action: "getDashboardNGReturn", valueType: "qty", unit: "ชิ้น", icon: "ngReturnIcon", colorClass: "red" }
 };
 
 function withTimeout_(promise, ms) {
@@ -1140,7 +1136,7 @@ function showDatePicker_() {
     btn.addEventListener("click", function() {
       dashState.dateStr = btn.getAttribute("data-date");
       dashState.dateLabel = btn.getAttribute("data-label");
-      dashState.dailyWork = null;
+      dashState.tabData = {};
       goBack_();
     });
   });
@@ -1149,99 +1145,95 @@ function showDatePicker_() {
 async function showDashboardHome_() {
   setPageTitle_("Trigo Dashboard");
 
+  var tabsHtml = Object.keys(TAB_CONFIG).map(function(t) {
+    var cfg = TAB_CONFIG[t];
+    return '<button type="button" class="dash-tab dash-tab-' + cfg.colorClass + '" onclick="onTabTap_(\'' + t + '\')">' +
+      '<span class="dash-tab-icon">' + window[cfg.icon]() + '</span>' +
+      '<span class="dash-tab-title">' + escapeHtml(cfg.label) + '</span>' +
+    '</button>';
+  }).join("");
+
   document.getElementById("content").innerHTML =
     '<div class="dash-date-row" onclick="goto_(showDatePicker_)">' +
       '<span class="dash-date-row-label">' + escapeHtml(dashState.dateLabel) + '</span>' +
       calendarIcon() +
     '</div>' +
-    '<div class="dash-tabs">' +
-      '<button type="button" class="dash-tab" onclick="onTabTap_(\'receive\')"><span class="dash-tab-title">รับงาน</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
-      '<button type="button" class="dash-tab" onclick="onTabTap_(\'dailywork\')"><span class="dash-tab-title">ยอดงานรายวัน</span><span class="dash-tab-value">OK / NG</span></button>' +
-      '<button type="button" class="dash-tab" onclick="onTabTap_(\'issue\')"><span class="dash-tab-title">เบิกงาน</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
-      '<button type="button" class="dash-tab" onclick="onTabTap_(\'ngreturn\')"><span class="dash-tab-title">ส่งคืน NG</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
-    '</div>' +
-    '<div id="dashGraphWrap"></div>' +
+    '<div class="dash-tabs">' + tabsHtml + '</div>' +
+    '<div id="dashSummaryWrap"></div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO YUSEN DASHBOARD</div>' +
       '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.0.0<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
 
-  await loadDailyWorkData_();
-  renderDashboardGraph_();
+  await loadAllTabData_();
+  renderDashboardSummary_();
 }
 
-async function loadDailyWorkData_() {
-  if (dashState.dailyWork && dashState.dailyWork.dateStr === dashState.dateStr) return;
+async function loadAllTabData_() {
+  var tabs = Object.keys(TAB_CONFIG);
+  var needsFetch = tabs.some(function(t) {
+    return !dashState.tabData[t] || dashState.tabData[t].dateStr !== dashState.dateStr;
+  });
 
-  try {
-    var res = await api("getDashboardDailyWork", { dateStr: dashState.dateStr });
-    dashState.dailyWork = (res && res.ok) ? res : { dateStr: dashState.dateStr, missions: [] };
-  } catch (e) {
-    dashState.dailyWork = { dateStr: dashState.dateStr, missions: [] };
-  }
+  if (!needsFetch) return;
+
+  var results = await Promise.all(tabs.map(function(t) {
+    return api(TAB_CONFIG[t].action, { dateStr: dashState.dateStr }).catch(function() {
+      return { ok: false };
+    });
+  }));
+
+  tabs.forEach(function(t, idx) {
+    var res = results[idx];
+    dashState.tabData[t] = (res && res.ok) ? res : { dateStr: dashState.dateStr, missions: [] };
+  });
 }
 
-function renderDashboardGraph_() {
-  var wrap = document.getElementById("dashGraphWrap");
+function sumMissions_(tab, field) {
+  var missions = (dashState.tabData[tab] && dashState.tabData[tab].missions) || [];
+  return missions.reduce(function(sum, m) { return sum + (m[field] || 0); }, 0);
+}
+
+function renderDashboardSummary_() {
+  var wrap = document.getElementById("dashSummaryWrap");
   if (!wrap) return;
-
-  var missions = (dashState.dailyWork && dashState.dailyWork.missions) || [];
-
-  if (missions.length === 0) {
-    wrap.innerHTML =
-      '<div class="dash-section">' +
-        '<h3 class="dash-section-title">OK / NG แยกตามมิชชั่น</h3>' +
-        '<p class="dash-empty-text">ยังไม่มีข้อมูลงานรายวันในวันนี้</p>' +
-      '</div>';
-    return;
-  }
-
-  var sorted = missions.slice().sort(function(a, b) { return (b.ok + b.ng) - (a.ok + a.ng); });
-  var max = Math.max.apply(null, sorted.map(function(m) { return m.ok + m.ng; }).concat([1]));
-
-  var rowsHtml = sorted.map(function(m) {
-    var total = m.ok + m.ng;
-    var okPct = total > 0 ? (m.ok / max) * 100 : 0;
-    var ngPct = total > 0 ? (m.ng / max) * 100 : 0;
-
-    return '<div class="dash-bar-row">' +
-      '<div class="dash-bar-label">' + escapeHtml(m.mission) + ' &middot; OK ' + numberWithCommas_(m.ok) + ' / NG ' + numberWithCommas_(m.ng) + '</div>' +
-      '<div class="dash-bar-track">' +
-        '<div class="dash-bar-ok" style="width:' + okPct + '%"></div>' +
-        '<div class="dash-bar-ng" style="width:' + ngPct + '%"></div>' +
-      '</div>' +
-    '</div>';
-  }).join("");
 
   wrap.innerHTML =
     '<div class="dash-section">' +
-      '<h3 class="dash-section-title">OK / NG แยกตามมิชชั่น</h3>' +
-      rowsHtml +
-      '<div class="dash-bar-legend">' +
-        '<span><span class="dash-legend-dot" style="background:#2FA84F"></span>OK</span>' +
-        '<span><span class="dash-legend-dot" style="background:#E23B3B"></span>NG</span>' +
+      '<h3 class="dash-section-title">สรุปยอดรวมวันนี้</h3>' +
+      '<div class="dash-summary-grid">' +
+        '<div class="dash-summary-tile dash-tile-green"><span class="dash-summary-label">รับงาน</span><span class="dash-summary-value">' + numberWithCommas_(sumMissions_("receive", "qty")) + ' ชิ้น</span></div>' +
+        '<div class="dash-summary-tile dash-tile-purple"><span class="dash-summary-label">ยอดงานรายวัน</span><span class="dash-summary-value">OK ' + numberWithCommas_(sumMissions_("dailywork", "ok")) + ' / NG ' + numberWithCommas_(sumMissions_("dailywork", "ng")) + '</span></div>' +
+        '<div class="dash-summary-tile dash-tile-blue"><span class="dash-summary-label">เบิกงาน</span><span class="dash-summary-value">' + numberWithCommas_(sumMissions_("issue", "qty")) + ' ชิ้น</span></div>' +
+        '<div class="dash-summary-tile dash-tile-red"><span class="dash-summary-label">ส่งคืน NG</span><span class="dash-summary-value">' + numberWithCommas_(sumMissions_("ngreturn", "qty")) + ' ชิ้น</span></div>' +
       '</div>' +
     '</div>';
 }
 
 function onTabTap_(tab) {
-  if (tab === "dailywork") {
-    goto_(showDailyWorkMissionList_);
-    return;
-  }
-  alert("แท็บนี้กำลังพัฒนา เร็วๆ นี้");
+  dashState.currentTab = tab;
+  goto_(showTabMissionList_);
 }
 
-function showDailyWorkMissionList_() {
-  setPageTitle_("ยอดงานรายวัน");
+function tabValueHtml_(cfg, item) {
+  if (cfg.valueType === "okng") {
+    return '<span class="ok-val">OK ' + numberWithCommas_(item.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(item.ng) + '</span>';
+  }
+  return numberWithCommas_(item.qty) + (cfg.unit ? " " + cfg.unit : "");
+}
 
-  var missions = (dashState.dailyWork && dashState.dailyWork.missions) || [];
+function showTabMissionList_() {
+  var tab = dashState.currentTab;
+  var cfg = TAB_CONFIG[tab];
+  setPageTitle_(cfg.label);
+
+  var missions = (dashState.tabData[tab] && dashState.tabData[tab].missions) || [];
 
   if (missions.length === 0) {
     document.getElementById("content").innerHTML =
       '<div class="picker-page">' +
         '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
-        '<div class="dash-empty-text">ยังไม่มีข้อมูลงานรายวันในวันที่นี้</div>' +
+        '<div class="dash-empty-text">ยังไม่มีข้อมูล' + escapeHtml(cfg.label) + 'ในวันที่นี้</div>' +
       '</div>';
     return;
   }
@@ -1250,7 +1242,7 @@ function showDailyWorkMissionList_() {
     return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
       '<span class="picker-item-text">' +
         '<span class="picker-item-title">' + escapeHtml(m.mission) + '</span>' +
-        '<span class="picker-item-sub"><span class="ok-val">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
+        '<span class="picker-item-sub">' + tabValueHtml_(cfg, m) + '</span>' +
       '</span>' +
       chevronIcon() +
     '</button>';
@@ -1267,29 +1259,35 @@ function showDailyWorkMissionList_() {
     btn.addEventListener("click", function() {
       var idx = Number(btn.getAttribute("data-idx"));
       dashState.currentMission = missions[idx];
-      goto_(showDailyWorkBatchList_);
+      goto_(showTabBatchList_);
     });
   });
 }
 
-function showDailyWorkBatchList_() {
+function showTabBatchList_() {
+  var tab = dashState.currentTab;
+  var cfg = TAB_CONFIG[tab];
   var m = dashState.currentMission;
   setPageTitle_(m.mission);
 
   var batchesHtml = m.batches.map(function(b) {
-    var defectNames = Object.keys(b.defectCounts || {});
-    var defectHtml = defectNames.length > 0
-      ? '<ul class="dash-defect-list">' + defectNames.map(function(name) {
+    var defectHtml = "";
+
+    if (cfg.defects) {
+      var defectNames = Object.keys(b.defectCounts || {});
+      if (defectNames.length > 0) {
+        defectHtml = '<ul class="dash-defect-list">' + defectNames.map(function(name) {
           return '<li>' + escapeHtml(name) + ' ' + numberWithCommas_(b.defectCounts[name]) + '</li>';
-        }).join("") + '</ul>'
-      : "";
+        }).join("") + '</ul>';
+      }
+    }
 
     return '<div class="dash-batch-card">' +
       '<div class="dash-batch-card-head"><span class="dash-batch-card-part">' + escapeHtml(b.partNumber) + '</span></div>' +
       '<div class="dash-batch-card-body">' +
         '<div class="dash-batch-row">' +
           '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
-          '<span class="dash-ok-ng"><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
+          '<span class="dash-ok-ng">' + tabValueHtml_(cfg, b) + '</span>' +
         '</div>' +
         defectHtml +
       '</div>' +
@@ -1303,51 +1301,31 @@ function showDailyWorkBatchList_() {
       '<div class="dash-batch-list">' + batchesHtml + '</div>' +
       '<div class="dash-total-row" style="width:340px;max-width:calc(100% - 32px);margin:0 auto 2vh;">' +
         '<span>รวม Mission นี้</span>' +
-        '<span><span class="ok-val" style="color:#1B8A3D">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val" style="color:#D22">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
+        '<span>' + tabValueHtml_(cfg, m) + '</span>' +
       '</div>' +
-      '<button class="static-primary-btn" type="button" onclick="sendSummaryToCustomer_()">' + shareIcon() + '<span>ส่งสรุปให้ลูกค้า</span></button>' +
       '<button class="static-secondary-btn" type="button" onclick="openCaptureScreen_()">' + cameraIcon() + '<span>สรุปสำหรับ Capture</span></button>' +
     '</div>';
 }
 
-function sendSummaryToCustomer_() {
-  var m = dashState.currentMission;
-
-  var lines = ["สรุปยอดงานวันที่ " + dashState.dateLabel.replace(/^[^(]*\(/, "").replace(")", ""), "Mission: " + m.mission, ""];
-
-  m.batches.forEach(function(b) {
-    lines.push("Part " + b.partNumber);
-    lines.push("Batch " + b.batch + " — OK " + numberWithCommas_(b.ok) + " / NG " + numberWithCommas_(b.ng));
-    lines.push("");
-  });
-
-  lines.push("รวมทั้งวัน: OK " + numberWithCommas_(m.ok) + " / NG " + numberWithCommas_(m.ng));
-
-  var text = lines.join("\n");
-
-  if (typeof liff === "undefined" || !liff.isApiAvailable || !liff.isApiAvailable("shareTargetPicker")) {
-    alert("อุปกรณ์นี้ไม่รองรับการแชร์ผ่าน LINE โดยตรง กรุณาใช้ปุ่ม Capture แทน");
-    return;
-  }
-
-  liff.shareTargetPicker([{ type: "text", text: text }]).catch(function(e) {
-    console.log(e);
-  });
-}
-
 function openCaptureScreen_() {
+  var tab = dashState.currentTab;
+  var cfg = TAB_CONFIG[tab];
   var m = dashState.currentMission;
   var partsMap = {};
   var partOrder = [];
 
   m.batches.forEach(function(b) {
     if (!partsMap[b.partNumber]) {
-      partsMap[b.partNumber] = { partNumber: b.partNumber, ok: 0, ng: 0, batches: [] };
+      partsMap[b.partNumber] = { partNumber: b.partNumber, ok: 0, ng: 0, qty: 0, batches: [] };
       partOrder.push(b.partNumber);
     }
     var p = partsMap[b.partNumber];
-    p.ok += b.ok;
-    p.ng += b.ng;
+    if (cfg.valueType === "okng") {
+      p.ok += b.ok;
+      p.ng += b.ng;
+    } else {
+      p.qty += b.qty;
+    }
     p.batches.push(b);
   });
 
@@ -1356,7 +1334,7 @@ function openCaptureScreen_() {
     var batchRows = p.batches.map(function(b) {
       return '<div class="capture-batch-row">' +
         '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
-        '<span><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
+        '<span>' + tabValueHtml_(cfg, b) + '</span>' +
       '</div>';
     }).join("");
 
@@ -1364,7 +1342,7 @@ function openCaptureScreen_() {
       '<div class="capture-part-head"><span class="capture-part-title">' + escapeHtml(pn) + '</span></div>' +
       '<div class="capture-part-body">' +
         batchRows +
-        '<div class="capture-part-total"><span>รวม</span><span>OK ' + numberWithCommas_(p.ok) + ' &middot; NG ' + numberWithCommas_(p.ng) + '</span></div>' +
+        '<div class="capture-part-total"><span>รวม</span><span>' + tabValueHtml_(cfg, p) + '</span></div>' +
       '</div>' +
     '</div>';
   }).join("");
@@ -1424,8 +1402,20 @@ function calendarIcon() {
   return '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="5"></rect><path d="M8 24H56" stroke="currentColor" stroke-width="5"></path><path d="M18 6V16" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path><path d="M46 6V16" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path></svg>';
 }
 
-function shareIcon() {
-  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="48" cy="14" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><circle cx="48" cy="50" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><circle cx="16" cy="32" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><path d="M23 28L41 18" stroke="#ffffff" stroke-width="5"></path><path d="M23 36L41 46" stroke="#ffffff" stroke-width="5"></path></svg>';
+function receiveIcon() {
+  return '<svg viewBox="0 0 96 96" aria-hidden="true"><path d="M30 10H66V44H85L48 80L11 44H30V10Z" fill="currentColor"></path><rect x="10" y="82" width="76" height="14" rx="7" fill="currentColor"></rect></svg>';
+}
+
+function dailyworkIcon() {
+  return '<svg viewBox="0 0 96 96" aria-hidden="true"><rect x="18" y="14" width="60" height="74" rx="8" fill="none" stroke="currentColor" stroke-width="5"></rect><rect x="36" y="8" width="24" height="14" rx="4" fill="currentColor"></rect><path d="M30 46L42 58L68 32" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M30 70H66" stroke="currentColor" stroke-width="6" stroke-linecap="round"></path></svg>';
+}
+
+function issueIcon() {
+  return '<svg viewBox="0 0 96 96" aria-hidden="true"><path d="M31 86H65V46H85L48 10L11 46H31V86Z" fill="currentColor"></path><path d="M8 70H14V82H82V70H88V90H8V70Z" fill="currentColor"></path></svg>';
+}
+
+function ngReturnIcon() {
+  return '<svg viewBox="0 0 96 96" aria-hidden="true"><path d="M34 18L8 34L34 50V39H54C68 39 78 49 78 63C78 73 72 82 63 86V93C77 89 88 77 88 63C88 43 74 29 54 29H34V18Z" fill="currentColor"></path></svg>';
 }
 
 function cameraIcon() {
