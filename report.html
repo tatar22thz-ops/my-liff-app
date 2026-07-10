@@ -52,7 +52,8 @@ body {
 
 .top-header {
   height: 6.52vh;
-  background: #0E4F8C;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
   position: relative;
   display: flex;
   align-items: center;
@@ -60,11 +61,99 @@ body {
 }
 
 .top-header h1 {
-  color: #ffffff;
+  color: #0E1F33;
   font-size: 3.05vh;
   font-weight: 800;
   margin: 0;
   line-height: 1;
+}
+
+.home-header {
+  position: relative;
+  aspect-ratio: 1536 / 211;
+  background-image: url('report-banner.jpg');
+  background-size: 100% 100%;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-color: #000513;
+}
+
+.user-bar {
+  height: 8vh;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.user-icon {
+  width: 4.2vh;
+  height: 4.2vh;
+  flex: 0 0 auto;
+}
+
+.user-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3vh;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.user-name {
+  color: #0E1F33;
+  font-size: 2.3vh;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: .1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-sub {
+  color: #5F6B7A;
+  font-size: 1.6vh;
+  line-height: 1.1;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  border: 1px solid #C8E6C9;
+  background: #F3FBF4;
+  border-radius: 999px;
+  padding: 0.6vh 1.4vh;
+}
+
+.status-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 50%;
+  background: #00A84A;
+  flex: 0 0 auto;
+}
+
+.status-text {
+  color: #00A84A;
+  font-size: 1.8vh;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .header-logo {
@@ -778,7 +867,7 @@ body {
     <header class="top-header">
       <button class="back-btn" id="headerBackBtn" type="button" onclick="goBack_()" aria-label="Back">
         <svg viewBox="0 0 64 64">
-          <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M42 8L18 32L42 56" fill="none" stroke="#0E1F33" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
       </button>
       <h1 id="pageTitle">Trigo Report</h1>
@@ -786,6 +875,27 @@ body {
         <img src="logo.svg" alt="TRIGO">
       </div>
     </header>
+
+    <div id="homeHero" style="display:none">
+      <header class="home-header"></header>
+      <section class="user-bar">
+        <div class="user-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="31" fill="none" stroke="#0E4F8C" stroke-width="3"></circle>
+            <circle cx="32" cy="24" r="13" fill="#0E4F8C"></circle>
+            <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#0E4F8C"></path>
+          </svg>
+        </div>
+        <div class="user-info">
+          <div id="homeUserName" class="user-name">Loading...</div>
+          <div id="homeUserSub" class="user-sub"></div>
+        </div>
+        <div class="user-status">
+          <span class="status-dot"></span>
+          <span class="status-text">พร้อมใช้งาน</span>
+        </div>
+      </section>
+    </div>
 
     <div id="content"></div>
   </main>
@@ -804,9 +914,9 @@ body {
       <div class="credits-title">TRIGO REPORT</div>
       <div class="credits-version">Version 1.0.0</div>
       <div class="credits-divider"></div>
-      <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538)<br>สร้างขึ้นเพื่อใช้สำหรับสร้างใบงานและใบลงชื่อประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
+      <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>สร้างขึ้นเพื่อใช้สำหรับสร้างใบงานและใบลงชื่อประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
-      <p class="credits-text">This application was developed by Lon Banjong (TRIGO538)<br>Created solely for generating daily mission reports and presence sheets at Site Yusen LCBTH<br>Unauthorized copying, editing, or modification is strictly prohibited</p>
+      <p class="credits-text">This application was developed by Lon Banjong (TRIGO538) and Kamonchanok Poonsawat (TRIGO301)<br>Created solely for generating daily mission reports and presence sheets at Site Yusen LCBTH<br>Unauthorized copying, editing, or modification is strictly prohibited</p>
       <div class="credits-date">เริ่มพัฒนา / Development started: 9 กรกฎาคม 2026 (July 9, 2026)</div>
     </div>
   </div>
@@ -895,6 +1005,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     currentEmployeeDisplayName = initData.employee.displayName || initData.employee.name;
+
+    var homeUserName = document.getElementById("homeUserName");
+    var homeUserSub = document.getElementById("homeUserSub");
+    if (homeUserName) homeUserName.textContent = initData.employee.name || "Unknown";
+    if (homeUserSub) homeUserSub.textContent = initData.employee.employeeId || "";
   } catch (e) {
     alert("โหลดข้อมูลผู้ใช้ไม่สำเร็จ: " + (e && e.message ? e.message : e));
     return;
@@ -914,6 +1029,16 @@ function goto_(fn) {
   navStack_.push(fn);
   fn();
   updateBackBtnVisibility_();
+  updateHomeHeroVisibility_(fn);
+}
+
+function updateHomeHeroVisibility_(fn) {
+  var topHeader = document.querySelector(".top-header");
+  var hero = document.getElementById("homeHero");
+  var isHome = fn === showHomeChoice_;
+
+  if (topHeader) topHeader.style.display = isHome ? "none" : "";
+  if (hero) hero.style.display = isHome ? "block" : "none";
 }
 
 function goBack_() {

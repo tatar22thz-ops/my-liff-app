@@ -58,44 +58,20 @@ body {
 .top-header {
   position: relative;
   height: 6.52vh;
-  background: #0E4F8C;
-  border-bottom: 1px solid rgba(255,255,255,.38);
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
   display: flex;
   align-items: center;
 }
 
 .home-header {
   position: relative;
-  height: 15vh;
+  aspect-ratio: 1536 / 240;
   background-image: url('home-banner.jpg');
-  background-size: 100% auto;
+  background-size: 100% 100%;
   background-position: top center;
   background-repeat: no-repeat;
   background-color: #000513;
-}
-
-.home-logo {
-  position: absolute;
-  left: 13px;
-  top: 0.83vh;
-  width: 7.94vh;
-  height: 4.27vh;
-}
-
-.home-subtitle {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 1.5vh;
-  text-align: center;
-}
-
-.home-subtitle span {
-  color: #ffffff;
-  font-family: "Kanit", "Segoe UI", sans-serif;
-  font-size: 1.66vh;
-  font-weight: 700;
-  letter-spacing: .2px;
 }
 
 .logo {
@@ -111,7 +87,7 @@ body {
 
 .top-header h1 {
   margin: 0 0 0 15px;
-  color: #ffffff;
+  color: #0E1F33;
   font-size: 3.55vh;
   line-height: 1;
   font-weight: 700;
@@ -121,7 +97,8 @@ body {
 
 .user-bar {
   height: 8vh;
-  background: #0E4F8C;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
   display: flex;
   align-items: center;
   padding: 0 16px;
@@ -150,7 +127,7 @@ body {
 }
 
 .user-name {
-  color: #ffffff;
+  color: #0E1F33;
   font-size: 2.3vh;
   line-height: 1.1;
   font-weight: 700;
@@ -161,8 +138,7 @@ body {
 }
 
 .user-sub {
-  color: #ffffff;
-  opacity: 0.75;
+  color: #5F6B7A;
   font-size: 1.6vh;
   line-height: 1.1;
   font-weight: 400;
@@ -176,19 +152,23 @@ body {
   align-items: center;
   gap: 6px;
   flex: 0 0 auto;
+  border: 1px solid #C8E6C9;
+  background: #F3FBF4;
+  border-radius: 999px;
+  padding: 0.6vh 1.4vh;
 }
 
 .status-dot {
   width: 1.2vh;
   height: 1.2vh;
   border-radius: 50%;
-  background: #00E676;
+  background: #00A84A;
   flex: 0 0 auto;
   display: none;
 }
 
 .status-text {
-  color: #00E676;
+  color: #00A84A;
   font-size: 1.8vh;
   font-weight: 700;
   white-space: nowrap;
@@ -198,8 +178,8 @@ body {
 .spinner {
   width: 2.6vh;
   height: 2.6vh;
-  border: 2.5px solid rgba(255,255,255,0.25);
-  border-top-color: #ffffff;
+  border: 2.5px solid #E5E9F0;
+  border-top-color: #0E4F8C;
   border-radius: 50%;
   flex: 0 0 auto;
   animation: spin_ 0.8s linear infinite;
@@ -470,7 +450,8 @@ footer {
 
 .receive-header {
   height: 6.52vh;
-  background: #0E4F8C;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
   position: relative;
   display: flex;
   align-items: center;
@@ -478,7 +459,7 @@ footer {
 }
 
 .receive-header h1 {
-  color: #ffffff;
+  color: #0E1F33;
   font-size: 3.55vh;
   font-weight: 800;
   margin: 0;
@@ -1503,19 +1484,14 @@ footer {
 </head>
 <body>
   <main id="app" class="app">
-    <header class="home-header">
-      <img class="home-logo" src="logo.svg" alt="TRIGO">
-      <div class="home-subtitle">
-        <span>Inventory &bull; Sorting &bull; Operations</span>
-      </div>
-    </header>
+    <header class="home-header"></header>
 
     <section class="user-bar">
       <div class="user-icon" aria-hidden="true">
         <svg viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="31" fill="none" stroke="#ffffff" stroke-width="3"></circle>
-          <circle cx="32" cy="24" r="13" fill="#ffffff"></circle>
-          <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#ffffff"></path>
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#0E4F8C" stroke-width="3"></circle>
+          <circle cx="32" cy="24" r="13" fill="#0E4F8C"></circle>
+          <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#0E4F8C"></path>
         </svg>
       </div>
       <div class="user-info">
@@ -1644,7 +1620,7 @@ footer {
   <header class="receive-header">
     <button class="back-btn" type="button" onclick="goBackStep_()" aria-label="Back">
       <svg viewBox="0 0 64 64">
-        <path d="M42 8L18 32L42 56" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M42 8L18 32L42 56" fill="none" stroke="#0E1F33" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
     </button>
 
