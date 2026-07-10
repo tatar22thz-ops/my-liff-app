@@ -663,7 +663,10 @@ body {
 }
 
 .home-footer {
-  margin-top: 4vh;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3.32vh;
   text-align: center;
   color: #000000;
 }
@@ -1182,9 +1185,49 @@ function showEmployeeSelectView_() {
       '<p class="picker-context">Part : ' + escapeHtml(partNames) + '</p>' +
       '<h2 class="picker-heading">เลือกพนักงาน + เวลาทำงาน</h2>' +
       '<div class="emp-list">' + rowsHtml + '</div>' +
+      '<button type="button" class="add-employee-btn" onclick="goto_(showReportAddEmployeeView_)">+ เพิ่มพนักงาน</button>' +
       '<button class="static-primary-btn" type="button" onclick="onProceedToConfirm_()">' + downloadIcon() + '<span>ถัดไป</span></button>' +
       '<button class="static-secondary-btn" type="button" onclick="goBack_()">' + '<span>ย้อนกลับ</span></button>' +
     '</div>';
+}
+
+async function showReportAddEmployeeView_() {
+  setPageTitle_("เพิ่มพนักงาน");
+
+  if (!employeeOptionsCache_) {
+    try {
+      var res = await api("getEmployeeOptions", {});
+      employeeOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูลพนักงานไม่สำเร็จ");
+      employeeOptionsCache_ = [];
+    }
+  }
+
+  var existingIds = reportState.employees.map(function(e) { return e.employeeId; });
+  var available = employeeOptionsCache_.filter(function(e) { return existingIds.indexOf(e.employeeId) === -1; });
+
+  renderMultiPicker_({
+    heading: "เลือกพนักงาน (เลือกได้หลายคน)",
+    searchPlaceholder: "ค้นหาชื่อ หรือ Pass",
+    items: available.map(function(e) {
+      var subParts = [presenceEmployeeTeam_(e.site)];
+      if (e.pass) subParts.push("Pass: " + e.pass);
+      return { title: e.name, sub: subParts.join(" · "), value: e.employeeId, raw: e };
+    }),
+    onConfirm: function(selectedItems) {
+      selectedItems.forEach(function(item) {
+        reportState.employees.push({ employeeId: item.raw.employeeId, employeeName: item.raw.name });
+        reportState.selected[item.raw.employeeId] = {
+          employeeName: item.raw.name,
+          checked: true,
+          start: "08:00",
+          end: "17:00"
+        };
+      });
+      goBack_();
+    }
+  });
 }
 
 function onProceedToConfirm_() {
@@ -1281,6 +1324,7 @@ function showSuccessView_(data) {
       '</section>' +
       '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบงาน</a></div>' +
       '<button class="static-primary-btn" type="button" onclick="goFromHome_(showMissionPicker)">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="resetNav_(showHomeChoice_)"><span>กลับหน้าแรก</span></button>' +
     '</div>';
 }
 
@@ -1565,6 +1609,7 @@ function showPresenceSuccessView_(data) {
       '</section>' +
       '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบลงชื่อ</a></div>' +
       '<button class="static-primary-btn" type="button" onclick="resetPresenceAndGoto_()">' + refreshWhiteIcon() + '<span>สร้างใบลงชื่อเพิ่ม</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="resetNav_(showHomeChoice_)"><span>กลับหน้าแรก</span></button>' +
     '</div>';
 }
 

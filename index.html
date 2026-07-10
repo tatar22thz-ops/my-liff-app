@@ -1378,6 +1378,18 @@ footer {
   text-align: right;
 }
 
+.confirm-qty-warning {
+  grid-template-columns: 1fr;
+  background: #FDECEA;
+  border: 1px solid #E53935;
+  border-radius: 10px;
+  padding: 1.2vh 1.4vh;
+  color: #C62828;
+  font-size: 2.1vh;
+  font-weight: 700;
+  text-align: center;
+}
+
 .save-btn {
   width: 319px;
   height: 8.41vh;
@@ -2961,7 +2973,9 @@ async function showDailyWorkManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Batch</label>
-          <input id="dwManualBatch" type="text" placeholder="กรอก Batch" oninput="updateDailyWorkManualForm()">
+          <select id="dwManualBatch" onchange="updateDailyWorkManualForm()" disabled>
+            <option value="">เลือก Part No ก่อน</option>
+          </select>
         </div>
         <div class="qty-row">
           <label>OK</label>
@@ -3016,12 +3030,16 @@ function onDailyWorkManualMissionChange() {
 async function onDailyWorkManualPartChange_() {
   var partNumber = document.getElementById("dwManualPartNumber").value;
   var wrap = document.getElementById("defectSectionWrap");
+  var batchSelect = document.getElementById("dwManualBatch");
 
   dwManualDefects_ = [];
   if (wrap) {
     wrap.innerHTML = "";
     wrap.style.display = "none";
   }
+
+  batchSelect.innerHTML = '<option value="">เลือก Part No ก่อน</option>';
+  batchSelect.disabled = true;
 
   if (partNumber) {
     try {
@@ -3031,6 +3049,28 @@ async function onDailyWorkManualPartChange_() {
       dwManualDefects_ = [];
     }
     if (wrap) wrap.innerHTML = renderDefectSectionHtml_(dwManualDefects_);
+
+    var batchRes;
+    try {
+      batchRes = await api("getBatchOptions", { partNumber: partNumber });
+    } catch (e) {
+      batchRes = { ok: false, options: [] };
+    }
+
+    var batches = (batchRes && batchRes.ok && batchRes.options) ? batchRes.options.filter(function(b) {
+      return b.remaining > 0;
+    }) : [];
+
+    if (batches.length > 0) {
+      batchSelect.innerHTML = '<option value="">เลือก Batch</option>' +
+        batches.map(function(b) {
+          return '<option value="' + escapeHtml(b.batch) + '">' + escapeHtml(b.batch) + ' — งานคงเหลือ ' + b.remaining + '</option>';
+        }).join("");
+      batchSelect.disabled = false;
+    } else {
+      batchSelect.innerHTML = '<option value="">ยังไม่มีการรับงานสำหรับ Part นี้</option>';
+      batchSelect.disabled = true;
+    }
   }
 
   updateDailyWorkManualForm();
@@ -3169,6 +3209,19 @@ function updateDailyWorkQtyForm_() {
   }
 }
 
+function remainingWorkRowHtml_(value) {
+  if (value < 0) {
+    return '<div class="confirm-qty-row confirm-qty-warning">' +
+      '<span>⚠️ เกินยอดรับ ' + Math.abs(value) + ' ชิ้น กรุณาตรวจสอบ</span>' +
+    '</div>';
+  }
+
+  return '<div class="confirm-qty-row">' +
+    '<span>งานคงเหลือ (จากยอดรับ)</span>' +
+    '<span>' + value + '</span>' +
+  '</div>';
+}
+
 function showDailyWorkConfirm() {
   var okInput = document.getElementById("dailyWorkOkInput");
   var ngInput = document.getElementById("dailyWorkNgInput");
@@ -3230,10 +3283,7 @@ function showDailyWorkConfirm() {
           <span>${ng}</span>
         </div>
         ${defectSummaryHtml}
-        <div class="confirm-qty-row">
-          <span>เหลือหลังบันทึก</span>
-          <span>${dailyWorkState.remaining - ok - ng}</span>
-        </div>
+        ${remainingWorkRowHtml_(dailyWorkState.remaining - ok - ng)}
       </section>
 
       <button class="save-btn" type="button" onclick="saveDailyWork_()">
@@ -3323,10 +3373,7 @@ function showDailyWorkSuccess_(data) {
           <span>NG</span>
           <span>${data.ngEntered}</span>
         </div>
-        <div class="confirm-qty-row">
-          <span>เหลือหลังบันทึก</span>
-          <span>${data.remainingAfter}</span>
-        </div>
+        ${remainingWorkRowHtml_(data.remainingAfter)}
       </section>
 
       <button class="static-primary-btn" type="button" onclick="goHome()">
