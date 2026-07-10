@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trigo Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  transition: transform 0.1s ease;
+}
+
+.picker-item:active,
+.static-primary-btn:active,
+.static-secondary-btn:active,
+.dash-tab:active,
+.dash-mission-row:active {
+  transform: scale(0.97);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #EEF2F7;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.app {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  background: #EEF2F7;
+  color: #000000;
+}
+
+.top-header {
+  height: 6.52vh;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-header h1 {
+  color: #0E1F33;
+  font-size: 3.05vh;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
+
+.header-logo {
+  position: absolute;
+  right: 12px;
+  top: 0.83vh;
+  width: 7.94vh;
+  height: 4.27vh;
+}
+
+.header-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.back-btn {
+  position: absolute;
+  left: 12px;
+  top: 0.71vh;
+  width: 4.74vh;
+  height: 5.33vh;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+}
+
+.back-btn.show {
+  display: block;
+}
+
+.back-btn svg {
+  width: 4.74vh;
+  height: 5.33vh;
+  display: block;
+}
+
+.home-header {
+  position: relative;
+  aspect-ratio: 1536 / 230;
+  background-image: url('dashboard-banner.jpg');
+  background-size: 100% 100%;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-color: #000513;
+}
+
+.user-bar {
+  height: 8vh;
+  background: #ffffff;
+  border-bottom: 1px solid #E5E9F0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.user-icon {
+  width: 4.2vh;
+  height: 4.2vh;
+  flex: 0 0 auto;
+}
+
+.user-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3vh;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.user-name {
+  color: #0E1F33;
+  font-size: 2.3vh;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: .1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-sub {
+  color: #5F6B7A;
+  font-size: 1.6vh;
+  line-height: 1.1;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  border: 1px solid #C8E6C9;
+  background: #F3FBF4;
+  border-radius: 999px;
+  padding: 0.6vh 1.4vh;
+}
+
+.status-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 50%;
+  background: #00A84A;
+  flex: 0 0 auto;
+}
+
+.status-text {
+  color: #00A84A;
+  font-size: 1.8vh;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 5, 19, .55);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.9vh;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.loading-overlay-spinner {
+  width: 5.69vh;
+  height: 5.69vh;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin_ 0.8s linear infinite;
+}
+
+@keyframes spin_ {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay-text {
+  margin: 0;
+  color: #ffffff;
+  text-align: center;
+  font-size: 2.13vh;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.picker-page {
+  padding: 2.4vh 16px 4vh;
+}
+
+.picker-context {
+  color: #000000;
+  font-size: 2.4vh;
+  font-weight: 400;
+  margin: 0 0 1.2vh;
+}
+
+.picker-heading {
+  color: #000000;
+  font-size: 3.55vh;
+  font-weight: 800;
+  margin: 0 0 1.6vh;
+}
+
+.picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  padding-bottom: 3vh;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 7vh;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 0 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+.picker-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+
+.picker-item-title {
+  font-size: 2.6vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.picker-item-sub {
+  font-size: 1.9vh;
+  font-weight: 500;
+  color: #555555;
+}
+
+.picker-item-sub .ok-val {
+  color: #1B8A3D;
+  font-weight: 700;
+}
+
+.picker-item-sub .ng-val {
+  color: #D22;
+  font-weight: 700;
+}
+
+.picker-item svg {
+  width: 2.4vh;
+  height: 2.4vh;
+  flex: 0 0 auto;
+  color: #000000;
+}
+
+.error-view {
+  position: relative;
+  min-height: 80vh;
+  padding-top: 12.80vh;
+}
+
+.error-card {
+  width: 322px;
+  max-width: calc(100% - 32px);
+  min-height: 25vh;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: #FFDCDC;
+  text-align: center;
+  padding: 3vh 16px;
+}
+
+.error-card .big-x {
+  width: 7.94vh;
+  height: 7.94vh;
+  margin-bottom: 3vh;
+}
+
+.error-title {
+  color: #FF1111;
+  font-size: 2.84vh;
+  line-height: 1;
+  font-weight: 800;
+  margin: 0 0 2.5vh;
+}
+
+.error-title svg {
+  width: 3.4vh;
+  height: 3.4vh;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.error-text {
+  color: #333333;
+  font-size: 2.3vh;
+  line-height: 1.4;
+  font-weight: 800;
+  margin: 0;
+}
+
+.static-primary-btn {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  height: 8.41vh;
+  margin: 2vh auto 1.5vh;
+  border: 0;
+  border-radius: 9px;
+  background: #0E4F8C;
+  color: #ffffff;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.9vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.static-primary-btn svg {
+  width: 3.6vh;
+  height: 3.6vh;
+  flex: 0 0 auto;
+}
+
+.static-secondary-btn {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  height: 8.41vh;
+  margin: 0 auto;
+  border: 2px solid #555555;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #555555;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2.7vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.dash-date-row {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 2.4vh auto 1.6vh;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 1.4vh 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.dash-date-row-label {
+  font-size: 2.3vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.dash-date-row svg {
+  width: 2.4vh;
+  height: 2.4vh;
+  color: #0E4F8C;
+}
+
+.dash-tabs {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 2vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2vh;
+}
+
+.dash-tab {
+  border: 2px solid #000000;
+  border-radius: 12px;
+  background: #ffffff;
+  min-height: 9vh;
+  padding: 1.2vh 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5vh;
+  cursor: pointer;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+.dash-tab.disabled {
+  opacity: 0.45;
+}
+
+.dash-tab-title {
+  font-size: 2.1vh;
+  font-weight: 800;
+  color: #000000;
+  text-align: center;
+}
+
+.dash-tab-value {
+  font-size: 1.6vh;
+  font-weight: 500;
+  color: #555555;
+}
+
+.dash-section {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 3vh;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #E0E0E0;
+  padding: 1.8vh 16px 2vh;
+}
+
+.dash-section-title {
+  font-size: 2.1vh;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 1.6vh;
+}
+
+.dash-bar-row {
+  margin-bottom: 1.6vh;
+}
+
+.dash-bar-row:last-child {
+  margin-bottom: 0;
+}
+
+.dash-bar-label {
+  font-size: 1.7vh;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 0.5vh;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-bar-track {
+  height: 1.9vh;
+  border-radius: 5px;
+  background: #F0F2F5;
+  overflow: hidden;
+  display: flex;
+}
+
+.dash-bar-ok {
+  background: #2FA84F;
+  height: 100%;
+}
+
+.dash-bar-ng {
+  background: #E23B3B;
+  height: 100%;
+}
+
+.dash-bar-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 1.4vh;
+  font-size: 1.5vh;
+  color: #555555;
+}
+
+.dash-bar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-legend-dot {
+  width: 1.2vh;
+  height: 1.2vh;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dash-empty-text {
+  color: #777777;
+  font-size: 1.9vh;
+  text-align: center;
+  padding: 2vh 0;
+}
+
+.dash-batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  padding-bottom: 2vh;
+}
+
+.dash-batch-card {
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.dash-batch-card-head {
+  background: #F5F7FA;
+  padding: 1.1vh 14px;
+}
+
+.dash-batch-card-part {
+  font-size: 2.1vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.dash-batch-card-body {
+  padding: 1.2vh 14px 1.4vh;
+}
+
+.dash-batch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.9vh;
+  margin-bottom: 0.9vh;
+}
+
+.dash-batch-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.dash-batch-no {
+  color: #555555;
+}
+
+.dash-ok-ng span {
+  font-weight: 700;
+}
+
+.dash-ok-ng .ok-val {
+  color: #1B8A3D;
+}
+
+.dash-ok-ng .ng-val {
+  color: #D22;
+}
+
+.dash-defect-list {
+  margin: 0.6vh 0 0;
+  padding-left: 16px;
+  font-size: 1.6vh;
+  color: #888888;
+}
+
+.dash-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #E5E9F0;
+  margin-top: 0.9vh;
+  padding-top: 0.9vh;
+  font-size: 1.8vh;
+}
+
+.dash-total-row span:first-child {
+  color: #555555;
+  font-weight: 600;
+}
+
+.dash-total-row span:last-child {
+  font-weight: 700;
+}
+
+.home-menu {
+  padding-top: 0;
+}
+
+.home-footer {
+  position: relative;
+  margin-top: 4vh;
+  padding-bottom: 3.32vh;
+  text-align: center;
+  color: #000000;
+}
+
+.footer-brand {
+  font-size: 1.6vh;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5vh;
+}
+
+.footer-meta {
+  font-size: 1.18vh;
+  font-weight: 400;
+  color: #555555;
+  line-height: 1.6;
+}
+
+.credits-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 5, 19, .65);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.credits-overlay.show {
+  display: flex;
+}
+
+.credits-card {
+  position: relative;
+  width: 340px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 4vh 20px 3vh;
+  text-align: center;
+}
+
+.credits-close-btn {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 3.2vh;
+  height: 3.2vh;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.credits-close-btn svg {
+  width: 3.2vh;
+  height: 3.2vh;
+  display: block;
+}
+
+.credits-logo {
+  width: 7.94vh;
+  height: 4.27vh;
+  margin: 0 auto 1.4vh;
+  display: block;
+}
+
+.credits-title {
+  color: #0E4F8C;
+  font-size: 2.4vh;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+.credits-version {
+  color: #777777;
+  font-size: 1.6vh;
+  margin-top: 0.3vh;
+}
+
+.credits-divider {
+  width: 60px;
+  height: 2px;
+  background: #E0E0E0;
+  margin: 1.9vh auto;
+}
+
+.credits-text {
+  margin: 0;
+  color: #333333;
+  font-size: 1.7vh;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.credits-date {
+  margin-top: 1.9vh;
+  color: #999999;
+  font-size: 1.4vh;
+  line-height: 1.6;
+}
+
+.capture-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: #F4F6F9;
+  overflow-y: auto;
+}
+
+.capture-banner {
+  position: relative;
+  aspect-ratio: 1536 / 230;
+  background-image: url('dashboard-banner.jpg');
+  background-size: 100% 100%;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-color: #000513;
+}
+
+.capture-close-btn {
+  position: absolute;
+  top: 1.2vh;
+  right: 1.2vh;
+  width: 3.4vh;
+  height: 3.4vh;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.capture-close-btn svg {
+  width: 1.7vh;
+  height: 1.7vh;
+}
+
+.capture-body {
+  padding: 2.4vh 16px 4vh;
+}
+
+.capture-heading {
+  text-align: center;
+  font-size: 2.7vh;
+  font-weight: 800;
+  color: #000000;
+  margin: 0 0 0.3vh;
+}
+
+.capture-date {
+  text-align: center;
+  font-size: 1.9vh;
+  color: #555555;
+  margin: 0 0 2vh;
+}
+
+.capture-part-card {
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  margin-bottom: 1.4vh;
+}
+
+.capture-part-head {
+  background: #F5F7FA;
+  padding: 1.1vh 14px;
+}
+
+.capture-part-title {
+  font-size: 2vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.capture-part-body {
+  padding: 1.1vh 14px 1.3vh;
+}
+
+.capture-batch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.8vh;
+  margin-bottom: 0.8vh;
+}
+
+.capture-batch-row .ok-val {
+  color: #1B8A3D;
+  font-weight: 700;
+}
+
+.capture-batch-row .ng-val {
+  color: #D22;
+  font-weight: 700;
+}
+
+.capture-part-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #E5E9F0;
+  margin-top: 0.6vh;
+  padding-top: 0.6vh;
+  font-size: 1.7vh;
+}
+
+.capture-part-total span:first-child {
+  color: #555555;
+  font-weight: 600;
+}
+
+.capture-part-total span:last-child {
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="top-header">
+      <button class="back-btn" id="headerBackBtn" type="button" onclick="goBack_()" aria-label="Back">
+        <svg viewBox="0 0 64 64">
+          <path d="M42 8L18 32L42 56" fill="none" stroke="#0E1F33" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </button>
+      <h1 id="pageTitle">Trigo Dashboard</h1>
+      <div class="header-logo">
+        <img src="logo.svg" alt="TRIGO">
+      </div>
+    </header>
+
+    <div id="homeHero" style="display:none">
+      <header class="home-header"></header>
+      <section class="user-bar">
+        <div class="user-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="31" fill="none" stroke="#0E4F8C" stroke-width="3"></circle>
+            <circle cx="32" cy="24" r="13" fill="#0E4F8C"></circle>
+            <path d="M10 58C14 45 22 39 32 39C42 39 50 45 54 58C48 62 40 64 32 64C24 64 16 62 10 58Z" fill="#0E4F8C"></path>
+          </svg>
+        </div>
+        <div class="user-info">
+          <div id="homeUserName" class="user-name">Loading...</div>
+          <div id="homeUserSub" class="user-sub"></div>
+        </div>
+        <div class="user-status">
+          <span class="status-dot"></span>
+          <span class="status-text">พร้อมใช้งาน</span>
+        </div>
+      </section>
+    </div>
+
+    <div id="content"></div>
+  </main>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay-spinner"></div>
+    <p class="loading-overlay-text">กำลังโหลด<br>กรุณารอสักครู่...</p>
+  </div>
+
+  <div id="creditsOverlay" class="credits-overlay">
+    <div class="credits-card">
+      <button class="credits-close-btn" type="button" onclick="hideCreditsPopup_()" aria-label="Close">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>
+      </button>
+      <img class="credits-logo" src="logo.svg" alt="TRIGO">
+      <div class="credits-title">TRIGO YUSEN DASHBOARD</div>
+      <div class="credits-version">Version 1.0.0</div>
+      <div class="credits-divider"></div>
+      <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>สร้างขึ้นเพื่อใช้สำหรับดูภาพรวมยอดงานประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
+      <div class="credits-divider"></div>
+      <p class="credits-text">This application was developed by Lon Banjong (TRIGO538) and Kamonchanok Poonsawat (TRIGO301)<br>Created solely for viewing the daily work overview at Site Yusen LCBTH<br>Unauthorized copying, editing, or modification is strictly prohibited</p>
+      <div class="credits-date">เริ่มพัฒนา / Development started: 10 กรกฎาคม 2026 (July 10, 2026)</div>
+    </div>
+  </div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<script>
+var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6iBeELosvSfsrm0oSGN7GfOeEyb8NVD2_2z7XMralNZdlA/exec";
+
+var currentLineUserId = "";
+var currentEmployeeDisplayName = "";
+
+var dashState = {
+  dateStr: "",
+  dateLabel: "",
+  dailyWork: null,
+  currentMission: null
+};
+
+function withTimeout_(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(function (resolve, reject) {
+      setTimeout(function () { reject(new Error("timeout")); }, ms);
+    })
+  ]);
+}
+
+function showLoadingOverlay_() {
+  var overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.classList.add("show");
+}
+
+function hideLoadingOverlay_() {
+  var overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.classList.remove("show");
+}
+
+async function api(action, extra) {
+  var body = Object.assign({ action: action }, extra || {});
+
+  showLoadingOverlay_();
+
+  try {
+    var res = await fetch(GAS_API, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(body)
+    });
+
+    return await res.json();
+  } finally {
+    hideLoadingOverlay_();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  try {
+    await withTimeout_(liff.init({ liffId: "2010604851-DASHBOARD" }), 15000);
+  } catch (e) {
+    alert("liff.init() ล้มเหลว: " + (e && e.message ? e.message : e));
+    return;
+  }
+
+  if (!liff.isLoggedIn() && !liff.isInClient()) {
+    liff.login();
+    return;
+  }
+
+  try {
+    var profile = await withTimeout_(liff.getProfile(), 15000);
+    currentLineUserId = profile.userId;
+  } catch (e) {
+    alert("liff.getProfile() ล้มเหลว: " + (e && e.message ? e.message : e));
+  }
+
+  try {
+    var initData = await api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: "" });
+
+    if (!initData || !initData.employee || !initData.employee.employeeId) {
+      showUnauthorizedView();
+      return;
+    }
+
+    currentEmployeeDisplayName = initData.employee.displayName || initData.employee.name;
+
+    var homeUserName = document.getElementById("homeUserName");
+    var homeUserSub = document.getElementById("homeUserSub");
+    if (homeUserName) homeUserName.textContent = initData.employee.name || "Unknown";
+    if (homeUserSub) homeUserSub.textContent = initData.employee.employeeId || "";
+  } catch (e) {
+    alert("โหลดข้อมูลผู้ใช้ไม่สำเร็จ: " + (e && e.message ? e.message : e));
+    return;
+  }
+
+  var today = new Date();
+  dashState.dateStr = formatDateForApi_(today);
+  dashState.dateLabel = formatDateLabel_(today, "วันนี้");
+
+  goto_(showDashboardHome_);
+});
+
+function setPageTitle_(text) {
+  var el = document.getElementById("pageTitle");
+  if (el) el.textContent = text;
+}
+
+var navStack_ = [];
+
+function goto_(fn) {
+  navStack_.push(fn);
+  fn();
+  updateBackBtnVisibility_();
+  updateHomeHeroVisibility_(fn);
+}
+
+function updateHomeHeroVisibility_(fn) {
+  var topHeader = document.querySelector(".top-header");
+  var hero = document.getElementById("homeHero");
+  var isHome = fn === showDashboardHome_;
+
+  if (topHeader) topHeader.style.display = isHome ? "none" : "";
+  if (hero) hero.style.display = isHome ? "block" : "none";
+}
+
+function goBack_() {
+  if (navStack_.length <= 1) {
+    if (navStack_[0] === showDashboardHome_) {
+      if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
+        liff.closeWindow();
+      }
+      return;
+    }
+    resetNav_(showDashboardHome_);
+    return;
+  }
+  navStack_.pop();
+  var prevFn = navStack_[navStack_.length - 1];
+  prevFn();
+  updateBackBtnVisibility_();
+  updateHomeHeroVisibility_(prevFn);
+}
+
+function resetNav_(fn) {
+  navStack_ = [];
+  goto_(fn);
+}
+
+function goFromHome_(fn) {
+  navStack_ = [showDashboardHome_];
+  goto_(fn);
+}
+
+function updateBackBtnVisibility_() {
+  var btn = document.getElementById("headerBackBtn");
+  if (!btn) return;
+  btn.classList.toggle("show", navStack_.length > 1);
+}
+
+function showUnauthorizedView() {
+  document.getElementById("content").innerHTML =
+    '<div class="error-view">' +
+      '<section class="error-card">' +
+        bigXIcon() +
+        '<h2 class="error-title">' + smallXIcon() + '<span>ไม่ได้รับอนุญาต</span></h2>' +
+        '<p class="error-text">บัญชี LINE นี้ยังไม่ได้ลงทะเบียน<br>เป็นพนักงานในระบบ<br>กรุณาติดต่อหัวหน้างาน</p>' +
+      '</section>' +
+    '</div>';
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function pad2_(n) {
+  return n < 10 ? "0" + n : String(n);
+}
+
+function formatDateForApi_(d) {
+  return pad2_(d.getDate()) + "/" + pad2_(d.getMonth() + 1) + "/" + d.getFullYear();
+}
+
+var THAI_DAYS = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+
+function formatDateLabel_(d, tag) {
+  return tag + " (วัน" + THAI_DAYS[d.getDay()] + " " + formatDateForApi_(d) + ")";
+}
+
+function numberWithCommas_(n) {
+  return Number(n || 0).toLocaleString("en-US");
+}
+
+function showDatePicker_() {
+  var today = new Date();
+  var options = [];
+  var tags = ["วันนี้", "เมื่อวาน", "เมื่อวานซืน"];
+
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(today);
+    d.setDate(today.getDate() - i);
+    options.push({ d: d, tag: tags[i] || (i + " วันก่อน") });
+  }
+
+  var listHtml = options.map(function(o) {
+    return '<button type="button" class="picker-item" data-date="' + formatDateForApi_(o.d) + '" data-label="' + escapeHtml(formatDateLabel_(o.d, o.tag)) + '">' +
+      '<span class="picker-item-text"><span class="picker-item-title">' + escapeHtml(formatDateLabel_(o.d, o.tag)) + '</span></span>' +
+      chevronIcon() +
+    '</button>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<h2 class="picker-heading">เลือกวันที่</h2>' +
+      '<div class="picker-list">' + listHtml + '</div>' +
+    '</div>';
+
+  document.querySelectorAll(".picker-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      dashState.dateStr = btn.getAttribute("data-date");
+      dashState.dateLabel = btn.getAttribute("data-label");
+      dashState.dailyWork = null;
+      goBack_();
+    });
+  });
+}
+
+async function showDashboardHome_() {
+  setPageTitle_("Trigo Dashboard");
+
+  document.getElementById("content").innerHTML =
+    '<div class="dash-date-row" onclick="goto_(showDatePicker_)">' +
+      '<span class="dash-date-row-label">' + escapeHtml(dashState.dateLabel) + '</span>' +
+      calendarIcon() +
+    '</div>' +
+    '<div class="dash-tabs">' +
+      '<button type="button" class="dash-tab" onclick="onTabTap_(\'receive\')"><span class="dash-tab-title">รับงาน</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
+      '<button type="button" class="dash-tab" onclick="onTabTap_(\'dailywork\')"><span class="dash-tab-title">ยอดงานรายวัน</span><span class="dash-tab-value">OK / NG</span></button>' +
+      '<button type="button" class="dash-tab" onclick="onTabTap_(\'issue\')"><span class="dash-tab-title">เบิกงาน</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
+      '<button type="button" class="dash-tab" onclick="onTabTap_(\'ngreturn\')"><span class="dash-tab-title">ส่งคืน NG</span><span class="dash-tab-value">แยกตามมิชชั่น</span></button>' +
+    '</div>' +
+    '<div id="dashGraphWrap"></div>' +
+    '<footer class="home-footer">' +
+      '<div class="footer-brand">TRIGO YUSEN DASHBOARD</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.0.0<br>&copy; 2026 TRIGO</div>' +
+    '</footer>';
+
+  await loadDailyWorkData_();
+  renderDashboardGraph_();
+}
+
+async function loadDailyWorkData_() {
+  if (dashState.dailyWork && dashState.dailyWork.dateStr === dashState.dateStr) return;
+
+  try {
+    var res = await api("getDashboardDailyWork", { dateStr: dashState.dateStr });
+    dashState.dailyWork = (res && res.ok) ? res : { dateStr: dashState.dateStr, missions: [] };
+  } catch (e) {
+    dashState.dailyWork = { dateStr: dashState.dateStr, missions: [] };
+  }
+}
+
+function renderDashboardGraph_() {
+  var wrap = document.getElementById("dashGraphWrap");
+  if (!wrap) return;
+
+  var missions = (dashState.dailyWork && dashState.dailyWork.missions) || [];
+
+  if (missions.length === 0) {
+    wrap.innerHTML =
+      '<div class="dash-section">' +
+        '<h3 class="dash-section-title">OK / NG แยกตามมิชชั่น</h3>' +
+        '<p class="dash-empty-text">ยังไม่มีข้อมูลงานรายวันในวันนี้</p>' +
+      '</div>';
+    return;
+  }
+
+  var sorted = missions.slice().sort(function(a, b) { return (b.ok + b.ng) - (a.ok + a.ng); });
+  var max = Math.max.apply(null, sorted.map(function(m) { return m.ok + m.ng; }).concat([1]));
+
+  var rowsHtml = sorted.map(function(m) {
+    var total = m.ok + m.ng;
+    var okPct = total > 0 ? (m.ok / max) * 100 : 0;
+    var ngPct = total > 0 ? (m.ng / max) * 100 : 0;
+
+    return '<div class="dash-bar-row">' +
+      '<div class="dash-bar-label">' + escapeHtml(m.mission) + ' &middot; OK ' + numberWithCommas_(m.ok) + ' / NG ' + numberWithCommas_(m.ng) + '</div>' +
+      '<div class="dash-bar-track">' +
+        '<div class="dash-bar-ok" style="width:' + okPct + '%"></div>' +
+        '<div class="dash-bar-ng" style="width:' + ngPct + '%"></div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  wrap.innerHTML =
+    '<div class="dash-section">' +
+      '<h3 class="dash-section-title">OK / NG แยกตามมิชชั่น</h3>' +
+      rowsHtml +
+      '<div class="dash-bar-legend">' +
+        '<span><span class="dash-legend-dot" style="background:#2FA84F"></span>OK</span>' +
+        '<span><span class="dash-legend-dot" style="background:#E23B3B"></span>NG</span>' +
+      '</div>' +
+    '</div>';
+}
+
+function onTabTap_(tab) {
+  if (tab === "dailywork") {
+    goto_(showDailyWorkMissionList_);
+    return;
+  }
+  alert("แท็บนี้กำลังพัฒนา เร็วๆ นี้");
+}
+
+function showDailyWorkMissionList_() {
+  setPageTitle_("ยอดงานรายวัน");
+
+  var missions = (dashState.dailyWork && dashState.dailyWork.missions) || [];
+
+  if (missions.length === 0) {
+    document.getElementById("content").innerHTML =
+      '<div class="picker-page">' +
+        '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
+        '<div class="dash-empty-text">ยังไม่มีข้อมูลงานรายวันในวันที่นี้</div>' +
+      '</div>';
+    return;
+  }
+
+  var listHtml = missions.map(function(m, idx) {
+    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
+      '<span class="picker-item-text">' +
+        '<span class="picker-item-title">' + escapeHtml(m.mission) + '</span>' +
+        '<span class="picker-item-sub"><span class="ok-val">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
+      '</span>' +
+      chevronIcon() +
+    '</button>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
+      '<h2 class="picker-heading">เลือก Mission</h2>' +
+      '<div class="picker-list">' + listHtml + '</div>' +
+    '</div>';
+
+  document.querySelectorAll(".picker-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var idx = Number(btn.getAttribute("data-idx"));
+      dashState.currentMission = missions[idx];
+      goto_(showDailyWorkBatchList_);
+    });
+  });
+}
+
+function showDailyWorkBatchList_() {
+  var m = dashState.currentMission;
+  setPageTitle_(m.mission);
+
+  var batchesHtml = m.batches.map(function(b) {
+    var defectNames = Object.keys(b.defectCounts || {});
+    var defectHtml = defectNames.length > 0
+      ? '<ul class="dash-defect-list">' + defectNames.map(function(name) {
+          return '<li>' + escapeHtml(name) + ' ' + numberWithCommas_(b.defectCounts[name]) + '</li>';
+        }).join("") + '</ul>'
+      : "";
+
+    return '<div class="dash-batch-card">' +
+      '<div class="dash-batch-card-head"><span class="dash-batch-card-part">' + escapeHtml(b.partNumber) + '</span></div>' +
+      '<div class="dash-batch-card-body">' +
+        '<div class="dash-batch-row">' +
+          '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
+          '<span class="dash-ok-ng"><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
+        '</div>' +
+        defectHtml +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
+      '<h2 class="picker-heading">' + escapeHtml(m.mission) + '</h2>' +
+      '<div class="dash-batch-list">' + batchesHtml + '</div>' +
+      '<div class="dash-total-row" style="width:340px;max-width:calc(100% - 32px);margin:0 auto 2vh;">' +
+        '<span>รวม Mission นี้</span>' +
+        '<span><span class="ok-val" style="color:#1B8A3D">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val" style="color:#D22">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
+      '</div>' +
+      '<button class="static-primary-btn" type="button" onclick="sendSummaryToCustomer_()">' + shareIcon() + '<span>ส่งสรุปให้ลูกค้า</span></button>' +
+      '<button class="static-secondary-btn" type="button" onclick="openCaptureScreen_()">' + cameraIcon() + '<span>สรุปสำหรับ Capture</span></button>' +
+    '</div>';
+}
+
+function sendSummaryToCustomer_() {
+  var m = dashState.currentMission;
+
+  var lines = ["สรุปยอดงานวันที่ " + dashState.dateLabel.replace(/^[^(]*\(/, "").replace(")", ""), "Mission: " + m.mission, ""];
+
+  m.batches.forEach(function(b) {
+    lines.push("Part " + b.partNumber);
+    lines.push("Batch " + b.batch + " — OK " + numberWithCommas_(b.ok) + " / NG " + numberWithCommas_(b.ng));
+    lines.push("");
+  });
+
+  lines.push("รวมทั้งวัน: OK " + numberWithCommas_(m.ok) + " / NG " + numberWithCommas_(m.ng));
+
+  var text = lines.join("\n");
+
+  if (typeof liff === "undefined" || !liff.isApiAvailable || !liff.isApiAvailable("shareTargetPicker")) {
+    alert("อุปกรณ์นี้ไม่รองรับการแชร์ผ่าน LINE โดยตรง กรุณาใช้ปุ่ม Capture แทน");
+    return;
+  }
+
+  liff.shareTargetPicker([{ type: "text", text: text }]).catch(function(e) {
+    console.log(e);
+  });
+}
+
+function openCaptureScreen_() {
+  var m = dashState.currentMission;
+  var partsMap = {};
+  var partOrder = [];
+
+  m.batches.forEach(function(b) {
+    if (!partsMap[b.partNumber]) {
+      partsMap[b.partNumber] = { partNumber: b.partNumber, ok: 0, ng: 0, batches: [] };
+      partOrder.push(b.partNumber);
+    }
+    var p = partsMap[b.partNumber];
+    p.ok += b.ok;
+    p.ng += b.ng;
+    p.batches.push(b);
+  });
+
+  var cardsHtml = partOrder.map(function(pn) {
+    var p = partsMap[pn];
+    var batchRows = p.batches.map(function(b) {
+      return '<div class="capture-batch-row">' +
+        '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
+        '<span><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
+      '</div>';
+    }).join("");
+
+    return '<div class="capture-part-card">' +
+      '<div class="capture-part-head"><span class="capture-part-title">' + escapeHtml(pn) + '</span></div>' +
+      '<div class="capture-part-body">' +
+        batchRows +
+        '<div class="capture-part-total"><span>รวม</span><span>OK ' + numberWithCommas_(p.ok) + ' &middot; NG ' + numberWithCommas_(p.ng) + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("app").insertAdjacentHTML("afterend",
+    '<div class="capture-screen" id="captureScreen">' +
+      '<div class="capture-banner">' +
+        '<button class="capture-close-btn" type="button" onclick="closeCaptureScreen_()" aria-label="Close">' + smallXWhiteIcon() + '</button>' +
+      '</div>' +
+      '<div class="capture-body">' +
+        '<h1 class="capture-heading">สรุปยอดงานประจำวัน</h1>' +
+        '<p class="capture-date">' + escapeHtml(dashState.dateStr) + '</p>' +
+        cardsHtml +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function closeCaptureScreen_() {
+  var el = document.getElementById("captureScreen");
+  if (el) el.remove();
+}
+
+var creditTapCount_ = 0;
+var creditTapTimer_ = null;
+
+function handleCreditTap_() {
+  creditTapCount_++;
+
+  if (creditTapTimer_) clearTimeout(creditTapTimer_);
+  creditTapTimer_ = setTimeout(function() {
+    creditTapCount_ = 0;
+  }, 2000);
+
+  if (creditTapCount_ >= 5) {
+    creditTapCount_ = 0;
+    clearTimeout(creditTapTimer_);
+    showCreditsPopup_();
+  }
+}
+
+function showCreditsPopup_() {
+  var overlay = document.getElementById("creditsOverlay");
+  if (overlay) overlay.classList.add("show");
+}
+
+function hideCreditsPopup_() {
+  var overlay = document.getElementById("creditsOverlay");
+  if (overlay) overlay.classList.remove("show");
+}
+
+function chevronIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 12L44 32L24 52" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+}
+
+function calendarIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="12" width="48" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="5"></rect><path d="M8 24H56" stroke="currentColor" stroke-width="5"></path><path d="M18 6V16" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path><path d="M46 6V16" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path></svg>';
+}
+
+function shareIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="48" cy="14" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><circle cx="48" cy="50" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><circle cx="16" cy="32" r="8" fill="none" stroke="#ffffff" stroke-width="5"></circle><path d="M23 28L41 18" stroke="#ffffff" stroke-width="5"></path><path d="M23 36L41 46" stroke="#ffffff" stroke-width="5"></path></svg>';
+}
+
+function cameraIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="18" width="52" height="36" rx="6" fill="none" stroke="#555555" stroke-width="5"></rect><path d="M22 18L27 10H37L42 18" fill="none" stroke="#555555" stroke-width="5" stroke-linejoin="round"></path><circle cx="32" cy="36" r="11" fill="none" stroke="#555555" stroke-width="5"></circle></svg>';
+}
+
+function bigXIcon() {
+  return '<svg class="big-x" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M18 18L46 46M46 18L18 46" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>';
+}
+
+function smallXIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>';
+}
+
+function smallXWhiteIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></path></svg>';
+}
+</script>
+</body>
+</html>
