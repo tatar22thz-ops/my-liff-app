@@ -1756,6 +1756,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     homeHtmlCache = app.innerHTML;
   }
 
+  // Ensures the hardware/system back button always has a history entry of
+  // ours to land on, so it's interceptable (see popstate listener below)
+  // instead of falling straight through to closing the LIFF webview.
+  history.pushState({}, "", "");
+
   loadInitialData();
 
 });
@@ -1830,22 +1835,33 @@ function openFeaturePage_(titleText) {
 }
 
 var navStack_ = [];
+var atHome_ = true;
 
 function goto_(fn) {
   navStack_.push(fn);
+  atHome_ = false;
+  history.pushState({}, "", "");
   fn();
 }
 
 function goBackStep_() {
+  history.back();
+}
+
+window.addEventListener("popstate", function() {
+  if (atHome_) {
+    if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
+      liff.closeWindow();
+    }
+    return;
+  }
   if (navStack_.length <= 1) {
-    navStack_ = [];
     goHome();
     return;
   }
   navStack_.pop();
-  var prevFn = navStack_[navStack_.length - 1];
-  prevFn();
-}
+  navStack_[navStack_.length - 1]();
+});
 
 function openReceive() {
   openFeaturePage_("รับงานเข้า");
@@ -1856,6 +1872,7 @@ function openReceive() {
 function goHome() {
   stopScanCamera_();
   navStack_ = [];
+  atHome_ = true;
   var app = document.getElementById("app");
 
   if (app && homeHtmlCache) {

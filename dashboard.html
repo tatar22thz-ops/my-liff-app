@@ -1038,9 +1038,13 @@ function setPageTitle_(text) {
 }
 
 var navStack_ = [];
+var isHistoryPop_ = false;
 
 function goto_(fn) {
   navStack_.push(fn);
+  if (!isHistoryPop_) {
+    history.pushState({}, "", "");
+  }
   fn();
   updateBackBtnVisibility_();
   updateHomeHeroVisibility_(fn);
@@ -1056,6 +1060,10 @@ function updateHomeHeroVisibility_(fn) {
 }
 
 function goBack_() {
+  history.back();
+}
+
+window.addEventListener("popstate", function() {
   if (navStack_.length <= 1) {
     if (navStack_[0] === showDashboardHome_) {
       if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
@@ -1063,15 +1071,19 @@ function goBack_() {
       }
       return;
     }
+    isHistoryPop_ = true;
     resetNav_(showDashboardHome_);
+    isHistoryPop_ = false;
     return;
   }
   navStack_.pop();
   var prevFn = navStack_[navStack_.length - 1];
+  isHistoryPop_ = true;
   prevFn();
   updateBackBtnVisibility_();
   updateHomeHeroVisibility_(prevFn);
-}
+  isHistoryPop_ = false;
+});
 
 function resetNav_(fn) {
   navStack_ = [];
