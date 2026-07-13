@@ -1767,7 +1767,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 function loadInitialData() {
-  api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName })
+  api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: currentLineDisplayName, appName: "Hub" })
     .then(function(data) {
       var userName = document.getElementById("homeUserName");
       var userSub = document.getElementById("homeUserSub");

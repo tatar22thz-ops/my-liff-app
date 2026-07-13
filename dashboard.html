@@ -1007,7 +1007,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   try {
-    var initData = await api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: "" });
+    var initData = await api("getInitialData", { lineUserId: currentLineUserId, lineDisplayName: "", appName: "Dashboard" });
 
     if (!initData || !initData.employee || !initData.employee.employeeId) {
       showUnauthorizedView();
