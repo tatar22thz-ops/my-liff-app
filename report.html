@@ -1441,7 +1441,9 @@ function submitReport_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      goto_(function() { showSuccessView_(data); });
+      // เข้าหน้าสำเร็จแบบล้าง stack: back จากตรงนี้ต้องกลับหน้าแรก
+      // ไม่ใช่ย้อนไปหน้ายืนยันแล้วกดสร้างใบงานซ้ำได้อีก
+      resetNav_(function() { showSuccessView_(data); });
       return;
     }
     if (btn) btn.disabled = false;
@@ -1726,7 +1728,7 @@ function submitPresenceSheet_() {
     }
   }).then(function(data) {
     if (data && data.ok) {
-      goto_(function() { showPresenceSuccessView_(data); });
+      resetNav_(function() { showPresenceSuccessView_(data); });
       return;
     }
     if (btn) btn.disabled = false;
