@@ -232,6 +232,25 @@ body {
   padding: 2.4vh 16px 4vh;
 }
 
+.picker-page.has-sticky-footer {
+  padding-bottom: 14vh;
+}
+
+.dash-sticky-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: #ffffff;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.12);
+  padding: 1.6vh 16px calc(1.6vh + env(safe-area-inset-bottom, 0px));
+}
+
+.dash-sticky-footer .static-secondary-btn {
+  margin: 0 auto;
+}
+
 .picker-context {
   color: #000000;
   font-size: 2.4vh;
@@ -925,7 +944,7 @@ var dashState = {
 
 var TAB_CONFIG = {
   receive: { label: "รับงาน", action: "getDashboardReceive", valueType: "qty", unit: "ชิ้น", icon: "receiveIcon", colorClass: "green" },
-  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true },
+  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true, combinedCapture: true },
   issue: { label: "เบิกงาน", action: "getDashboardIssue", valueType: "qty", unit: "ชิ้น", icon: "issueIcon", colorClass: "blue" },
   ngreturn: { label: "ส่งคืน NG", action: "getDashboardNGReturn", valueType: "qty", unit: "ชิ้น", icon: "ngReturnIcon", colorClass: "red" }
 };
@@ -1248,12 +1267,17 @@ function showTabMissionList_() {
     '</button>';
   }).join("");
 
+  var stickyFooterHtml = cfg.combinedCapture
+    ? '<div class="dash-sticky-footer"><button class="static-secondary-btn" type="button" onclick="openCombinedCaptureScreen_()">' + cameraIcon() + '<span>ส่งยอดลูกค้า</span></button></div>'
+    : "";
+
   document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
+    '<div class="picker-page' + (cfg.combinedCapture ? ' has-sticky-footer' : '') + '">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
       '<h2 class="picker-heading">เลือก Mission</h2>' +
       '<div class="picker-list">' + listHtml + '</div>' +
-    '</div>';
+    '</div>' +
+    stickyFooterHtml;
 
   document.querySelectorAll(".picker-item").forEach(function(btn) {
     btn.addEventListener("click", function() {
@@ -1303,18 +1327,15 @@ function showTabBatchList_() {
         '<span>รวม Mission นี้</span>' +
         '<span>' + tabValueHtml_(cfg, m) + '</span>' +
       '</div>' +
-      '<button class="static-secondary-btn" type="button" onclick="openCaptureScreen_()">' + cameraIcon() + '<span>สรุปสำหรับ Capture</span></button>' +
+      (cfg.combinedCapture ? "" : '<button class="static-secondary-btn" type="button" onclick="openCaptureScreen_()">' + cameraIcon() + '<span>ส่งยอดลูกค้า</span></button>') +
     '</div>';
 }
 
-function openCaptureScreen_() {
-  var tab = dashState.currentTab;
-  var cfg = TAB_CONFIG[tab];
-  var m = dashState.currentMission;
+function groupBatchesByPart_(cfg, batches) {
   var partsMap = {};
   var partOrder = [];
 
-  m.batches.forEach(function(b) {
+  batches.forEach(function(b) {
     if (!partsMap[b.partNumber]) {
       partsMap[b.partNumber] = { partNumber: b.partNumber, ok: 0, ng: 0, qty: 0, batches: [] };
       partOrder.push(b.partNumber);
@@ -1329,8 +1350,11 @@ function openCaptureScreen_() {
     p.batches.push(b);
   });
 
-  var cardsHtml = partOrder.map(function(pn) {
-    var p = partsMap[pn];
+  return partOrder.map(function(pn) { return partsMap[pn]; });
+}
+
+function renderCaptureCardsHtml_(cfg, parts) {
+  return parts.map(function(p) {
     var batchRows = p.batches.map(function(b) {
       return '<div class="capture-batch-row">' +
         '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
@@ -1339,14 +1363,16 @@ function openCaptureScreen_() {
     }).join("");
 
     return '<div class="capture-part-card">' +
-      '<div class="capture-part-head"><span class="capture-part-title">' + escapeHtml(pn) + '</span></div>' +
+      '<div class="capture-part-head"><span class="capture-part-title">' + escapeHtml(p.partNumber) + '</span></div>' +
       '<div class="capture-part-body">' +
         batchRows +
         '<div class="capture-part-total"><span>รวม</span><span>' + tabValueHtml_(cfg, p) + '</span></div>' +
       '</div>' +
     '</div>';
   }).join("");
+}
 
+function renderCaptureScreen_(cardsHtml) {
   document.getElementById("app").insertAdjacentHTML("afterend",
     '<div class="capture-screen" id="captureScreen">' +
       '<div class="capture-banner">' +
@@ -1359,6 +1385,21 @@ function openCaptureScreen_() {
       '</div>' +
     '</div>'
   );
+}
+
+function openCaptureScreen_() {
+  var cfg = TAB_CONFIG[dashState.currentTab];
+  var parts = groupBatchesByPart_(cfg, dashState.currentMission.batches);
+  renderCaptureScreen_(renderCaptureCardsHtml_(cfg, parts));
+}
+
+function openCombinedCaptureScreen_() {
+  var tab = dashState.currentTab;
+  var cfg = TAB_CONFIG[tab];
+  var missions = (dashState.tabData[tab] && dashState.tabData[tab].missions) || [];
+  var allBatches = missions.reduce(function(acc, m) { return acc.concat(m.batches); }, []);
+  var parts = groupBatchesByPart_(cfg, allBatches);
+  renderCaptureScreen_(renderCaptureCardsHtml_(cfg, parts));
 }
 
 function closeCaptureScreen_() {
