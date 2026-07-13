@@ -447,6 +447,30 @@ body {
   color: #0E4F8C;
 }
 
+.my-work-chip {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1.8vh;
+  border: 2px solid #7C4DFF;
+  border-radius: 10px;
+  background: #F1ECFF;
+  color: #7C4DFF;
+  padding: 1.2vh 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 2vh;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-work-chip svg {
+  width: 2.2vh;
+  height: 2.2vh;
+  flex: 0 0 auto;
+}
+
 .dash-tabs {
   width: 340px;
   max-width: calc(100% - 32px);
@@ -614,6 +638,12 @@ body {
   padding-left: 16px;
   font-size: 1.6vh;
   color: #888888;
+}
+
+.dash-batch-employees {
+  font-size: 1.6vh;
+  color: #777777;
+  margin-top: 0.5vh;
 }
 
 .dash-total-row {
@@ -943,10 +973,10 @@ var dashState = {
 };
 
 var TAB_CONFIG = {
-  receive: { label: "รับงาน", action: "getDashboardReceive", valueType: "qty", unit: "ชิ้น", icon: "receiveIcon", colorClass: "green" },
-  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true, combinedCapture: true },
-  issue: { label: "เบิกงาน", action: "getDashboardIssue", valueType: "qty", unit: "ชิ้น", icon: "issueIcon", colorClass: "blue" },
-  ngreturn: { label: "ส่งคืน NG", action: "getDashboardNGReturn", valueType: "qty", unit: "ชิ้น", icon: "ngReturnIcon", colorClass: "red" }
+  receive: { label: "รับงาน", action: "getDashboardReceive", valueType: "qty", unit: "ชิ้น", icon: "receiveIcon", colorClass: "green", byLabel: "รับโดย" },
+  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true, combinedCapture: true, myWork: true },
+  issue: { label: "เบิกงาน", action: "getDashboardIssue", valueType: "qty", unit: "ชิ้น", icon: "issueIcon", colorClass: "blue", byLabel: "เบิกโดย" },
+  ngreturn: { label: "ส่งคืน NG", action: "getDashboardNGReturn", valueType: "qty", unit: "ชิ้น", icon: "ngReturnIcon", colorClass: "red", byLabel: "คืนโดย" }
 };
 
 function withTimeout_(promise, ms) {
@@ -1283,9 +1313,14 @@ function showTabMissionList_() {
     ? '<div class="dash-sticky-footer"><button class="static-secondary-btn" type="button" onclick="openCombinedCaptureScreen_()">' + cameraIcon() + '<span>ส่งยอดลูกค้า</span></button></div>'
     : "";
 
+  var myWorkChipHtml = cfg.myWork
+    ? '<button type="button" class="my-work-chip" onclick="goto_(showMyWork_)"><span>ยอดงานของฉัน</span>' + chevronIcon() + '</button>'
+    : "";
+
   document.getElementById("content").innerHTML =
     '<div class="picker-page' + (cfg.combinedCapture ? ' has-sticky-footer' : '') + '">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
+      myWorkChipHtml +
       '<h2 class="picker-heading">เลือก Mission</h2>' +
       '<div class="picker-list">' + listHtml + '</div>' +
     '</div>' +
@@ -1318,6 +1353,11 @@ function showTabBatchList_() {
       }
     }
 
+    var employeesHtml = "";
+    if (cfg.byLabel && b.employeeNames && b.employeeNames.length > 0) {
+      employeesHtml = '<div class="dash-batch-employees">' + escapeHtml(cfg.byLabel) + ': ' + escapeHtml(b.employeeNames.join(", ")) + '</div>';
+    }
+
     return '<div class="dash-batch-card">' +
       '<div class="dash-batch-card-head"><span class="dash-batch-card-part">' + escapeHtml(b.partNumber) + '</span></div>' +
       '<div class="dash-batch-card-body">' +
@@ -1326,6 +1366,7 @@ function showTabBatchList_() {
           '<span class="dash-ok-ng">' + tabValueHtml_(cfg, b) + '</span>' +
         '</div>' +
         defectHtml +
+        employeesHtml +
       '</div>' +
     '</div>';
   }).join("");
@@ -1339,7 +1380,56 @@ function showTabBatchList_() {
         '<span>รวม Mission นี้</span>' +
         '<span>' + tabValueHtml_(cfg, m) + '</span>' +
       '</div>' +
-      (cfg.combinedCapture ? "" : '<button class="static-secondary-btn" type="button" onclick="openCaptureScreen_()">' + cameraIcon() + '<span>ส่งยอดลูกค้า</span></button>') +
+    '</div>';
+}
+
+async function showMyWork_() {
+  setPageTitle_("ยอดงานของฉัน");
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
+      '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
+    '</div>';
+
+  var data = await api("getDashboardMyWork", { lineUserId: currentLineUserId }).catch(function() { return { ok: false }; });
+  var missions = (data && data.ok && data.missions) || [];
+
+  if (missions.length === 0) {
+    document.getElementById("content").innerHTML =
+      '<div class="picker-page">' +
+        '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
+        '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
+        '<div class="dash-empty-text">ยังไม่มีข้อมูลยอดงานใน 7 วันที่ผ่านมา</div>' +
+      '</div>';
+    return;
+  }
+
+  var missionsHtml = missions.map(function(m) {
+    var partsHtml = m.parts.map(function(p) {
+      var batchesHtml = p.batches.map(function(b) {
+        return '<div class="dash-batch-row">' +
+          '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
+          '<span class="dash-ok-ng"><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
+        '</div>';
+      }).join("");
+
+      return '<div class="dash-batch-card">' +
+        '<div class="dash-batch-card-head"><span class="dash-batch-card-part">' + escapeHtml(p.partNumber) + '</span></div>' +
+        '<div class="dash-batch-card-body">' + batchesHtml + '</div>' +
+      '</div>';
+    }).join("");
+
+    return '<div class="dash-section">' +
+      '<h3 class="dash-section-title">' + escapeHtml(m.mission) + ' &middot; OK ' + numberWithCommas_(m.ok) + ' / NG ' + numberWithCommas_(m.ng) + '</h3>' +
+      '<div class="dash-batch-list">' + partsHtml + '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
+      '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
+      missionsHtml +
     '</div>';
 }
 
@@ -1397,12 +1487,6 @@ function renderCaptureScreen_(cardsHtml) {
       '</div>' +
     '</div>'
   );
-}
-
-function openCaptureScreen_() {
-  var cfg = TAB_CONFIG[dashState.currentTab];
-  var parts = groupBatchesByPart_(cfg, dashState.currentMission.batches);
-  renderCaptureScreen_(renderCaptureCardsHtml_(cfg, parts));
 }
 
 function openCombinedCaptureScreen_() {
