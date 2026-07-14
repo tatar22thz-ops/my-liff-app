@@ -1050,7 +1050,7 @@ body {
       </button>
       <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
       <div class="credits-title">TRIGO YUSEN DASHBOARD</div>
-      <div class="credits-version">Version 1.3.0</div>
+      <div class="credits-version">Version 1.3.1</div>
       <div class="credits-divider"></div>
       <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538)<br>สร้างขึ้นเพื่อใช้สำหรับดูภาพรวมยอดงานประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
@@ -1337,7 +1337,7 @@ async function showDashboardHome_() {
     '<div id="dashSummaryWrap"></div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO YUSEN DASHBOARD</div>' +
-      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.3.0<br>&copy; 2026 TRIGO</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.3.1<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
 
   await loadAllTabData_();
@@ -1675,7 +1675,7 @@ async function showChangelogView_() {
   document.getElementById("content").innerHTML = '<div class="cl-page"><p class="picker-context">กำลังโหลด...</p></div>';
   var res;
   try {
-    res = await api("getChangelog", {});
+    res = await api("getChangelog", { app: "Dashboard" });
   } catch (e) {
     res = { ok: false };
   }
@@ -1701,7 +1701,8 @@ function renderChangelogHtml_(entries) {
 
   return groups.map(function(g) {
     var items = g.items.map(function(it) {
-      return '<li class="cl-item"><span class="cl-app">' + escapeHtml(it.app) + '</span>' + escapeHtml(it.detail) + '</li>';
+      var appTag = (it.app === "ทั้งหมด") ? '<span class="cl-app">' + escapeHtml(it.app) + '</span>' : '';
+      return '<li class="cl-item">' + appTag + escapeHtml(it.detail) + '</li>';
     }).join("");
     return '<section class="cl-card">' +
       '<div class="cl-head"><span class="cl-ver">v' + escapeHtml(g.version) + '</span><span class="cl-date">' + escapeHtml(g.date) + '</span></div>' +
