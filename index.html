@@ -1507,11 +1507,169 @@ footer {
   height: 3.6vh;
   flex: 0 0 auto;
 }
+
+.batch-combo {
+  position: relative;
+}
+
+.batch-suggest {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 2px);
+  z-index: 40;
+  background: #ffffff;
+  border: 2px solid #0E4F8C;
+  border-radius: 8px;
+  max-height: 34vh;
+  overflow-y: auto;
+  box-shadow: 0 6px 16px rgba(0,0,0,.16);
+}
+
+.batch-suggest-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #EEF2F7;
+  background: #ffffff;
+  padding: 1.5vh 14px;
+  text-align: left;
+  cursor: pointer;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+}
+
+.batch-suggest-item:last-child {
+  border-bottom: none;
+}
+
+.batch-suggest-item:active {
+  background: #EEF2F7;
+}
+
+.batch-suggest-no {
+  font-size: 2.2vh;
+  font-weight: 700;
+  color: #000000;
+}
+
+.batch-suggest-extra {
+  font-size: 1.7vh;
+  color: #0E4F8C;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.noti-bell {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 5.2vh;
+  height: 5.2vh;
+  border: none;
+  padding: 0;
+  background: rgba(255,255,255,.92);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.28);
+}
+
+.noti-bell svg {
+  width: 3vh;
+  height: 3vh;
+  display: block;
+}
+
+.noti-dot {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1.7vh;
+  height: 1.7vh;
+  background: #FF1111;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+.noti-dot.show {
+  display: block;
+}
+
+.cl-page {
+  padding: 2.4vh 16px 6vh;
+}
+
+.cl-card {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1.8vh;
+  background: #ffffff;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 1.6vh 16px 1.8vh;
+}
+
+.cl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid #EEF2F7;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+}
+
+.cl-ver {
+  font-size: 2.6vh;
+  font-weight: 800;
+  color: #0E4F8C;
+}
+
+.cl-date {
+  font-size: 1.8vh;
+  color: #777777;
+  font-weight: 500;
+}
+
+.cl-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-item {
+  font-size: 1.95vh;
+  color: #222222;
+  line-height: 1.45;
+  padding: 0.6vh 0;
+}
+
+.cl-app {
+  display: inline-block;
+  font-size: 1.5vh;
+  font-weight: 700;
+  color: #0E4F8C;
+  background: #EAF2FB;
+  border-radius: 6px;
+  padding: 0.2vh 8px;
+  margin-right: 8px;
+}
 </style>
 </head>
 <body>
   <main id="app" class="app">
-    <header class="home-header"></header>
+    <header class="home-header">
+      <button class="noti-bell" type="button" id="notiBell" onclick="openChangelog_()" aria-label="ประวัติการอัปเดต">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6a4 4 0 0 1 4 4v1.6c8.3 1.8 13.5 9 13.5 18.4v8.4l4.5 6.6v3H10v-3l4.5-6.6v-8.4c0-9.4 5.2-16.6 13.5-18.4V10a4 4 0 0 1 4-4z" fill="#0E4F8C"></path><path d="M25 51h14a7 7 0 0 1-14 0z" fill="#0E4F8C"></path></svg>
+        <span class="noti-dot" id="notiDot"></span>
+      </button>
+    </header>
 
     <section class="user-bar">
       <div class="user-icon" aria-hidden="true">
@@ -1800,6 +1958,11 @@ function loadInitialData() {
       var userName = document.getElementById("homeUserName");
       var userSub = document.getElementById("homeUserSub");
 
+      if (data && data.version) {
+        window.currentAppVersion = data.version;
+        updateNotiBadge_();
+      }
+
       if (userName && data && data.employee) {
         userName.textContent = data.employee.name || "Unknown";
         currentEmployeeDisplayName = data.employee.displayName || data.employee.name || "Unknown";
@@ -1860,6 +2023,70 @@ function openFeaturePage_(titleText) {
   document.getElementById("app").innerHTML = template.innerHTML;
   var h1 = document.querySelector(".receive-header h1");
   if (h1) h1.textContent = titleText;
+}
+
+function updateNotiBadge_() {
+  var dot = document.getElementById("notiDot");
+  if (!dot) return;
+  var seen = "";
+  try { seen = localStorage.getItem("trigo_changelog_seen") || ""; } catch (e) {}
+  if (window.currentAppVersion && seen !== window.currentAppVersion) {
+    dot.classList.add("show");
+  } else {
+    dot.classList.remove("show");
+  }
+}
+
+function markChangelogSeen_() {
+  try { localStorage.setItem("trigo_changelog_seen", window.currentAppVersion || ""); } catch (e) {}
+  var dot = document.getElementById("notiDot");
+  if (dot) dot.classList.remove("show");
+}
+
+function openChangelog_() {
+  markChangelogSeen_();
+  openFeaturePage_("ประวัติการอัปเดต");
+  navStack_ = [];
+  goto_(showChangelogView_);
+}
+
+async function showChangelogView_() {
+  document.getElementById("receiveContent").innerHTML = '<div class="cl-page"><p class="picker-context">กำลังโหลด...</p></div>';
+  var res;
+  try {
+    res = await api("getChangelog", {});
+  } catch (e) {
+    res = { ok: false };
+  }
+  var entries = (res && res.ok && res.entries) ? res.entries : [];
+  document.getElementById("receiveContent").innerHTML = '<div class="cl-page">' + renderChangelogHtml_(entries) + '</div>';
+}
+
+function renderChangelogHtml_(entries) {
+  if (!entries || entries.length === 0) {
+    return '<p class="picker-context" style="text-align:center">ยังไม่มีประวัติการอัปเดต</p>';
+  }
+
+  var groups = [];
+  var byVer = {};
+
+  entries.forEach(function(e) {
+    if (!byVer[e.version]) {
+      byVer[e.version] = { version: e.version, date: e.date, items: [] };
+      groups.push(byVer[e.version]);
+    }
+    byVer[e.version].items.push(e);
+  });
+
+  return groups.map(function(g) {
+    var items = g.items.map(function(it) {
+      return '<li class="cl-item"><span class="cl-app">' + escapeHtml(it.app) + '</span>' + escapeHtml(it.detail) + '</li>';
+    }).join("");
+    return '<section class="cl-card">' +
+      '<div class="cl-head"><span class="cl-ver">v' + escapeHtml(g.version) + '</span><span class="cl-date">' + escapeHtml(g.date) + '</span></div>' +
+      '<ul class="cl-list">' + items + '</ul>' +
+    '</section>';
+  }).join("");
 }
 
 var navStack_ = [];
@@ -2103,13 +2330,13 @@ async function showManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Part No</label>
-          <select id="manualPartNumber" onchange="updateManualForm()" disabled>
+          <select id="manualPartNumber" onchange="onManualPartChange_()" disabled>
             <option value="">เลือก Mission ก่อน</option>
           </select>
         </div>
         <div class="qty-row">
           <label>Batch</label>
-          <input id="manualBatch" type="text" placeholder="กรอก Batch" oninput="updateManualForm()">
+          ${batchComboFieldHtml_("recv", "พิมพ์เลข Batch เพื่อค้นหา หรือพิมพ์ใหม่")}
         </div>
         <div class="qty-row">
           <label>Total</label>
@@ -2134,6 +2361,8 @@ function onManualMissionChange() {
   var mission = document.getElementById("manualMission").value;
   var partSelect = document.getElementById("manualPartNumber");
 
+  setBatchComboOptions_("recv", []);
+
   if (!mission) {
     partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
     partSelect.disabled = true;
@@ -2151,6 +2380,23 @@ function onManualMissionChange() {
       return '<option value="' + escapeHtml(p.partNumber) + '">' + escapeHtml(label) + '</option>';
     }).join("");
   partSelect.disabled = false;
+
+  updateManualForm();
+}
+
+async function onManualPartChange_() {
+  var partNumber = document.getElementById("manualPartNumber").value;
+  setBatchComboOptions_("recv", []);
+
+  if (partNumber) {
+    try {
+      var res = await api("getBatchOptions", { partNumber: partNumber });
+      // รับงาน: โชว์ทุก Batch ที่เคยรับของ Part นี้ (ไว้เลือกรับซ้ำ) และยังพิมพ์ใหม่ได้
+      setBatchComboOptions_("recv", (res && res.ok && res.options) ? res.options : []);
+    } catch (e) {
+      setBatchComboOptions_("recv", []);
+    }
+  }
 
   updateManualForm();
 }
@@ -2486,6 +2732,85 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// ---- ช่อง Batch แบบค้นหาได้ (พิมพ์เลขท้ายแล้วมีรายการเด้งให้เลือก) ----
+// allowFree: true = พิมพ์ Batch ใหม่เองได้ (ใช้กับหน้ารับงาน), false = ต้องเลือกจากรายการ
+var BATCH_COMBOS_ = {
+  recv: { inputId: "manualBatch", suggestId: "manualBatchSuggest", allowFree: true, onChange: "updateManualForm" },
+  dw:   { inputId: "dwManualBatch", suggestId: "dwManualBatchSuggest", allowFree: false, onChange: "updateDailyWorkManualForm" },
+  ng:   { inputId: "ngManualBatch", suggestId: "ngManualBatchSuggest", allowFree: false, onChange: "updateReturnNGManualForm" },
+  cs:   { inputId: "csManualBatch", suggestId: "csManualBatchSuggest", allowFree: false, onChange: "updateCheckStockManualForm" }
+};
+var batchComboState_ = {};
+
+function batchComboFieldHtml_(key, placeholder) {
+  var c = BATCH_COMBOS_[key];
+  return '<div class="batch-combo">' +
+    '<input id="' + c.inputId + '" type="text" autocomplete="off" placeholder="' + escapeHtml(placeholder) + '" oninput="onBatchComboInput_(\'' + key + '\')">' +
+    '<div class="batch-suggest" id="' + c.suggestId + '"></div>' +
+  '</div>';
+}
+
+function setBatchComboOptions_(key, options) {
+  batchComboState_[key] = { options: options || [], matches: [] };
+  var c = BATCH_COMBOS_[key];
+  var input = document.getElementById(c.inputId);
+  if (input) input.value = "";
+  var box = document.getElementById(c.suggestId);
+  if (box) { box.innerHTML = ""; box.style.display = "none"; }
+}
+
+function onBatchComboInput_(key) {
+  var c = BATCH_COMBOS_[key];
+  var st = batchComboState_[key] || { options: [], matches: [] };
+  var input = document.getElementById(c.inputId);
+  var box = document.getElementById(c.suggestId);
+  var q = String(input.value || "").trim().toLowerCase();
+
+  var matches = q === "" ? [] : st.options.filter(function(o) {
+    return String(o.batch || "").toLowerCase().indexOf(q) !== -1;
+  });
+  st.matches = matches;
+  batchComboState_[key] = st;
+
+  if (box) {
+    box.innerHTML = matches.slice(0, 40).map(function(o, i) {
+      var extra = "";
+      if (o.remaining !== undefined && o.remaining !== null && o.remaining !== "") extra = "งานเหลือ " + o.remaining;
+      else if (o.ngOnHand !== undefined && key === "ng") extra = "NG เหลือ " + o.ngOnHand;
+      else if (o.available !== undefined) extra = "คงเหลือ " + o.available;
+      return '<button type="button" class="batch-suggest-item" onclick="pickBatchCombo_(\'' + key + '\',' + i + ')">' +
+        '<span class="batch-suggest-no">' + escapeHtml(String(o.batch)) + '</span>' +
+        (extra !== "" ? '<span class="batch-suggest-extra">' + escapeHtml(extra) + '</span>' : '') +
+      '</button>';
+    }).join("");
+    box.style.display = matches.length ? "block" : "none";
+  }
+
+  if (window[c.onChange]) window[c.onChange]();
+}
+
+function pickBatchCombo_(key, i) {
+  var c = BATCH_COMBOS_[key];
+  var st = batchComboState_[key];
+  if (!st || !st.matches[i]) return;
+  var input = document.getElementById(c.inputId);
+  if (input) input.value = st.matches[i].batch;
+  var box = document.getElementById(c.suggestId);
+  if (box) { box.innerHTML = ""; box.style.display = "none"; }
+  if (window[c.onChange]) window[c.onChange]();
+}
+
+// true = Batch ในช่องใช้ได้ (allowFree ยอมทุกค่าที่ไม่ว่าง / ไม่งั้นต้องตรงกับรายการ)
+function batchComboIsValid_(key) {
+  var c = BATCH_COMBOS_[key];
+  var st = batchComboState_[key] || { options: [] };
+  var input = document.getElementById(c.inputId);
+  var val = String(input && input.value || "").trim();
+  if (!val) return false;
+  if (c.allowFree) return true;
+  return st.options.some(function(o) { return String(o.batch) === val; });
 }
 
 var pickerItemsCache_ = [];
@@ -3044,9 +3369,7 @@ async function showDailyWorkManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Batch</label>
-          <select id="dwManualBatch" onchange="updateDailyWorkManualForm()" disabled>
-            <option value="">เลือก Part No ก่อน</option>
-          </select>
+          ${batchComboFieldHtml_("dw", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
         </div>
         <div class="qty-row">
           <label>OK</label>
@@ -3101,7 +3424,6 @@ function onDailyWorkManualMissionChange() {
 async function onDailyWorkManualPartChange_() {
   var partNumber = document.getElementById("dwManualPartNumber").value;
   var wrap = document.getElementById("defectSectionWrap");
-  var batchSelect = document.getElementById("dwManualBatch");
 
   dwManualDefects_ = [];
   if (wrap) {
@@ -3109,8 +3431,7 @@ async function onDailyWorkManualPartChange_() {
     wrap.style.display = "none";
   }
 
-  batchSelect.innerHTML = '<option value="">เลือก Part No ก่อน</option>';
-  batchSelect.disabled = true;
+  setBatchComboOptions_("dw", []);
 
   if (partNumber) {
     try {
@@ -3128,20 +3449,12 @@ async function onDailyWorkManualPartChange_() {
       batchRes = { ok: false, options: [] };
     }
 
+    // ยอดงานรายวัน: เฉพาะ Batch ที่ยังมีงานเหลือให้ทำ
     var batches = (batchRes && batchRes.ok && batchRes.options) ? batchRes.options.filter(function(b) {
       return b.remaining > 0;
     }) : [];
 
-    if (batches.length > 0) {
-      batchSelect.innerHTML = '<option value="">เลือก Batch</option>' +
-        batches.map(function(b) {
-          return '<option value="' + escapeHtml(b.batch) + '">' + escapeHtml(b.batch) + ' — งานคงเหลือ ' + b.remaining + '</option>';
-        }).join("");
-      batchSelect.disabled = false;
-    } else {
-      batchSelect.innerHTML = '<option value="">ยังไม่มีการรับงานสำหรับ Part นี้</option>';
-      batchSelect.disabled = true;
-    }
+    setBatchComboOptions_("dw", batches);
   }
 
   updateDailyWorkManualForm();
@@ -3169,7 +3482,7 @@ function updateDailyWorkManualForm() {
     }
   }
 
-  var valid = mission && partNumber && batch && ok >= 0 && ng >= 0 && (ok + ng) > 0 && defectValid;
+  var valid = mission && partNumber && batchComboIsValid_("dw") && ok >= 0 && ng >= 0 && (ok + ng) > 0 && defectValid;
 
   if (valid) {
     nextBtn.disabled = false;
@@ -3566,13 +3879,13 @@ async function showReturnNGManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Part No</label>
-          <select id="ngManualPartNumber" onchange="updateReturnNGManualForm()" disabled>
+          <select id="ngManualPartNumber" onchange="onReturnNGManualPartChange_()" disabled>
             <option value="">เลือก Mission ก่อน</option>
           </select>
         </div>
         <div class="qty-row">
           <label>Batch</label>
-          <input id="ngManualBatch" type="text" placeholder="กรอก Batch" oninput="updateReturnNGManualForm()">
+          ${batchComboFieldHtml_("ng", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
         </div>
         <div class="qty-row">
           <label>จำนวนที่ส่งคืน</label>
@@ -3597,6 +3910,8 @@ function onReturnNGManualMissionChange() {
   var mission = document.getElementById("ngManualMission").value;
   var partSelect = document.getElementById("ngManualPartNumber");
 
+  setBatchComboOptions_("ng", []);
+
   if (!mission) {
     partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
     partSelect.disabled = true;
@@ -3618,14 +3933,33 @@ function onReturnNGManualMissionChange() {
   updateReturnNGManualForm();
 }
 
+async function onReturnNGManualPartChange_() {
+  var partNumber = document.getElementById("ngManualPartNumber").value;
+  setBatchComboOptions_("ng", []);
+
+  if (partNumber) {
+    try {
+      var res = await api("getBatchOptions", { partNumber: partNumber });
+      // ส่งคืน NG: เฉพาะ Batch ที่ยังมี NG คงเหลือ
+      var batches = (res && res.ok && res.options) ? res.options.filter(function(b) {
+        return Number(b.ngOnHand || 0) > 0;
+      }) : [];
+      setBatchComboOptions_("ng", batches);
+    } catch (e) {
+      setBatchComboOptions_("ng", []);
+    }
+  }
+
+  updateReturnNGManualForm();
+}
+
 function updateReturnNGManualForm() {
   var mission = document.getElementById("ngManualMission").value;
   var partNumber = document.getElementById("ngManualPartNumber").value;
-  var batch = document.getElementById("ngManualBatch").value.trim();
   var qty = Number(document.getElementById("ngManualQty").value || 0);
   var nextBtn = document.getElementById("ngManualNextBtn");
 
-  var valid = mission && partNumber && batch && qty > 0;
+  var valid = mission && partNumber && batchComboIsValid_("ng") && qty > 0;
 
   if (valid) {
     nextBtn.disabled = false;
@@ -3951,13 +4285,13 @@ async function showCheckStockManualEntryView() {
         </div>
         <div class="qty-row">
           <label>Part No</label>
-          <select id="csManualPartNumber" onchange="updateCheckStockManualForm()" disabled>
+          <select id="csManualPartNumber" onchange="onCheckStockManualPartChange_()" disabled>
             <option value="">เลือก Mission ก่อน</option>
           </select>
         </div>
         <div class="qty-row">
           <label>Batch</label>
-          <input id="csManualBatch" type="text" placeholder="กรอก Batch" oninput="updateCheckStockManualForm()">
+          ${batchComboFieldHtml_("cs", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
         </div>
       </section>
 
@@ -3977,6 +4311,8 @@ async function showCheckStockManualEntryView() {
 function onCheckStockManualMissionChange() {
   var mission = document.getElementById("csManualMission").value;
   var partSelect = document.getElementById("csManualPartNumber");
+
+  setBatchComboOptions_("cs", []);
 
   if (!mission) {
     partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
@@ -3999,13 +4335,29 @@ function onCheckStockManualMissionChange() {
   updateCheckStockManualForm();
 }
 
+async function onCheckStockManualPartChange_() {
+  var partNumber = document.getElementById("csManualPartNumber").value;
+  setBatchComboOptions_("cs", []);
+
+  if (partNumber) {
+    try {
+      var res = await api("getBatchOptions", { partNumber: partNumber });
+      // เช็คสต็อก: ทุก Batch ที่มีใน Inventory ของ Part นี้
+      setBatchComboOptions_("cs", (res && res.ok && res.options) ? res.options : []);
+    } catch (e) {
+      setBatchComboOptions_("cs", []);
+    }
+  }
+
+  updateCheckStockManualForm();
+}
+
 function updateCheckStockManualForm() {
   var mission = document.getElementById("csManualMission").value;
   var partNumber = document.getElementById("csManualPartNumber").value;
-  var batch = document.getElementById("csManualBatch").value.trim();
   var nextBtn = document.getElementById("csManualNextBtn");
 
-  var valid = mission && partNumber && batch;
+  var valid = mission && partNumber && batchComboIsValid_("cs");
 
   if (valid) {
     nextBtn.disabled = false;

@@ -895,6 +895,104 @@ body {
 .capture-part-total span:last-child {
   font-weight: 700;
 }
+
+.noti-bell {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 5.2vh;
+  height: 5.2vh;
+  border: none;
+  padding: 0;
+  background: rgba(255,255,255,.92);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.28);
+}
+
+.noti-bell svg {
+  width: 3vh;
+  height: 3vh;
+  display: block;
+}
+
+.noti-dot {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1.7vh;
+  height: 1.7vh;
+  background: #FF1111;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+.noti-dot.show {
+  display: block;
+}
+
+.cl-page {
+  padding: 2.4vh 16px 6vh;
+}
+
+.cl-card {
+  width: 340px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1.8vh;
+  background: #ffffff;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 1.6vh 16px 1.8vh;
+}
+
+.cl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid #EEF2F7;
+  padding-bottom: 1vh;
+  margin-bottom: 1vh;
+}
+
+.cl-ver {
+  font-size: 2.6vh;
+  font-weight: 800;
+  color: #0E4F8C;
+}
+
+.cl-date {
+  font-size: 1.8vh;
+  color: #777777;
+  font-weight: 500;
+}
+
+.cl-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-item {
+  font-size: 1.95vh;
+  color: #222222;
+  line-height: 1.45;
+  padding: 0.6vh 0;
+}
+
+.cl-app {
+  display: inline-block;
+  font-size: 1.5vh;
+  font-weight: 700;
+  color: #0E4F8C;
+  background: #EAF2FB;
+  border-radius: 6px;
+  padding: 0.2vh 8px;
+  margin-right: 8px;
+}
 </style>
 </head>
 <body>
@@ -912,7 +1010,12 @@ body {
     </header>
 
     <div id="homeHero" style="display:none">
-      <header class="home-header"></header>
+      <header class="home-header">
+        <button class="noti-bell" type="button" id="notiBell" onclick="openChangelog_()" aria-label="ประวัติการอัปเดต">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6a4 4 0 0 1 4 4v1.6c8.3 1.8 13.5 9 13.5 18.4v8.4l4.5 6.6v3H10v-3l4.5-6.6v-8.4c0-9.4 5.2-16.6 13.5-18.4V10a4 4 0 0 1 4-4z" fill="#0E4F8C"></path><path d="M25 51h14a7 7 0 0 1-14 0z" fill="#0E4F8C"></path></svg>
+          <span class="noti-dot" id="notiDot"></span>
+        </button>
+      </header>
       <section class="user-bar">
         <div class="user-icon" aria-hidden="true">
           <svg viewBox="0 0 64 64">
@@ -1045,6 +1148,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     currentEmployeeDisplayName = initData.employee.displayName || initData.employee.name;
+
+    if (initData.version) {
+      window.currentAppVersion = initData.version;
+      updateNotiBadge_();
+    }
 
     var homeUserName = document.getElementById("homeUserName");
     var homeUserSub = document.getElementById("homeUserSub");
@@ -1537,6 +1645,69 @@ function showCreditsPopup_() {
 function hideCreditsPopup_() {
   var overlay = document.getElementById("creditsOverlay");
   if (overlay) overlay.classList.remove("show");
+}
+
+function updateNotiBadge_() {
+  var dot = document.getElementById("notiDot");
+  if (!dot) return;
+  var seen = "";
+  try { seen = localStorage.getItem("trigo_changelog_seen") || ""; } catch (e) {}
+  if (window.currentAppVersion && seen !== window.currentAppVersion) {
+    dot.classList.add("show");
+  } else {
+    dot.classList.remove("show");
+  }
+}
+
+function markChangelogSeen_() {
+  try { localStorage.setItem("trigo_changelog_seen", window.currentAppVersion || ""); } catch (e) {}
+  var dot = document.getElementById("notiDot");
+  if (dot) dot.classList.remove("show");
+}
+
+function openChangelog_() {
+  markChangelogSeen_();
+  goFromHome_(showChangelogView_);
+}
+
+async function showChangelogView_() {
+  setPageTitle_("ประวัติการอัปเดต");
+  document.getElementById("content").innerHTML = '<div class="cl-page"><p class="picker-context">กำลังโหลด...</p></div>';
+  var res;
+  try {
+    res = await api("getChangelog", {});
+  } catch (e) {
+    res = { ok: false };
+  }
+  var entries = (res && res.ok && res.entries) ? res.entries : [];
+  document.getElementById("content").innerHTML = '<div class="cl-page">' + renderChangelogHtml_(entries) + '</div>';
+}
+
+function renderChangelogHtml_(entries) {
+  if (!entries || entries.length === 0) {
+    return '<p class="picker-context" style="text-align:center">ยังไม่มีประวัติการอัปเดต</p>';
+  }
+
+  var groups = [];
+  var byVer = {};
+
+  entries.forEach(function(e) {
+    if (!byVer[e.version]) {
+      byVer[e.version] = { version: e.version, date: e.date, items: [] };
+      groups.push(byVer[e.version]);
+    }
+    byVer[e.version].items.push(e);
+  });
+
+  return groups.map(function(g) {
+    var items = g.items.map(function(it) {
+      return '<li class="cl-item"><span class="cl-app">' + escapeHtml(it.app) + '</span>' + escapeHtml(it.detail) + '</li>';
+    }).join("");
+    return '<section class="cl-card">' +
+      '<div class="cl-head"><span class="cl-ver">v' + escapeHtml(g.version) + '</span><span class="cl-date">' + escapeHtml(g.date) + '</span></div>' +
+      '<ul class="cl-list">' + items + '</ul>' +
+    '</section>';
+  }).join("");
 }
 
 function chevronIcon() {
