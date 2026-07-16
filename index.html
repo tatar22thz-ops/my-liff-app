@@ -1775,7 +1775,7 @@ footer {
 
     <footer>
       <div class="footer-brand">TRIGO YUSEN HUB</div>
-      <div class="footer-meta" onclick="handleCreditTap_()">Version 1.3.2<br>&copy; 2026 TRIGO</div>
+      <div class="footer-meta" onclick="handleCreditTap_()">Version 1.3.3<br>&copy; 2026 TRIGO</div>
     </footer>
 </main>
 
@@ -1791,7 +1791,7 @@ footer {
     </button>
     <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
     <div class="credits-title">TRIGO YUSEN HUB</div>
-    <div class="credits-version">Version 1.3.2</div>
+    <div class="credits-version">Version 1.3.3</div>
     <div class="credits-divider"></div>
     <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>เพื่อใช้ในการบันทึกข้อมูลงาน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
     <div class="credits-divider"></div>
@@ -3510,10 +3510,19 @@ function submitDailyWorkManualEntry() {
     return;
   }
 
+  // ช่องกรอกด้วยตัวเองไม่เคยดึงยอดรับ/ยอดคงเหลือจริงของ Batch มาเก็บไว้เลย
+  // (ต่างจาก flow สแกนที่ได้จาก scanLookup) ทำให้หน้ายืนยันเทียบกับ 0 เสมอ
+  // แล้วขึ้นเตือน "เกินยอดรับ" ทั้งที่ยอดจริงยังเหลือเยอะ — ดึงจากรายการ Batch
+  // ที่โหลดไว้ตอนเลือก Part (มี remaining/receivedTotal จริงติดมาด้วยอยู่แล้ว)
+  var dwOptions = (batchComboState_.dw && batchComboState_.dw.options) || [];
+  var batchInfo = dwOptions.find(function(o) { return String(o.batch) === batch; });
+
   dailyWorkState.mission = mission;
   dailyWorkState.partNumber = partNumber;
   dailyWorkState.partName = part.partName;
   dailyWorkState.batch = batch;
+  dailyWorkState.receivedTotal = batchInfo ? batchInfo.receivedTotal : 0;
+  dailyWorkState.remaining = batchInfo ? batchInfo.remaining : 0;
   dailyWorkState.ok = ok;
   dailyWorkState.ng = ng;
 
