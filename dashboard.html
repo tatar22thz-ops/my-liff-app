@@ -465,138 +465,6 @@ body {
   cursor: pointer;
 }
 
-.edit-entries-chip {
-  border-color: #E08A00;
-  background: #FFF3E0;
-  color: #E08A00;
-}
-
-.wo-doc {
-  width: 340px;
-  max-width: calc(100% - 32px);
-  margin: 0 auto;
-  background: #ffffff;
-  border: 1px solid #C9CFD8;
-  border-radius: 10px;
-  padding: 2vh 16px 2.4vh;
-}
-
-.wo-doc-header {
-  border-bottom: 2px solid #000000;
-  padding-bottom: 1.4vh;
-  margin-bottom: 1.6vh;
-}
-
-.wo-doc-title {
-  font-size: 2.4vh;
-  font-weight: 800;
-  color: #000000;
-  text-align: center;
-  margin-bottom: 1vh;
-}
-
-.wo-doc-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.7vh;
-  color: #333333;
-  font-weight: 600;
-}
-
-.wo-batch-block {
-  border-bottom: 1px dashed #D5D9E0;
-  padding: 1.2vh 0;
-}
-
-.wo-batch-block:last-of-type {
-  border-bottom: none;
-}
-
-.wo-batch-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.9vh;
-  font-weight: 700;
-  color: #000000;
-}
-
-.wo-contributors {
-  margin-top: 0.8vh;
-  padding-left: 12px;
-  border-left: 3px solid #EEF2F7;
-}
-
-.wo-contributor-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.7vh;
-  color: #444444;
-  padding: 0.4vh 0;
-}
-
-.wo-doc-total {
-  display: flex;
-  justify-content: space-between;
-  border-top: 2px solid #000000;
-  margin-top: 1.4vh;
-  padding-top: 1.2vh;
-  font-size: 2vh;
-  font-weight: 800;
-  color: #000000;
-}
-
-.edit-form-row {
-  display: grid;
-  grid-template-columns: 94px 1fr;
-  align-items: center;
-  width: 340px;
-  max-width: calc(100% - 32px);
-  margin: 0 auto 1.6vh;
-}
-
-.edit-form-row label {
-  color: #333333;
-  font-size: 2vh;
-  font-weight: 600;
-}
-
-.edit-form-row input {
-  height: 5.5vh;
-  border: 2px solid #AEB4B8;
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 0 12px;
-  color: #000000;
-  font-family: "Kanit", "Segoe UI", sans-serif;
-  font-size: 2.2vh;
-  outline: none;
-}
-
-.edit-defect-section {
-  width: 340px;
-  max-width: calc(100% - 32px);
-  margin: 0 auto 1.6vh;
-  background: #F7F8FA;
-  border-radius: 10px;
-  padding: 1.4vh 14px;
-}
-
-.edit-defect-label {
-  font-size: 1.8vh;
-  font-weight: 700;
-  color: #555555;
-  margin: 0 0 1vh;
-}
-
-.edit-defect-sum {
-  font-size: 1.7vh;
-  font-weight: 700;
-  margin-top: 0.6vh;
-}
-
-.edit-defect-sum.ok { color: #1B8A3D; }
-.edit-defect-sum.bad { color: #D22; }
-
 .my-work-chip svg {
   width: 2.2vh;
   height: 2.2vh;
@@ -1182,7 +1050,7 @@ body {
       </button>
       <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
       <div class="credits-title">TRIGO YUSEN DASHBOARD</div>
-      <div class="credits-version">Version 1.4.0</div>
+      <div class="credits-version">Version 1.5.0</div>
       <div class="credits-divider"></div>
       <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538)<br>สร้างขึ้นเพื่อใช้สำหรับดูภาพรวมยอดงานประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
@@ -1209,7 +1077,7 @@ var dashState = {
 
 var TAB_CONFIG = {
   receive: { label: "รับงาน", action: "getDashboardReceive", valueType: "qty", unit: "ชิ้น", icon: "receiveIcon", colorClass: "green", byLabel: "รับโดย" },
-  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true, combinedCapture: true, myWork: true, workOrderView: true, editEntries: true },
+  dailywork: { label: "ยอดงานรายวัน", action: "getDashboardDailyWork", valueType: "okng", icon: "dailyworkIcon", colorClass: "purple", defects: true, combinedCapture: true, myWork: true },
   issue: { label: "เบิกงาน", action: "getDashboardIssue", valueType: "qty", unit: "ชิ้น", icon: "issueIcon", colorClass: "blue", byLabel: "เบิกโดย" },
   ngreturn: { label: "ส่งคืน NG", action: "getDashboardNGReturn", valueType: "qty", unit: "ชิ้น", icon: "ngReturnIcon", colorClass: "red", byLabel: "คืนโดย" }
 };
@@ -1469,7 +1337,7 @@ async function showDashboardHome_() {
     '<div id="dashSummaryWrap"></div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO YUSEN DASHBOARD</div>' +
-      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.4.0<br>&copy; 2026 TRIGO</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.5.0<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
 
   await loadAllTabData_();
@@ -1563,15 +1431,10 @@ function showTabMissionList_() {
     ? '<button type="button" class="my-work-chip" onclick="goto_(showMyWork_)"><span>ยอดงานของฉัน</span>' + chevronIcon() + '</button>'
     : "";
 
-  var editEntriesChipHtml = cfg.editEntries
-    ? '<button type="button" class="my-work-chip edit-entries-chip" onclick="goto_(showEditMissionPicker_)"><span>แก้ไขยอดงานรายวัน</span>' + chevronIcon() + '</button>'
-    : "";
-
   document.getElementById("content").innerHTML =
     '<div class="picker-page' + (cfg.combinedCapture ? ' has-sticky-footer' : '') + '">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
       myWorkChipHtml +
-      editEntriesChipHtml +
       '<h2 class="picker-heading">เลือก Mission</h2>' +
       '<div class="picker-list">' + listHtml + '</div>' +
     '</div>' +
@@ -1622,10 +1485,6 @@ function showTabBatchList_() {
     '</div>';
   }).join("");
 
-  var workOrderBtnHtml = cfg.workOrderView
-    ? '<button class="static-secondary-btn" type="button" onclick="goto_(showWorkOrderView_)" style="margin:2vh auto 0;">' + docIcon() + '<span>ดูใบงาน</span></button>'
-    : "";
-
   document.getElementById("content").innerHTML =
     '<div class="picker-page">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
@@ -1635,292 +1494,7 @@ function showTabBatchList_() {
         '<span>รวม Mission นี้</span>' +
         '<span>' + tabValueHtml_(cfg, m) + '</span>' +
       '</div>' +
-      workOrderBtnHtml +
     '</div>';
-}
-
-// หน้า "ดูใบงาน" — ดูอย่างเดียว หน้าตาเหมือนเอกสารจริง ให้พนักงานเช็คว่ายอด
-// ที่ตัวเอง/เพื่อนลงถูกไหม แก้ไขไม่ได้จากตรงนี้ (ต้องไปเมนูแก้ไขยอดงานรายวัน)
-function showWorkOrderView_() {
-  var m = dashState.currentMission;
-  setPageTitle_("ดูใบงาน");
-
-  var partsHtml = m.batches.map(function(b) {
-    var contributorsHtml = (b.contributors || []).map(function(c) {
-      return '<div class="wo-contributor-row">' +
-        '<span>' + escapeHtml(c.employeeName) + '</span>' +
-        '<span><span class="ok-val">OK ' + numberWithCommas_(c.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(c.ng) + '</span></span>' +
-      '</div>';
-    }).join("");
-
-    return '<div class="wo-batch-block">' +
-      '<div class="wo-batch-head">' +
-        '<span>' + escapeHtml(b.partNumber) + ' &middot; Batch ' + escapeHtml(b.batch) + '</span>' +
-        '<span>' + tabValueHtml_(TAB_CONFIG.dailywork, b) + '</span>' +
-      '</div>' +
-      (contributorsHtml ? '<div class="wo-contributors">' + contributorsHtml + '</div>' : '') +
-    '</div>';
-  }).join("");
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<div class="wo-doc">' +
-        '<div class="wo-doc-header">' +
-          '<div class="wo-doc-title">ใบงาน — ยอดงานรายวัน</div>' +
-          '<div class="wo-doc-meta"><span>Mission: ' + escapeHtml(m.mission) + '</span><span>วันที่: ' + escapeHtml(dashState.dateLabel) + '</span></div>' +
-        '</div>' +
-        partsHtml +
-        '<div class="wo-doc-total">' +
-          '<span>รวมทั้งหมด</span>' +
-          '<span>' + tabValueHtml_(TAB_CONFIG.dailywork, m) + '</span>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-}
-
-async function showMyWork_() {
-  setPageTitle_("ยอดงานของฉัน");
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
-      '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
-    '</div>';
-
-  var data = await api("getDashboardMyWork", { lineUserId: currentLineUserId }).catch(function() { return { ok: false }; });
-  var missions = (data && data.ok && data.missions) || [];
-
-  if (missions.length === 0) {
-    document.getElementById("content").innerHTML =
-      '<div class="picker-page">' +
-        '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
-        '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
-        '<div class="dash-empty-text">ยังไม่มีข้อมูลยอดงานใน 7 วันที่ผ่านมา</div>' +
-      '</div>';
-    return;
-  }
-
-  var missionsHtml = missions.map(function(m) {
-    var partsHtml = m.parts.map(function(p) {
-      var batchesHtml = p.batches.map(function(b) {
-        return '<div class="dash-batch-row">' +
-          '<span class="dash-batch-no">Batch ' + escapeHtml(b.batch) + '</span>' +
-          '<span class="dash-ok-ng"><span class="ok-val">OK ' + numberWithCommas_(b.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(b.ng) + '</span></span>' +
-        '</div>';
-      }).join("");
-
-      return '<div class="dash-batch-card">' +
-        '<div class="dash-batch-card-head"><span class="dash-batch-card-part">' + escapeHtml(p.partNumber) + '</span></div>' +
-        '<div class="dash-batch-card-body">' + batchesHtml + '</div>' +
-      '</div>';
-    }).join("");
-
-    return '<div class="dash-section">' +
-      '<h3 class="dash-section-title">' + escapeHtml(m.mission) + ' &middot; OK ' + numberWithCommas_(m.ok) + ' / NG ' + numberWithCommas_(m.ng) + '</h3>' +
-      '<div class="dash-batch-list">' + partsHtml + '</div>' +
-    '</div>';
-  }).join("");
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">ย้อนหลัง 7 วัน</p>' +
-      '<h2 class="picker-heading">ยอดงานของฉัน</h2>' +
-      missionsHtml +
-    '</div>';
-}
-
-// ---- แก้ไขยอดงานรายวัน (แก้ได้เฉพาะรายการที่ตัวเองเป็นคนลง) ----
-
-function showEditMissionPicker_() {
-  setPageTitle_("แก้ไขยอดงานรายวัน");
-
-  var missions = (dashState.tabData.dailywork && dashState.tabData.dailywork.missions) || [];
-
-  if (missions.length === 0) {
-    document.getElementById("content").innerHTML =
-      '<div class="picker-page">' +
-        '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
-        '<div class="dash-empty-text">ยังไม่มีข้อมูลยอดงานรายวันในวันที่นี้</div>' +
-      '</div>';
-    return;
-  }
-
-  var listHtml = missions.map(function(m, idx) {
-    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
-      '<span class="picker-item-text"><span class="picker-item-title">' + escapeHtml(m.mission) + '</span></span>' +
-      chevronIcon() +
-    '</button>';
-  }).join("");
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">วันที่ : ' + escapeHtml(dashState.dateLabel) + '</p>' +
-      '<h2 class="picker-heading">เลือก Mission ที่จะแก้ไข</h2>' +
-      '<div class="picker-list">' + listHtml + '</div>' +
-    '</div>';
-
-  document.querySelectorAll(".picker-item").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      var idx = Number(btn.getAttribute("data-idx"));
-      goto_(function() { showMyEntriesForMission_(missions[idx].mission); });
-    });
-  });
-}
-
-async function showMyEntriesForMission_(mission) {
-  setPageTitle_("แก้ไขยอดงานรายวัน");
-  document.getElementById("content").innerHTML = '<div class="picker-page"><p class="picker-context">กำลังโหลด...</p></div>';
-
-  var res = await api("getMyDailyWorkEntries", { lineUserId: currentLineUserId, mission: mission, dateStr: dashState.dateStr })
-    .catch(function() { return { ok: false }; });
-  var entries = (res && res.ok && res.entries) || [];
-
-  if (entries.length === 0) {
-    document.getElementById("content").innerHTML =
-      '<div class="picker-page">' +
-        '<p class="picker-context">Mission : ' + escapeHtml(mission) + '</p>' +
-        '<div class="dash-empty-text">คุณยังไม่มีรายการที่ลงไว้ในมิชชั่นนี้วันนี้</div>' +
-      '</div>';
-    return;
-  }
-
-  var listHtml = entries.map(function(e, idx) {
-    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
-      '<span class="picker-item-text">' +
-        '<span class="picker-item-title">' + escapeHtml(e.partNumber) + ' &middot; Batch ' + escapeHtml(e.batch) + '</span>' +
-        '<span class="picker-item-sub"><span class="ok-val">OK ' + numberWithCommas_(e.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(e.ng) + '</span> &middot; ' + escapeHtml(e.timestamp) + '</span>' +
-      '</span>' +
-      chevronIcon() +
-    '</button>';
-  }).join("");
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">Mission : ' + escapeHtml(mission) + '</p>' +
-      '<h2 class="picker-heading">เลือกรายการที่จะแก้ไข</h2>' +
-      '<div class="picker-list">' + listHtml + '</div>' +
-    '</div>';
-
-  document.querySelectorAll(".picker-item").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      var idx = Number(btn.getAttribute("data-idx"));
-      goto_(function() { showEditEntryForm_(entries[idx]); });
-    });
-  });
-}
-
-var editEntryState_ = null;
-var editEntryDefects_ = [];
-
-function renderEditDefectSectionHtml_(defects, existingBreakdown) {
-  if (!defects || defects.length === 0) return "";
-
-  var rows = defects.map(function(name) {
-    var val = (existingBreakdown && existingBreakdown[name]) || "";
-    return '<div class="edit-form-row"><label>' + escapeHtml(name) + '</label>' +
-      '<input type="number" inputmode="numeric" class="edit-defect-input" data-defect="' + escapeHtml(name) + '" value="' + val + '" placeholder="0" oninput="updateEditEntryForm_()"></div>';
-  }).join("");
-
-  return '<div class="edit-defect-section">' +
-    '<p class="edit-defect-label">แยกประเภท NG</p>' +
-    rows +
-    '<p class="edit-defect-sum" id="editDefectSum"></p>' +
-  '</div>';
-}
-
-function getEditDefectBreakdown_() {
-  var inputs = document.querySelectorAll(".edit-defect-input");
-  var breakdown = {};
-  var sum = 0;
-
-  inputs.forEach(function(input) {
-    var val = Number(input.value || 0);
-    if (val > 0) breakdown[input.getAttribute("data-defect")] = val;
-    sum += val;
-  });
-
-  return { breakdown: breakdown, sum: sum };
-}
-
-async function showEditEntryForm_(entry) {
-  editEntryState_ = entry;
-  setPageTitle_("แก้ไขยอดงานรายวัน");
-
-  try {
-    var res = await api("getPartDefects", { partNumber: entry.partNumber, mission: entry.mission });
-    editEntryDefects_ = (res && res.ok && res.defects) ? res.defects : [];
-  } catch (e) {
-    editEntryDefects_ = [];
-  }
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">Mission : ' + escapeHtml(entry.mission) + '</p>' +
-      '<p class="picker-context">Part No. : ' + escapeHtml(entry.partNumber) + ' &middot; Batch ' + escapeHtml(entry.batch) + '</p>' +
-      '<div class="edit-form-row"><label>OK</label><input id="editEntryOk" type="number" inputmode="numeric" value="' + entry.ok + '" oninput="updateEditEntryForm_()"></div>' +
-      '<div class="edit-form-row"><label>NG</label><input id="editEntryNg" type="number" inputmode="numeric" value="' + entry.ng + '" oninput="updateEditEntryForm_()"></div>' +
-      '<div id="editEntryDefectWrap">' + renderEditDefectSectionHtml_(editEntryDefects_, entry.defectBreakdown) + '</div>' +
-      '<button id="editEntrySaveBtn" class="static-primary-btn" type="button" onclick="saveEditEntry_()">' + checkCircleWhiteIcon() + '<span>บันทึกการแก้ไข</span></button>' +
-    '</div>';
-
-  updateEditEntryForm_();
-}
-
-function updateEditEntryForm_() {
-  var ok = Number(document.getElementById("editEntryOk").value || 0);
-  var ng = Number(document.getElementById("editEntryNg").value || 0);
-  var saveBtn = document.getElementById("editEntrySaveBtn");
-  var sumEl = document.getElementById("editDefectSum");
-
-  var defectValid = true;
-  if (sumEl) {
-    var result = getEditDefectBreakdown_();
-    if (ng > 0) {
-      defectValid = result.sum === ng;
-      sumEl.textContent = "ยอดรวม " + result.sum + " / " + ng + (defectValid ? " ถูกต้อง" : " (ต้องเท่ากับ NG)");
-      sumEl.className = "edit-defect-sum " + (defectValid ? "ok" : "bad");
-    } else {
-      sumEl.textContent = "";
-    }
-  }
-
-  var valid = ok >= 0 && ng >= 0 && ok + ng > 0 && defectValid;
-  if (saveBtn) saveBtn.disabled = !valid;
-}
-
-function saveEditEntry_() {
-  var saveBtn = document.getElementById("editEntrySaveBtn");
-  if (saveBtn) {
-    if (saveBtn.disabled) return;
-    saveBtn.disabled = true;
-  }
-
-  var ok = Number(document.getElementById("editEntryOk").value || 0);
-  var ng = Number(document.getElementById("editEntryNg").value || 0);
-  var defectBreakdown = ng > 0 ? getEditDefectBreakdown_().breakdown : {};
-
-  api("editDailyWorkEntry", {
-    payload: {
-      lineUserId: currentLineUserId,
-      timestamp: editEntryState_.timestamp,
-      mission: editEntryState_.mission,
-      partNumber: editEntryState_.partNumber,
-      batch: editEntryState_.batch,
-      ok: ok,
-      ng: ng,
-      defectBreakdown: defectBreakdown
-    }
-  }).then(function(data) {
-    if (data && data.ok) {
-      alert("บันทึกการแก้ไขเรียบร้อย");
-      goto_(function() { showMyEntriesForMission_(editEntryState_.mission); });
-      return;
-    }
-    if (saveBtn) saveBtn.disabled = false;
-    alert((data && data.error) || "แก้ไขไม่สำเร็จ");
-  }).catch(function(err) {
-    if (saveBtn) saveBtn.disabled = false;
-    alert(err.message || err);
-  });
 }
 
 function groupBatchesByPart_(cfg, batches) {
@@ -2115,10 +1689,6 @@ function cameraIcon() {
   return '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="18" width="52" height="36" rx="6" fill="none" stroke="#555555" stroke-width="5"></rect><path d="M22 18L27 10H37L42 18" fill="none" stroke="#555555" stroke-width="5" stroke-linejoin="round"></path><circle cx="32" cy="36" r="11" fill="none" stroke="#555555" stroke-width="5"></circle></svg>';
 }
 
-function docIcon() {
-  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 6H38L50 18V58H14Z" fill="none" stroke="#555555" stroke-width="5" stroke-linejoin="round"></path><path d="M38 6V18H50" fill="none" stroke="#555555" stroke-width="5" stroke-linejoin="round"></path><path d="M22 30H42M22 40H42M22 50H34" stroke="#555555" stroke-width="5" stroke-linecap="round"></path></svg>';
-}
-
 function bigXIcon() {
   return '<svg class="big-x" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#FF1111"></circle><path d="M18 18L46 46M46 18L18 46" stroke="#ffffff" stroke-width="8" stroke-linecap="round"></path></svg>';
 }
@@ -2131,9 +1701,6 @@ function smallXWhiteIcon() {
   return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M19 19L45 45M45 19L19 45" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></path></svg>';
 }
 
-function checkCircleWhiteIcon() {
-  return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#ffffff"></circle><path d="M18 32L28 42L47 21" fill="none" stroke="#00A000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
-}
 </script>
 </body>
 </html>

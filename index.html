@@ -1848,7 +1848,7 @@ footer {
 
     <footer>
       <div class="footer-brand">TRIGO YUSEN HUB</div>
-      <div class="footer-meta" onclick="handleCreditTap_()">Version 1.4.0<br>&copy; 2026 TRIGO</div>
+      <div class="footer-meta" onclick="handleCreditTap_()">Version 1.5.0<br>&copy; 2026 TRIGO</div>
     </footer>
 </main>
 
@@ -1864,7 +1864,7 @@ footer {
     </button>
     <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
     <div class="credits-title">TRIGO YUSEN HUB</div>
-    <div class="credits-version">Version 1.4.0</div>
+    <div class="credits-version">Version 1.5.0</div>
     <div class="credits-divider"></div>
     <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>เพื่อใช้ในการบันทึกข้อมูลงาน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
     <div class="credits-divider"></div>
@@ -3319,7 +3319,7 @@ var dailyWorkState = {};
 var dwManualDefects_ = [];
 
 function openDailyWork() {
-  dailyWorkState = { mission: "", partNumber: "", partName: "", batch: "", receivedTotal: 0, remaining: 0, ok: 0, ng: 0, defects: undefined, defectBreakdown: {}, isRecheck: false, startTime: "", endTime: "" };
+  dailyWorkState = { mission: "", partNumber: "", partName: "", batch: "", receivedTotal: 0, remaining: 0, ok: 0, ng: 0, defects: undefined, defectBreakdown: {}, isRecheck: false, startTime: "", endTime: "", lotCode: "" };
   dwManualDefects_ = [];
   openFeaturePage_("เพิ่มงานรายวัน");
   navStack_ = [];
@@ -3423,7 +3423,7 @@ function showDailyWorkScanView() {
 var RECHECK_MISSION_SUFFIX_ = "(Recheck)";
 
 function isRecheckMissionName_(mission) {
-  return String(mission || "").indexOf(RECHECK_MISSION_SUFFIX_) !== -1;
+  return String(mission || "").toLowerCase().indexOf(RECHECK_MISSION_SUFFIX_.toLowerCase()) !== -1;
 }
 
 function applyDailyWorkScanOption_(opt) {
@@ -3436,6 +3436,7 @@ function applyDailyWorkScanOption_(opt) {
   dailyWorkState.remaining = opt.isRecheck ? 0 : opt.remaining;
   dailyWorkState.defects = undefined;
   dailyWorkState.defectBreakdown = {};
+  dailyWorkState.lotCode = opt.lotCode || "";
 
   if (!opt.isRecheck && opt.remaining <= 0) {
     goto_(function() { showNoStockView_("Batch นี้ทำครบแล้ว ไม่มีงานคงเหลือ"); });
@@ -3541,6 +3542,10 @@ async function showDailyWorkManualEntryView() {
         <div class="qty-row">
           <label>Batch</label>
           ${batchComboFieldHtml_("dw", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
+        </div>
+        <div class="qty-row">
+          <label>Lot No.</label>
+          <input id="dwManualLot" type="text" placeholder="ไม่บังคับกรอก" oninput="this.value = this.value.toUpperCase()">
         </div>
         <div class="qty-row">
           <label>OK</label>
@@ -3715,6 +3720,7 @@ function submitDailyWorkManualEntry() {
   dailyWorkState.remaining = (!isRecheck && batchInfo) ? batchInfo.remaining : 0;
   dailyWorkState.ok = ok;
   dailyWorkState.ng = ng;
+  dailyWorkState.lotCode = document.getElementById("dwManualLot").value.trim();
 
   goto_(showDailyWorkConfirm);
 }
@@ -3877,6 +3883,7 @@ function showDailyWorkConfirm() {
           <span>Batch</span>
           <span class="info-value">${escapeHtml(dailyWorkState.batch)}</span>
         </div>
+        ${dailyWorkState.lotCode ? '<div class="info-row"><span>Lot No.</span><span class="info-value">' + escapeHtml(dailyWorkState.lotCode) + '</span></div>' : ""}
       </section>
 
       <section class="confirm-qty">
@@ -3925,6 +3932,7 @@ function saveDailyWork_() {
       defectBreakdown: dailyWorkState.defectBreakdown || {},
       startTime: dailyWorkState.startTime || "",
       endTime: dailyWorkState.endTime || "",
+      lotCode: dailyWorkState.lotCode || "",
       lineUserId: currentLineUserId
     }
   }).then(function(data) {
