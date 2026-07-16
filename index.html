@@ -1192,6 +1192,16 @@ footer {
   margin: 0;
 }
 
+.error-raw-scan {
+  color: #999999;
+  font-size: 1.5vh;
+  line-height: 1.5;
+  font-weight: 500;
+  font-family: monospace;
+  word-break: break-all;
+  margin: 1.5vh 0 0;
+}
+
 .error-scan-btn {
   position: absolute;
   left: 50%;
@@ -1833,6 +1843,10 @@ var receiveState = {
   }
 };
 
+// เก็บรหัสดิบล่าสุดที่กล้องสแกนได้แต่ระบบหา Part/Batch ไม่เจอ ไว้โชว์บนหน้า
+// "ไม่พบข้อมูล" เพื่อวินิจฉัยปัญหาการสแกน (ของจริงจากกล้อง ไม่ใช่พิมพ์จากป้าย)
+var lastFailedRawScan_ = "";
+
 var homeHtmlCache = "";
 var currentLineUserId = "";
 var currentLineDisplayName = "";
@@ -2274,6 +2288,7 @@ function handleScanResult_(rawValue) {
               alert(data.error);
               return;
             }
+            lastFailedRawScan_ = rawValue;
             goto_(showNotFoundView);
             return;
         }
@@ -2532,6 +2547,7 @@ function showNotFoundView() {
           <span>ไม่พบข้อมูล</span>
         </h2>
         <p class="error-text">ไม่พบข้อมูล Part นี้<br>กรุณาตรวจสอบ QR Code<br>หรือติดต่อหัวหน้างาน</p>
+        ${lastFailedRawScan_ ? '<p class="error-raw-scan">รหัสที่สแกนได้:<br>' + escapeHtml(lastFailedRawScan_) + '</p>' : ''}
       </section>
 
       <button class="error-scan-btn" type="button" onclick="goBackStep_()">
@@ -2873,6 +2889,7 @@ function showBatchNotFoundView_() {
           <span>ไม่พบข้อมูล</span>
         </h2>
         <p class="error-text">ไม่พบ Batch นี้ในระบบ<br>กรุณาตรวจสอบข้อมูล<br>หรือติดต่อหัวหน้างาน</p>
+        ${lastFailedRawScan_ ? '<p class="error-raw-scan">รหัสที่สแกนได้:<br>' + escapeHtml(lastFailedRawScan_) + '</p>' : ''}
       </section>
 
       <button class="error-home-btn" type="button" onclick="goHome()">
@@ -3297,6 +3314,7 @@ function handleDailyWorkScanResult_(rawValue) {
   api("scanLookup", { rawScan: rawValue })
     .then(function(data) {
       if (!data || !data.ok) {
+        lastFailedRawScan_ = rawValue;
         goto_(showBatchNotFoundView_);
         return;
       }
@@ -3825,6 +3843,7 @@ function handleReturnNGScanResult_(rawValue) {
   api("scanLookup", { rawScan: rawValue })
     .then(function(data) {
       if (!data || !data.ok) {
+        lastFailedRawScan_ = rawValue;
         goto_(showBatchNotFoundView_);
         return;
       }
@@ -4237,6 +4256,7 @@ function handleCheckStockScanResult_(rawValue) {
   api("scanLookup", { rawScan: rawValue })
     .then(function(data) {
       if (!data || !data.ok) {
+        lastFailedRawScan_ = rawValue;
         goto_(showBatchNotFoundView_);
         return;
       }
