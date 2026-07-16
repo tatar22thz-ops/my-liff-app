@@ -1167,7 +1167,7 @@ body {
       </button>
       <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
       <div class="credits-title">TRIGO REPORT</div>
-      <div class="credits-version">Version 1.5.0</div>
+      <div class="credits-version">Version 1.6.0</div>
       <div class="credits-divider"></div>
       <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>สร้างขึ้นเพื่อใช้สำหรับสร้างใบงานและใบลงชื่อประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
@@ -1451,10 +1451,14 @@ function showHomeChoice_() {
         '<span class="home-menu-card-title">ตรวจสอบใบงาน</span>' +
         chevronIcon() +
       '</button>' +
+      '<button type="button" class="home-menu-card" onclick="goFromHome_(showPresenceEditDatePicker_)">' +
+        '<span class="home-menu-card-title">แก้ไขใบลงชื่อ</span>' +
+        chevronIcon() +
+      '</button>' +
     '</div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO REPORT</div>' +
-      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.5.0<br>&copy; 2026 TRIGO</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.6.0<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
 }
 
@@ -2169,6 +2173,7 @@ var inspectState_ = { dateStr: "", dateLabel: "", missions: [], currentMission: 
 var inspectMyEntries_ = [];
 var inspectEditEntry_ = null;
 var inspectEditDefects_ = [];
+var inspectReportFileUrl_ = "";
 
 function showInspectDatePicker_() {
   var today = new Date();
@@ -2239,6 +2244,10 @@ async function showInspectWorkOrder_() {
     .catch(function() { return { ok: false }; });
   inspectMyEntries_ = (res && res.ok && res.entries) || [];
 
+  var fileRes = await api("getMissionReportFileUrl", { mission: m.mission, dateStr: inspectState_.dateStr })
+    .catch(function() { return { ok: false, fileUrl: "" }; });
+  inspectReportFileUrl_ = (fileRes && fileRes.fileUrl) || "";
+
   renderInspectWorkOrder_();
 }
 
@@ -2285,6 +2294,9 @@ function renderInspectWorkOrder_() {
           '<span><span class="ok-val">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
         '</div>' +
       '</div>' +
+      (inspectReportFileUrl_
+        ? '<button type="button" class="static-secondary-btn" style="margin-top:2vh;" onclick="window.open(\'' + inspectReportFileUrl_ + '\', \'_blank\')">' + downloadIcon() + '<span>เปิดดูไฟล์ใบงาน</span></button>'
+        : '<p class="picker-context" style="margin-top:2vh;">ยังไม่มีไฟล์ใบงาน (จะสร้างให้อัตโนมัติเมื่อมีการบันทึก/แก้ไขยอดงาน)</p>') +
     '</div>';
 
   document.querySelectorAll(".wo-contributor-row-mine").forEach(function(btn) {
@@ -2435,6 +2447,185 @@ function saveInspectEdit_() {
     alert((data && data.error) || "แก้ไขไม่สำเร็จ");
   }).catch(function(err) {
     if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+// ---- แก้ไขใบลงชื่อ: เลือกวันที่ -> รายชื่อที่ลงไว้ -> เพิ่ม/แก้ไขทีละคน ----
+
+var presenceEditState_ = { dateStr: "", dateLabel: "", entries: [] };
+var presenceEditTarget_ = null;
+
+function showPresenceEditDatePicker_() {
+  var today = new Date();
+  var yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  var dayBefore = new Date(today);
+  dayBefore.setDate(today.getDate() - 2);
+
+  var options = [
+    { d: today, tag: "วันนี้" },
+    { d: yesterday, tag: "เมื่อวาน" },
+    { d: dayBefore, tag: "เมื่อวานซืน" }
+  ];
+
+  renderPicker_({
+    context: [],
+    heading: "เลือกวันที่",
+    showSearch: false,
+    items: options.map(function(o) {
+      return { title: formatDateLabel_(o.d, o.tag), value: formatDateForApi_(o.d) };
+    }),
+    onSelect: function(item) {
+      presenceEditState_.dateStr = item.value;
+      presenceEditState_.dateLabel = item.title;
+      goto_(showPresenceEditListView_);
+    }
+  });
+}
+
+async function showPresenceEditListView_() {
+  setPageTitle_("แก้ไขใบลงชื่อ");
+  document.getElementById("content").innerHTML = '<div class="picker-page"><p class="picker-context">กำลังโหลด...</p></div>';
+
+  var res = await api("getPresenceEntries", { dateStr: presenceEditState_.dateStr }).catch(function() { return { ok: false }; });
+  presenceEditState_.entries = (res && res.ok && res.entries) || [];
+
+  var fileRes = await api("getPresenceSheetFileUrl", { dateStr: presenceEditState_.dateStr }).catch(function() { return { ok: false, fileUrl: "" }; });
+  var fileUrl = (fileRes && fileRes.fileUrl) || "";
+
+  renderPresenceEditList_(fileUrl);
+}
+
+function renderPresenceEditList_(fileUrl) {
+  var rowsHtml = presenceEditState_.entries.map(function(e, idx) {
+    return '<button type="button" class="picker-item" data-idx="' + idx + '">' +
+      '<span class="picker-item-text">' +
+        '<span class="picker-item-title">' + escapeHtml(e.employeeName) + '</span>' +
+        '<span class="picker-item-sub">' + escapeHtml(e.start) + ' - ' + escapeHtml(e.end) + '</span>' +
+      '</span>' +
+      chevronIcon() +
+    '</button>';
+  }).join("");
+
+  var emptyHtml = presenceEditState_.entries.length === 0
+    ? '<div class="dash-empty-text">ยังไม่มีใครลงชื่อในวันนี้</div>'
+    : '';
+
+  var fileLinkHtml = fileUrl
+    ? '<button type="button" class="static-secondary-btn" style="margin-top:1.6vh;" onclick="window.open(\'' + fileUrl + '\', \'_blank\')">' + downloadIcon() + '<span>เปิดดูไฟล์ใบลงชื่อ</span></button>'
+    : '';
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">วันที่ : ' + escapeHtml(presenceEditState_.dateLabel) + '</p>' +
+      '<h2 class="picker-heading">รายชื่อที่ลงไว้</h2>' +
+      emptyHtml +
+      '<div class="picker-list">' + rowsHtml + '</div>' +
+      '<button type="button" class="add-employee-btn" onclick="goto_(showPresenceEditAddEmployeeView_)">+ เพิ่มพนักงาน</button>' +
+      fileLinkHtml +
+    '</div>';
+
+  document.querySelectorAll(".picker-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var idx = Number(btn.getAttribute("data-idx"));
+      goto_(function() { showPresenceEditForm_(presenceEditState_.entries[idx]); });
+    });
+  });
+}
+
+async function showPresenceEditAddEmployeeView_() {
+  setPageTitle_("เพิ่มพนักงาน");
+
+  if (!employeeOptionsCache_) {
+    try {
+      var res = await api("getEmployeeOptions", {});
+      employeeOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูลพนักงานไม่สำเร็จ");
+      employeeOptionsCache_ = [];
+    }
+  }
+
+  var existingIds = presenceEditState_.entries.map(function(e) { return e.employeeId; });
+  var available = employeeOptionsCache_.filter(function(e) { return existingIds.indexOf(e.employeeId) === -1; });
+
+  renderPicker_({
+    context: [{ label: "วันที่", value: presenceEditState_.dateLabel }],
+    heading: "เลือกพนักงาน",
+    showSearch: true,
+    searchPlaceholder: "ค้นหาชื่อ หรือ Pass",
+    items: available.map(function(e) {
+      return { title: e.name, sub: presenceEmployeeTeam_(e.site), value: e.employeeId };
+    }),
+    onSelect: function(item) {
+      goto_(function() {
+        showPresenceEditForm_({ employeeId: item.value, employeeName: item.title, start: "08:00", end: "17:00", otType: "normal", isCarOwner: false });
+      });
+    }
+  });
+}
+
+// <input type="time"> ต้องได้รับค่ารูปแบบ HH:MM เติมเลข 0 นำหน้าเสมอ (เช่น
+// "08:00" ไม่ใช่ "8:00") ไม่งั้น browser จะเมินค่าที่ใส่ให้เงียบๆ กลายเป็นช่อง
+// ว่างทั้งที่มีข้อมูลจริงอยู่ — ข้อมูลที่อ่านกลับจาก Sheet อาจไม่มีเลข 0 นำหน้า
+function padTimeStr_(t) {
+  var parts = String(t || "").split(":");
+  if (parts.length !== 2) return t || "";
+  return pad2_(Number(parts[0])) + ":" + pad2_(Number(parts[1]));
+}
+
+function showPresenceEditForm_(entry) {
+  presenceEditTarget_ = entry;
+  setPageTitle_("แก้ไขใบลงชื่อ");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">วันที่ : ' + escapeHtml(presenceEditState_.dateLabel) + '</p>' +
+      '<p class="picker-context">พนักงาน : ' + escapeHtml(entry.employeeName) + '</p>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="peStart" type="time" value="' + padTimeStr_(entry.start) + '"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="peEnd" type="time" value="' + padTimeStr_(entry.end) + '"></div>' +
+      '<button id="peSaveBtn" class="static-primary-btn" type="button" onclick="savePresenceEditEntry_()">' + checkCircleWhiteIcon() + '<span>บันทึก</span></button>' +
+    '</div>';
+}
+
+function savePresenceEditEntry_() {
+  var btn = document.getElementById("peSaveBtn");
+
+  if (btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+  }
+
+  var start = document.getElementById("peStart").value;
+  var end = document.getElementById("peEnd").value;
+
+  if (!start || !end) {
+    alert("กรุณาระบุเวลาเริ่ม-จบ");
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  api("editPresenceEntry", {
+    payload: {
+      lineUserId: currentLineUserId,
+      dateStr: presenceEditState_.dateStr,
+      employeeId: presenceEditTarget_.employeeId,
+      start: start,
+      end: end,
+      otType: presenceEditTarget_.otType || "normal",
+      isCarOwner: !!presenceEditTarget_.isCarOwner
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      alert("บันทึกเรียบร้อย");
+      goto_(showPresenceEditListView_);
+      return;
+    }
+    if (btn) btn.disabled = false;
+    alert((data && data.error) || "บันทึกไม่สำเร็จ");
+  }).catch(function(err) {
+    if (btn) btn.disabled = false;
     alert(err.message || err);
   });
 }
