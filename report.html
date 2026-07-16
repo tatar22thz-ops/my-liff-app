@@ -1173,7 +1173,7 @@ body {
       </button>
       <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
       <div class="credits-title">TRIGO REPORT</div>
-      <div class="credits-version">Version 1.6.1</div>
+      <div class="credits-version">Version 1.7.0</div>
       <div class="credits-divider"></div>
       <p class="credits-text">แอปพลิเคชันนี้พัฒนาโดย Lon Banjong (TRIGO538) และ Kamonchanok Poonsawat (TRIGO301)<br>สร้างขึ้นเพื่อใช้สำหรับสร้างใบงานและใบลงชื่อประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
@@ -1190,16 +1190,6 @@ var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6i
 var currentLineUserId = "";
 var currentEmployeeDisplayName = "";
 var currentEmployeeName_ = "";
-var partOptionsCache_ = null;
-
-var reportState = {
-  mission: "",
-  dateStr: "",
-  dateLabel: "",
-  employees: [],
-  parts: [],
-  selected: {}
-};
 
 function withTimeout_(promise, ms) {
   return Promise.race([
@@ -1445,306 +1435,23 @@ function showHomeChoice_() {
 
   document.getElementById("content").innerHTML =
     '<div class="home-menu">' +
-      '<button type="button" class="home-menu-card" onclick="goFromHome_(showMissionPicker)">' +
-        '<span class="home-menu-card-title">สร้างใบงาน</span>' +
-        chevronIcon() +
-      '</button>' +
       '<button type="button" class="home-menu-card" onclick="goFromHome_(showPresenceDatePicker_)">' +
         '<span class="home-menu-card-title">สร้างใบลงชื่อ</span>' +
         chevronIcon() +
       '</button>' +
       '<button type="button" class="home-menu-card" onclick="goFromHome_(showInspectDatePicker_)">' +
-        '<span class="home-menu-card-title">ตรวจสอบใบงาน</span>' +
+        '<span class="home-menu-card-title">ตรวจสอบ/แก้ไขใบงาน</span>' +
         chevronIcon() +
       '</button>' +
       '<button type="button" class="home-menu-card" onclick="goFromHome_(showPresenceEditDatePicker_)">' +
-        '<span class="home-menu-card-title">แก้ไขใบลงชื่อ</span>' +
+        '<span class="home-menu-card-title">ตรวจสอบ/แก้ไขใบลงชื่อ</span>' +
         chevronIcon() +
       '</button>' +
     '</div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO REPORT</div>' +
-      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.6.1<br>&copy; 2026 TRIGO</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.7.0<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
-}
-
-async function showMissionPicker() {
-  setPageTitle_("สร้างใบงาน");
-
-  if (!partOptionsCache_) {
-    try {
-      var res = await api("getPartOptions", {});
-      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
-    } catch (e) {
-      alert("โหลดข้อมูล Mission ไม่สำเร็จ");
-      partOptionsCache_ = [];
-    }
-  }
-
-  var missions = [];
-  var seen = {};
-
-  partOptionsCache_.forEach(function(opt) {
-    var m = opt.mission || "";
-    if (!m || seen[m]) return;
-    seen[m] = true;
-    missions.push(m);
-  });
-
-  renderPicker_({
-    context: [],
-    heading: "เลือก Mission",
-    showSearch: true,
-    searchPlaceholder: "ค้นหา Mission",
-    items: missions.map(function(m) { return { title: m, value: m }; }),
-    onSelect: function(item) {
-      reportState.mission = item.value;
-      goto_(showDatePicker);
-    }
-  });
-}
-
-function showDatePicker() {
-  var today = new Date();
-  var yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  var dayBefore = new Date(today);
-  dayBefore.setDate(today.getDate() - 2);
-
-  var options = [
-    { d: today, tag: "วันนี้" },
-    { d: yesterday, tag: "เมื่อวาน" },
-    { d: dayBefore, tag: "เมื่อวานซืน" }
-  ];
-
-  renderPicker_({
-    context: [{ label: "Mission", value: reportState.mission }],
-    heading: "เลือกวันที่",
-    showSearch: false,
-    items: options.map(function(o) {
-      return { title: formatDateLabel_(o.d, o.tag), value: formatDateForApi_(o.d) };
-    }),
-    onSelect: function(item) {
-      reportState.dateStr = item.value;
-      reportState.dateLabel = item.title;
-      loadPreview_();
-    }
-  });
-}
-
-async function loadPreview_() {
-  var res;
-
-  try {
-    res = await api("getReportPreview", { mission: reportState.mission, dateStr: reportState.dateStr });
-  } catch (e) {
-    alert("โหลดข้อมูลไม่สำเร็จ: " + (e && e.message ? e.message : e));
-    return;
-  }
-
-  if (!res || !res.ok || !res.hasData) {
-    goto_(showNoDataView_);
-    return;
-  }
-
-  reportState.employees = res.employees;
-  reportState.parts = res.parts;
-  reportState.selected = {};
-
-  res.employees.forEach(function(emp) {
-    // ดึงเวลาเริ่ม/จบจริงที่เคยลงไว้ตอนบันทึกยอดงานรายวันมาเติมให้อัตโนมัติ
-    // (เร็วสุด-ช้าสุดของคนนั้นในมิชชั่น/วันนี้) ถ้าไม่มีเลย fallback เป็นค่า
-    // เริ่มต้นเดิม — ยังแก้เอง/เพิ่มพนักงานเองได้ตามปกติ
-    reportState.selected[emp.employeeId] = {
-      employeeName: emp.employeeName,
-      checked: true,
-      start: emp.startTime || "08:00",
-      end: emp.endTime || "17:00"
-    };
-  });
-
-  goto_(showEmployeeSelectView_);
-}
-
-function showNoDataView_() {
-  document.getElementById("content").innerHTML =
-    '<div class="error-view">' +
-      '<section class="error-card">' +
-        bigXIcon() +
-        '<h2 class="error-title">' + smallXIcon() + '<span>ไม่พบข้อมูล</span></h2>' +
-        '<p class="error-text">ไม่พบข้อมูลการลงงานของ<br>Mission นี้ในวันที่เลือก<br>กรุณาตรวจสอบข้อมูล</p>' +
-      '</section>' +
-      '<button class="static-primary-btn" type="button" onclick="goFromHome_(showMissionPicker)">' + refreshWhiteIcon() + '<span>เลือกใหม่</span></button>' +
-    '</div>';
-}
-
-function showEmployeeSelectView_() {
-  var partNames = reportState.parts.map(function(p) { return p.partNumber; }).join(" / ");
-
-  var rowsHtml = reportState.employees.map(function(emp) {
-    var sel = reportState.selected[emp.employeeId];
-    return '<div class="emp-row' + (sel.checked ? ' checked' : '') + '" id="empRow_' + emp.employeeId + '">' +
-      '<label class="emp-row-check">' +
-        '<input type="checkbox" ' + (sel.checked ? "checked" : "") + ' onchange="toggleEmployee_(\'' + emp.employeeId + '\', this.checked)">' +
-        '<span class="emp-row-name">' + escapeHtml(emp.employeeName) + ' / ' + escapeHtml(emp.employeeId) + '</span>' +
-      '</label>' +
-      '<div class="emp-row-times">' +
-        '<div class="emp-time-field"><label>เริ่มงาน</label><input type="time" value="' + sel.start + '" onchange="updateEmployeeTime_(\'' + emp.employeeId + '\', \'start\', this.value)"></div>' +
-        '<div class="emp-time-field"><label>จบงาน</label><input type="time" value="' + sel.end + '" onchange="updateEmployeeTime_(\'' + emp.employeeId + '\', \'end\', this.value)"></div>' +
-      '</div>' +
-    '</div>';
-  }).join("");
-
-  document.getElementById("content").innerHTML =
-    '<div class="picker-page">' +
-      '<p class="picker-context">Mission : ' + escapeHtml(reportState.mission) + '</p>' +
-      '<p class="picker-context">วันที่ : ' + escapeHtml(reportState.dateLabel) + '</p>' +
-      '<p class="picker-context">Part : ' + escapeHtml(partNames) + '</p>' +
-      '<h2 class="picker-heading">เลือกพนักงาน + เวลาทำงาน</h2>' +
-      '<div class="emp-list">' + rowsHtml + '</div>' +
-      '<button type="button" class="add-employee-btn" onclick="goto_(showReportAddEmployeeView_)">+ เพิ่มพนักงาน</button>' +
-      '<button class="static-primary-btn" type="button" onclick="onProceedToConfirm_()">' + downloadIcon() + '<span>ถัดไป</span></button>' +
-      '<button class="static-secondary-btn" type="button" onclick="goBack_()">' + '<span>ย้อนกลับ</span></button>' +
-    '</div>';
-}
-
-async function showReportAddEmployeeView_() {
-  setPageTitle_("เพิ่มพนักงาน");
-
-  if (!employeeOptionsCache_) {
-    try {
-      var res = await api("getEmployeeOptions", {});
-      employeeOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
-    } catch (e) {
-      alert("โหลดข้อมูลพนักงานไม่สำเร็จ");
-      employeeOptionsCache_ = [];
-    }
-  }
-
-  var existingIds = reportState.employees.map(function(e) { return e.employeeId; });
-  var available = employeeOptionsCache_.filter(function(e) { return existingIds.indexOf(e.employeeId) === -1; });
-
-  renderMultiPicker_({
-    heading: "เลือกพนักงาน (เลือกได้หลายคน)",
-    searchPlaceholder: "ค้นหาชื่อ หรือ Pass",
-    items: available.map(function(e) {
-      var subParts = [presenceEmployeeTeam_(e.site)];
-      if (e.pass) subParts.push("Pass: " + e.pass);
-      return { title: e.name, sub: subParts.join(" · "), value: e.employeeId, raw: e };
-    }),
-    onConfirm: function(selectedItems) {
-      selectedItems.forEach(function(item) {
-        reportState.employees.push({ employeeId: item.raw.employeeId, employeeName: item.raw.name });
-        reportState.selected[item.raw.employeeId] = {
-          employeeName: item.raw.name,
-          checked: true,
-          start: "08:00",
-          end: "17:00"
-        };
-      });
-      goBack_();
-    }
-  });
-}
-
-function onProceedToConfirm_() {
-  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
-    return reportState.selected[id].checked;
-  });
-
-  if (chosenIds.length === 0) {
-    alert("กรุณาเลือกพนักงานอย่างน้อย 1 คน");
-    return;
-  }
-
-  goto_(showConfirmView_);
-}
-
-function toggleEmployee_(employeeId, checked) {
-  reportState.selected[employeeId].checked = checked;
-  var row = document.getElementById("empRow_" + employeeId);
-  if (row) row.classList.toggle("checked", checked);
-}
-
-function updateEmployeeTime_(employeeId, field, value) {
-  reportState.selected[employeeId][field] = value;
-}
-
-function showConfirmView_() {
-  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
-    return reportState.selected[id].checked;
-  });
-
-  var empListHtml = chosenIds.map(function(id) {
-    var e = reportState.selected[id];
-    return '<li>' + escapeHtml(e.employeeName) + ' / ' + escapeHtml(id) + ' &nbsp; (' + e.start + ' - ' + e.end + ')</li>';
-  }).join("");
-
-  var partNames = reportState.parts.map(function(p) { return p.partNumber; }).join(" / ");
-
-  document.getElementById("content").innerHTML =
-    '<div class="confirm-view">' +
-      '<h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนสร้างใบงาน</h2>' +
-      '<section class="confirm-card">' +
-        '<div class="info-row"><span>Mission</span><span class="info-value">' + escapeHtml(reportState.mission) + '</span></div>' +
-        '<div class="info-row"><span>วันที่</span><span class="info-value">' + escapeHtml(reportState.dateLabel) + '</span></div>' +
-        '<div class="info-row"><span>Part</span><span class="info-value">' + escapeHtml(partNames) + '</span></div>' +
-      '</section>' +
-      '<section class="confirm-card">' +
-        '<div class="info-row"><span>พนักงานที่เลือก (' + chosenIds.length + ' คน)</span></div>' +
-        '<ul class="emp-summary-list">' + empListHtml + '</ul>' +
-      '</section>' +
-      '<button class="static-primary-btn" type="button" onclick="submitReport_()">' + checkCircleWhiteIcon() + '<span>สร้างใบงาน</span></button>' +
-      '<button class="static-secondary-btn" type="button" onclick="goBack_()">' + '<span>แก้ไขข้อมูล</span></button>' +
-    '</div>';
-}
-
-function submitReport_() {
-  var btn = document.querySelector(".static-primary-btn");
-  if (btn) btn.disabled = true;
-
-  var chosenIds = Object.keys(reportState.selected).filter(function(id) {
-    return reportState.selected[id].checked;
-  });
-
-  var employees = chosenIds.map(function(id) {
-    var e = reportState.selected[id];
-    return { employeeId: id, employeeName: e.employeeName, start: e.start, end: e.end };
-  });
-
-  api("createMissionReport", {
-    payload: {
-      mission: reportState.mission,
-      dateStr: reportState.dateStr,
-      employees: employees,
-      lineUserId: currentLineUserId
-    }
-  }).then(function(data) {
-    if (data && data.ok) {
-      // เข้าหน้าสำเร็จแบบล้าง stack: back จากตรงนี้ต้องกลับหน้าแรก
-      // ไม่ใช่ย้อนไปหน้ายืนยันแล้วกดสร้างใบงานซ้ำได้อีก
-      resetNav_(function() { showSuccessView_(data); });
-      return;
-    }
-    if (btn) btn.disabled = false;
-    alert((data && data.error) || "สร้างใบงานไม่สำเร็จ");
-  }).catch(function(err) {
-    if (btn) btn.disabled = false;
-    alert(err.message || err);
-  });
-}
-
-function showSuccessView_(data) {
-  document.getElementById("content").innerHTML =
-    '<div class="confirm-view">' +
-      '<h2 class="confirm-heading-success">' + checkCircleIcon() + '<span>สร้างใบงานสำเร็จ</span></h2>' +
-      '<section class="confirm-card">' +
-        '<div class="info-row"><span>ชื่อไฟล์</span><span class="info-value">' + escapeHtml(data.fileName) + '</span></div>' +
-      '</section>' +
-      '<div class="link-box"><a href="' + data.fileUrl + '" target="_blank">เปิดไฟล์ใบงาน</a></div>' +
-      '<button class="static-primary-btn" type="button" onclick="goFromHome_(showMissionPicker)">' + refreshWhiteIcon() + '<span>สร้างใบงานเพิ่ม</span></button>' +
-      '<button class="static-secondary-btn" type="button" onclick="resetNav_(showHomeChoice_)"><span>กลับหน้าแรก</span></button>' +
-    '</div>';
 }
 
 var presenceState = {
@@ -2300,9 +2007,10 @@ function renderInspectWorkOrder_() {
           '<span><span class="ok-val">OK ' + numberWithCommas_(m.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(m.ng) + '</span></span>' +
         '</div>' +
       '</div>' +
+      '<button type="button" class="add-employee-btn" style="margin-top:2vh;" onclick="goto_(showAddMissionParticipantView_)">+ เพิ่มพนักงาน (ไม่เพิ่มยอด)</button>' +
       (inspectReportFileUrl_
-        ? '<button type="button" class="static-secondary-btn" style="margin-top:2vh;" onclick="window.open(\'' + inspectReportFileUrl_ + '\', \'_blank\')">' + downloadIcon() + '<span>เปิดดูไฟล์ใบงาน</span></button>'
-        : '<p class="picker-context" style="margin-top:2vh;">ยังไม่มีไฟล์ใบงาน (จะสร้างให้อัตโนมัติเมื่อมีการบันทึก/แก้ไขยอดงาน)</p>') +
+        ? '<button type="button" class="static-secondary-btn" style="margin-top:1vh;" onclick="window.open(\'' + inspectReportFileUrl_ + '\', \'_blank\')">' + downloadIcon() + '<span>เปิดดูไฟล์ใบงาน</span></button>'
+        : '<p class="picker-context" style="margin-top:1vh;">ยังไม่มีไฟล์ใบงาน (จะสร้างให้อัตโนมัติเมื่อมีการบันทึก/แก้ไขยอดงาน)</p>') +
     '</div>';
 
   document.querySelectorAll(".wo-contributor-row-mine").forEach(function(btn) {
@@ -2392,6 +2100,8 @@ async function showInspectEditForm_(entry) {
       '<p class="picker-context">Part No. : ' + escapeHtml(entry.partNumber) + ' &middot; Batch ' + escapeHtml(entry.batch) + '</p>' +
       '<div class="edit-form-row"><label>OK</label><input id="editEntryOk" type="number" inputmode="numeric" value="' + entry.ok + '" oninput="updateInspectEditForm_()"></div>' +
       '<div class="edit-form-row"><label>NG</label><input id="editEntryNg" type="number" inputmode="numeric" value="' + entry.ng + '" oninput="updateInspectEditForm_()"></div>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="editEntryStart" type="time" value="' + padTimeStr_(entry.startTime) + '"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="editEntryEnd" type="time" value="' + padTimeStr_(entry.endTime) + '"></div>' +
       '<div id="editEntryDefectWrap">' + renderEditDefectSectionHtml_(inspectEditDefects_, entry.defectBreakdown) + '</div>' +
       '<button id="editEntrySaveBtn" class="static-primary-btn" type="button" onclick="saveInspectEdit_()">' + checkCircleWhiteIcon() + '<span>บันทึกการแก้ไข</span></button>' +
     '</div>';
@@ -2430,6 +2140,8 @@ function saveInspectEdit_() {
 
   var ok = Number(document.getElementById("editEntryOk").value || 0);
   var ng = Number(document.getElementById("editEntryNg").value || 0);
+  var startTime = document.getElementById("editEntryStart").value || "";
+  var endTime = document.getElementById("editEntryEnd").value || "";
   var defectBreakdown = ng > 0 ? getEditDefectBreakdown_().breakdown : {};
 
   api("editDailyWorkEntry", {
@@ -2441,6 +2153,8 @@ function saveInspectEdit_() {
       batch: inspectEditEntry_.batch,
       ok: ok,
       ng: ng,
+      startTime: startTime,
+      endTime: endTime,
       defectBreakdown: defectBreakdown
     }
   }).then(function(data) {
@@ -2453,6 +2167,101 @@ function saveInspectEdit_() {
     alert((data && data.error) || "แก้ไขไม่สำเร็จ");
   }).catch(function(err) {
     if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+// "+ เพิ่มพนักงาน (ไม่เพิ่มยอด)" — ใช้ตอนพนักงานลืมมือถือ/ไม่ว่างลงเอง คนอื่น
+// กดแทนให้ได้ ผูกยอด 0/0 เข้ากับ Batch แรกของมิชชั่นนั้นเสมอ (ไม่กระทบยอด
+// เพราะบวกเพิ่ม 0) แค่ให้ชื่อไปโผล่ในใบงานตอน sync ครั้งถัดไป
+var addParticipantTarget_ = null;
+
+async function showAddMissionParticipantView_() {
+  setPageTitle_("เพิ่มพนักงาน");
+
+  if (!employeeOptionsCache_) {
+    try {
+      var res = await api("getEmployeeOptions", {});
+      employeeOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      alert("โหลดข้อมูลพนักงานไม่สำเร็จ");
+      employeeOptionsCache_ = [];
+    }
+  }
+
+  renderPicker_({
+    context: [
+      { label: "Mission", value: inspectState_.currentMission.mission },
+      { label: "วันที่", value: inspectState_.dateLabel }
+    ],
+    heading: "เลือกพนักงาน",
+    showSearch: true,
+    searchPlaceholder: "ค้นหาชื่อ หรือ Pass",
+    items: employeeOptionsCache_.map(function(e) {
+      var subParts = [presenceEmployeeTeam_(e.site)];
+      if (e.pass) subParts.push("Pass: " + e.pass);
+      return { title: e.name, sub: subParts.join(" · "), value: e.employeeId };
+    }),
+    onSelect: function(item) {
+      goto_(function() { showAddMissionParticipantForm_({ employeeId: item.value, employeeName: item.title }); });
+    }
+  });
+}
+
+function showAddMissionParticipantForm_(target) {
+  addParticipantTarget_ = target;
+  setPageTitle_("เพิ่มพนักงาน");
+
+  document.getElementById("content").innerHTML =
+    '<div class="picker-page">' +
+      '<p class="picker-context">Mission : ' + escapeHtml(inspectState_.currentMission.mission) + '</p>' +
+      '<p class="picker-context">พนักงาน : ' + escapeHtml(target.employeeName) + '</p>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="ampStart" type="time" value="08:00"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="ampEnd" type="time" value="17:00"></div>' +
+      '<button id="ampSaveBtn" class="static-primary-btn" type="button" onclick="saveAddMissionParticipant_()">' + checkCircleWhiteIcon() + '<span>เพิ่มพนักงาน</span></button>' +
+    '</div>';
+}
+
+function saveAddMissionParticipant_() {
+  var btn = document.getElementById("ampSaveBtn");
+  if (btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+  }
+
+  var start = document.getElementById("ampStart").value;
+  var end = document.getElementById("ampEnd").value;
+
+  if (!start || !end) {
+    alert("กรุณาระบุเวลาเริ่ม-จบ");
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  var m = inspectState_.currentMission;
+  var firstBatch = m.batches[0];
+
+  api("addMissionParticipant", {
+    payload: {
+      lineUserId: currentLineUserId,
+      mission: m.mission,
+      dateStr: inspectState_.dateStr,
+      employeeId: addParticipantTarget_.employeeId,
+      partNumber: firstBatch.partNumber,
+      batch: firstBatch.batch,
+      startTime: start,
+      endTime: end
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      alert("เพิ่มพนักงานเรียบร้อย");
+      goto_(showInspectWorkOrder_);
+      return;
+    }
+    if (btn) btn.disabled = false;
+    alert((data && data.error) || "เพิ่มไม่สำเร็จ");
+  }).catch(function(err) {
+    if (btn) btn.disabled = false;
     alert(err.message || err);
   });
 }
