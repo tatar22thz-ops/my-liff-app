@@ -78,12 +78,12 @@ body {
 }
 
 .user-bar {
-  height: 8vh;
+  min-height: 8vh;
   background: #ffffff;
   border-bottom: 1px solid #E5E9F0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 1vh 16px;
   gap: 10px;
 }
 
@@ -128,6 +128,26 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.user-type-badge {
+  display: none;
+  width: fit-content;
+  font-size: 1.2vh;
+  font-weight: 700;
+  padding: 0.3vh 1vh;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
+.user-type-badge.show {
+  display: inline-block;
+}
+
+.user-type-engineer { background: #980000; color: #ffffff; }
+.user-type-intern { background: #E6199C; color: #ffffff; }
+.user-type-oncall { background: #274E13; color: #ffffff; }
+.user-type-permanent { background: #FCE8B2; color: #6B5900; }
+.user-type-admin { background: #1155CC; color: #ffffff; }
 
 .user-status {
   display: flex;
@@ -1148,6 +1168,7 @@ body {
           </svg>
         </div>
         <div class="user-info">
+          <span id="homeUserType" class="user-type-badge"></span>
           <div id="homeUserName" class="user-name">Loading...</div>
           <div id="homeUserSub" class="user-sub"></div>
         </div>
@@ -1190,6 +1211,13 @@ var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6i
 var currentLineUserId = "";
 var currentEmployeeDisplayName = "";
 var currentEmployeeName_ = "";
+var currentEmployeeType_ = "";
+
+// Admin/Engineer แก้ไขยอดงานของคนอื่นได้ ไม่ใช่แค่ของตัวเอง
+function isElevatedEmployeeType_(type) {
+  var t = String(type || "").trim().toLowerCase();
+  return t === "admin" || t === "engineer";
+}
 
 function withTimeout_(promise, ms) {
   return Promise.race([
@@ -1258,6 +1286,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     currentEmployeeDisplayName = initData.employee.displayName || initData.employee.name;
     currentEmployeeName_ = initData.employee.name || "";
+    currentEmployeeType_ = initData.employee.type || "";
 
     if (initData.version) {
       window.currentAppVersion = initData.version;
@@ -1268,6 +1297,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     var homeUserSub = document.getElementById("homeUserSub");
     if (homeUserName) homeUserName.textContent = initData.employee.name || "Unknown";
     if (homeUserSub) homeUserSub.textContent = initData.employee.employeeId || "";
+    applyUserTypeBadge_(currentEmployeeType_);
   } catch (e) {
     alert("โหลดข้อมูลผู้ใช้ไม่สำเร็จ: " + (e && e.message ? e.message : e));
     return;
@@ -1275,6 +1305,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   goto_(showHomeChoice_);
 });
+
+// ป้าย Type สีตามที่ตั้งไว้ในชีท Employee — type ที่ไม่รู้จักจะไม่โชว์ป้ายเลย
+function userTypeBadgeClass_(type) {
+  var t = String(type || "").trim().toLowerCase();
+  if (t === "engineer") return "user-type-engineer";
+  if (t === "intern") return "user-type-intern";
+  if (t === "oncall") return "user-type-oncall";
+  if (t === "permanent") return "user-type-permanent";
+  if (t === "admin") return "user-type-admin";
+  return "";
+}
+
+function applyUserTypeBadge_(type) {
+  var badge = document.getElementById("homeUserType");
+  if (!badge) return;
+
+  var cls = userTypeBadgeClass_(type);
+  badge.className = "user-type-badge";
+
+  if (cls) {
+    badge.classList.add(cls, "show");
+    badge.textContent = type;
+  } else {
+    badge.textContent = "";
+  }
+}
 
 function setPageTitle_(text) {
   var el = document.getElementById("pageTitle");
@@ -1885,6 +1941,7 @@ function numberWithCommas_(n) {
 var inspectState_ = { dateStr: "", dateLabel: "", missions: [], currentMission: null };
 var inspectMyEntries_ = [];
 var inspectEditEntry_ = null;
+var inspectEditTargetEmployeeId_ = "";
 var inspectEditDefects_ = [];
 var inspectReportFileUrl_ = "";
 
@@ -1973,14 +2030,15 @@ function renderInspectWorkOrder_() {
   var partsHtml = m.batches.map(function(b) {
     var contributorsHtml = (b.contributors || []).map(function(c) {
       var isMine = c.employeeName === currentEmployeeName_;
+      var canEdit = isMine || isElevatedEmployeeType_(currentEmployeeType_);
       var rowText = '<span>' + escapeHtml(c.employeeName) + '</span>' +
         '<span><span class="ok-val">OK ' + numberWithCommas_(c.ok) + '</span> &middot; <span class="ng-val">NG ' + numberWithCommas_(c.ng) + '</span></span>';
 
-      if (!isMine) {
+      if (!canEdit) {
         return '<div class="wo-contributor-row">' + rowText + '</div>';
       }
 
-      return '<button type="button" class="wo-contributor-row wo-contributor-row-mine" data-batch="' + escapeHtml(b.batch) + '" data-part="' + escapeHtml(b.partNumber) + '">' +
+      return '<button type="button" class="wo-contributor-row wo-contributor-row-mine" data-batch="' + escapeHtml(b.batch) + '" data-part="' + escapeHtml(b.partNumber) + '" data-employee-id="' + escapeHtml(c.employeeId || "") + '" data-employee-name="' + escapeHtml(c.employeeName) + '" data-is-mine="' + (isMine ? "1" : "0") + '">' +
         rowText + editIcon() +
       '</button>';
     }).join("");
@@ -2015,7 +2073,12 @@ function renderInspectWorkOrder_() {
 
   document.querySelectorAll(".wo-contributor-row-mine").forEach(function(btn) {
     btn.addEventListener("click", function() {
-      handleInspectEditTap_(btn.getAttribute("data-batch"), btn.getAttribute("data-part"));
+      handleInspectEditTap_(
+        btn.getAttribute("data-batch"),
+        btn.getAttribute("data-part"),
+        btn.getAttribute("data-employee-id"),
+        btn.getAttribute("data-is-mine") === "1"
+      );
     });
   });
 }
@@ -2023,9 +2086,30 @@ function renderInspectWorkOrder_() {
 // รายการที่แก้ไขได้ต้องระบุแถวจริงใน Daily_Work_Log ให้ตรงเป๊ะ (ผูกกับ
 // timestamp) ปกติคนนึงลงงานต่อ Batch ครั้งเดียวต่อวันจะเจอรายการเดียวพอดี
 // เข้าฟอร์มแก้ไขได้เลย แต่ถ้าลงมากกว่า 1 ครั้ง (เช่นเช้า/บ่ายแยกกัน) ต้องถาม
-// ก่อนว่าจะแก้รายการไหน กันแก้ผิดรายการ
-function handleInspectEditTap_(batch, partNumber) {
-  var matches = inspectMyEntries_.filter(function(e) {
+// ก่อนว่าจะแก้รายการไหน กันแก้ผิดรายการ — ถ้าไม่ใช่แถวของตัวเอง (Admin/
+// Engineer กดของคนอื่น) inspectMyEntries_ ที่โหลดไว้ตอนแรกจะมีแต่ของตัวเอง
+// เท่านั้น ต้องดึงของคนนั้นสดๆ แยกต่างหาก
+async function handleInspectEditTap_(batch, partNumber, employeeId, isMine) {
+  var entries = inspectMyEntries_;
+
+  if (!isMine) {
+    var res;
+    try {
+      res = await api("getMyDailyWorkEntries", {
+        lineUserId: currentLineUserId,
+        mission: inspectState_.currentMission.mission,
+        dateStr: inspectState_.dateStr,
+        targetEmployeeId: employeeId
+      });
+    } catch (e) {
+      res = { ok: false };
+    }
+    entries = (res && res.ok && res.entries) || [];
+  }
+
+  inspectEditTargetEmployeeId_ = isMine ? "" : employeeId;
+
+  var matches = entries.filter(function(e) {
     return String(e.batch) === batch && String(e.partNumber) === partNumber;
   });
 
@@ -2155,7 +2239,8 @@ function saveInspectEdit_() {
       ng: ng,
       startTime: startTime,
       endTime: endTime,
-      defectBreakdown: defectBreakdown
+      defectBreakdown: defectBreakdown,
+      targetEmployeeId: inspectEditTargetEmployeeId_ || ""
     }
   }).then(function(data) {
     if (data && data.ok) {

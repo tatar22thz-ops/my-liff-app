@@ -113,12 +113,12 @@ body {
 }
 
 .user-bar {
-  height: 8vh;
+  min-height: 8vh;
   background: #ffffff;
   border-bottom: 1px solid #E5E9F0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 1vh 16px;
   gap: 10px;
 }
 
@@ -163,6 +163,26 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.user-type-badge {
+  display: none;
+  width: fit-content;
+  font-size: 1.2vh;
+  font-weight: 700;
+  padding: 0.3vh 1vh;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
+.user-type-badge.show {
+  display: inline-block;
+}
+
+.user-type-engineer { background: #980000; color: #ffffff; }
+.user-type-intern { background: #E6199C; color: #ffffff; }
+.user-type-oncall { background: #274E13; color: #ffffff; }
+.user-type-permanent { background: #FCE8B2; color: #6B5900; }
+.user-type-admin { background: #1155CC; color: #ffffff; }
 
 .user-status {
   display: flex;
@@ -1025,6 +1045,7 @@ body {
           </svg>
         </div>
         <div class="user-info">
+          <span id="homeUserType" class="user-type-badge"></span>
           <div id="homeUserName" class="user-name">Loading...</div>
           <div id="homeUserSub" class="user-sub"></div>
         </div>
@@ -1158,6 +1179,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     var homeUserSub = document.getElementById("homeUserSub");
     if (homeUserName) homeUserName.textContent = initData.employee.name || "Unknown";
     if (homeUserSub) homeUserSub.textContent = initData.employee.employeeId || "";
+    applyUserTypeBadge_(initData.employee.type);
   } catch (e) {
     alert("โหลดข้อมูลผู้ใช้ไม่สำเร็จ: " + (e && e.message ? e.message : e));
     return;
@@ -1606,6 +1628,32 @@ function updateNotiBadge_() {
     dot.classList.add("show");
   } else {
     dot.classList.remove("show");
+  }
+}
+
+// ป้าย Type สีตามที่ตั้งไว้ในชีท Employee — type ที่ไม่รู้จักจะไม่โชว์ป้ายเลย
+function userTypeBadgeClass_(type) {
+  var t = String(type || "").trim().toLowerCase();
+  if (t === "engineer") return "user-type-engineer";
+  if (t === "intern") return "user-type-intern";
+  if (t === "oncall") return "user-type-oncall";
+  if (t === "permanent") return "user-type-permanent";
+  if (t === "admin") return "user-type-admin";
+  return "";
+}
+
+function applyUserTypeBadge_(type) {
+  var badge = document.getElementById("homeUserType");
+  if (!badge) return;
+
+  var cls = userTypeBadgeClass_(type);
+  badge.className = "user-type-badge";
+
+  if (cls) {
+    badge.classList.add(cls, "show");
+    badge.textContent = type;
+  } else {
+    badge.textContent = "";
   }
 }
 
