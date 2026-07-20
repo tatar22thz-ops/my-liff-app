@@ -731,6 +731,17 @@ footer {
   flex: 0 0 auto;
 }
 
+.pq-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  color: #0B2A5C;
+  font-size: 3.44vh;
+  line-height: 1;
+  font-weight: 800;
+}
+
 .info-card {
   width: 340px;
   min-height: 17.89vh;
@@ -1450,16 +1461,16 @@ footer {
 .print-qr-toggle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 2.2vh auto 0;
   width: 319px;
-  font-size: 1.9vh;
+  font-size: 2.1vh;
   color: #333333;
 }
 
 .print-qr-toggle input[type="checkbox"] {
-  width: 2.4vh;
-  height: 2.4vh;
+  width: 3.2vh;
+  height: 3.2vh;
   accent-color: #0B2A5C;
   flex: 0 0 auto;
 }
@@ -3948,8 +3959,8 @@ function showDailyWorkConfirm() {
       </section>
 
       <label class="print-qr-toggle">
-        <input type="checkbox" id="dwPrintQrCheckbox">
-        <span>พิมพ์ QR อัตโนมัติเมื่อครบกล่อง</span>
+        <input type="checkbox" id="dwPrintQrCheckbox" disabled>
+        <span id="printQrToggleLabel">กำลังคำนวณจำนวนกล่อง...</span>
       </label>
 
       <button class="save-btn" type="button" onclick="saveDailyWork_()">
@@ -3963,6 +3974,39 @@ function showDailyWorkConfirm() {
       </button>
     </div>
   `;
+
+  refreshPrintQrPreview_();
+}
+
+// เรียกทุกครั้งที่เข้าหน้ายืนยันยอดงานรายวัน คำนวณล่วงหน้าว่าถ้ากดยืนยันตอน
+// นี้จะเข้าคิวพิมพ์ QR กี่กล่อง (ยังไม่บันทึกจริง แค่ preview) เติมเลขจริงลง
+// label ของช่องติ๊กแทนคำอธิบายลอยๆ
+async function refreshPrintQrPreview_() {
+  var res;
+  try {
+    res = await api("previewPrintQrBoxCount", {
+      payload: {
+        mission: dailyWorkState.mission,
+        partNumber: dailyWorkState.partNumber,
+        ok: dailyWorkState.ok,
+        ng: dailyWorkState.ng,
+        lineUserId: currentLineUserId
+      }
+    });
+  } catch (e) {
+    res = { ok: false };
+  }
+
+  // กัน race condition ถ้าผู้ใช้กด "แก้ไขข้อมูล" แล้วย้อนกลับมาหน้านี้ใหม่ก่อน
+  // preview รอบเก่าจะโหลดเสร็จ — element เดิมจะถูกแทนที่ไปแล้ว ไม่ต้องอัพเดท
+  var checkbox = document.getElementById("dwPrintQrCheckbox");
+  var label = document.getElementById("printQrToggleLabel");
+  if (!checkbox || !label) return;
+
+  checkbox.disabled = false;
+  label.textContent = (res && res.ok)
+    ? "พิมพ์ QR " + res.boxesToPrint + " กล่อง (ยังไม่ได้พิมพ์)"
+    : "พิมพ์ QR (คำนวณจำนวนกล่องไม่สำเร็จ)";
 }
 
 function saveDailyWork_() {
@@ -4177,8 +4221,8 @@ async function showPrintQrEntryView() {
 
   document.getElementById("receiveContent").innerHTML = `
     <div class="result-view">
-      <h2 class="scan-ok-title">
-        <span>เลือก Mission / Part / Batch ของกล่องที่เพิ่งทำเสร็จ</span>
+      <h2 class="pq-heading">
+        <span>เลือก Mission / Part / Batch ที่จะพิมพ์ QR</span>
       </h2>
 
       <section class="qty-form">
@@ -4203,7 +4247,7 @@ async function showPrintQrBatchEntryView() {
 
   document.getElementById("receiveContent").innerHTML = `
     <div class="result-view">
-      <h2 class="scan-ok-title">
+      <h2 class="pq-heading">
         <span>เลือก Mission / Part / Batch ที่จะสั่งพิมพ์ล่วงหน้า</span>
       </h2>
 
