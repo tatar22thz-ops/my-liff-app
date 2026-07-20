@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trigo Yusen Hub — Print Station</title>
+<script src="qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #0B2A5C;
+    --navy-dark: #081D40;
+    --green: #3DAA5B;
+    --red: #D8342A;
+    --gray: #5B6472;
+    --bg: #F2F4F7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Tahoma, sans-serif;
+    background: var(--bg);
+    color: #222;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 18px 24px;
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #cfd8ea; }
+  main {
+    max-width: 720px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: bold;
+  }
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gray);
+  }
+  .dot.ok { background: var(--green); }
+  .dot.busy { background: #E8A33D; }
+  .dot.err { background: var(--red); }
+  .controls { margin-top: 14px; display: flex; gap: 10px; }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-primary:disabled, .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hint {
+    font-size: 13px; color: var(--gray); margin-top: 10px; line-height: 1.6;
+  }
+  .log {
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 13px;
+  }
+  .log-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row .box { color: var(--gray); font-size: 12px; }
+  .log-row.printed .name { color: var(--green); }
+  .log-row.error .name { color: var(--red); }
+
+  /* ----- Label ที่จะพิมพ์จริง (ซ่อนไว้ปกติ โชว์เฉพาะตอนสั่ง Print) ----- */
+  #printArea { display: none; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea {
+      display: block;
+      position: fixed;
+      top: 0; left: 0;
+    }
+    @page { size: 1in 1in; margin: 0; }
+  }
+
+  #label {
+    width: 1in;
+    height: 1in;
+    position: relative;
+    background: #fff;
+  }
+  #label canvas {
+    position: absolute;
+    top: 0.03in;
+    left: 0.03in;
+    width: 0.82in;
+    height: 0.82in;
+  }
+  #label .corner {
+    position: absolute;
+    right: 0.03in;
+    bottom: 0.02in;
+    font-family: Tahoma, sans-serif;
+    font-size: 7px;
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Trigo Yusen Hub — Print Station</h1>
+  <p>เปิดหน้านี้ค้างไว้บน notebook หน้างานที่ต่อเครื่องพิมพ์ QR</p>
+</header>
+
+<main>
+  <div class="card">
+    <div class="status-row">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">ยังไม่ได้เริ่ม</span>
+    </div>
+    <div class="controls">
+      <button class="btn-primary" id="startBtn" onclick="startPolling_()">เริ่มทำงาน</button>
+      <button class="btn-danger" id="stopBtn" onclick="stopPolling_()" disabled>หยุด</button>
+    </div>
+    <p class="hint">
+      ต้องตั้งเครื่องพิมพ์ Zebra ZD220 เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน<br>
+      แนะนำเปิด Chrome ด้วยแฟล็ก <code>--kiosk-printing</code> เพื่อให้พิมพ์อัตโนมัติโดยไม่ต้องกดยืนยันทีละใบ
+      (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)
+    </p>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:bold; margin-bottom:8px;">ประวัติงานพิมพ์ล่าสุด</div>
+    <div class="log" id="log">
+      <div class="log-row"><span>ยังไม่มีงานพิมพ์</span></div>
+    </div>
+  </div>
+</main>
+
+<div id="printArea">
+  <div id="label">
+    <canvas id="qrCanvas"></canvas>
+    <div class="corner" id="cornerText"></div>
+  </div>
+</div>
+
+<script>
+var GAS_API = "https://script.google.com/macros/s/AKfycbxeASt8OLOAIj9GIuJUGUGS6iBeELosvSfsrm0oSGN7GfOeEyb8NVD2_2z7XMralNZdlA/exec";
+var POLL_INTERVAL_MS = 2500;
+
+var pollTimer_ = null;
+var isProcessing_ = false;
+
+function setStatus_(dotClass, text) {
+  document.getElementById("statusDot").className = "dot" + (dotClass ? " " + dotClass : "");
+  document.getElementById("statusText").textContent = text;
+}
+
+function api_(action, payload) {
+  var body = Object.assign({ action: action }, payload || {});
+  return fetch(GAS_API, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  }).then(function(res) { return res.json(); });
+}
+
+function addLogRow_(job, state, message) {
+  var log = document.getElementById("log");
+  var firstRow = log.querySelector(".log-row");
+  if (firstRow && firstRow.textContent.indexOf("ยังไม่มีงานพิมพ์") !== -1) {
+    log.innerHTML = "";
+  }
+
+  var row = document.createElement("div");
+  row.className = "log-row " + state;
+
+  var left = document.createElement("span");
+  left.innerHTML = '<span class="name">' + escapeHtml_(job.employeeName) + "</span> — " +
+    escapeHtml_(job.mission) + " · กล่อง #" + job.boxNumber + (message ? " (" + escapeHtml_(message) + ")" : "");
+
+  var right = document.createElement("span");
+  right.className = "box";
+  right.textContent = new Date().toLocaleTimeString("th-TH");
+
+  row.appendChild(left);
+  row.appendChild(right);
+  log.insertBefore(row, log.firstChild);
+}
+
+function escapeHtml_(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+// ฟอร์แมต QR แบบ Option B: ข้อมูลดิบฝังในตัว QR เลย คั่นด้วย | เพื่อให้เปิด
+// ใน Excel แล้วใช้ Text to Columns แยกคอลัมน์ได้ทันที
+function buildQrPayload_(job) {
+  return [
+    job.employeeName,
+    job.timestamp ? String(job.timestamp).split(" ")[0] : "",
+    job.mission,
+    job.partNumber,
+    job.batch,
+    job.boxNumber,
+    job.qty
+  ].join("|");
+}
+
+function renderLabel_(job) {
+  return new Promise(function(resolve, reject) {
+    var canvas = document.getElementById("qrCanvas");
+    var payload = buildQrPayload_(job);
+
+    QRCode.toCanvas(canvas, payload, { margin: 0, width: 240 }, function(err) {
+      if (err) { reject(err); return; }
+
+      document.getElementById("cornerText").textContent = "PASS " + job.employeeId + "-" + job.boxNumber;
+      resolve();
+    });
+  });
+}
+
+function printLabel_() {
+  return new Promise(function(resolve) {
+    window.print();
+    // window.print() เป็น synchronous ใน Chrome ปกติ (ยิ่งเปิดด้วย
+    // --kiosk-printing จะพิมพ์ทันทีไม่มี dialog) หน่วงเล็กน้อยกันเครื่องพิมพ์
+    // ประมวลผลไม่ทัน ก่อนไปดึงงานถัดไป
+    setTimeout(resolve, 800);
+  });
+}
+
+function processJob_(job) {
+  return renderLabel_(job)
+    .then(printLabel_)
+    .then(function() { return api_("markPrintJobPrinted", { jobId: job.jobId }); })
+    .then(function(res) {
+      if (res && res.ok) {
+        addLogRow_(job, "printed", "พิมพ์แล้ว");
+      } else {
+        addLogRow_(job, "error", (res && res.error) || "mark printed ไม่สำเร็จ");
+      }
+    })
+    .catch(function(err) {
+      addLogRow_(job, "error", String(err && err.message ? err.message : err));
+    });
+}
+
+function pollOnce_() {
+  if (isProcessing_) return;
+  isProcessing_ = true;
+
+  api_("getPendingPrintJobs", {})
+    .then(function(res) {
+      var jobs = (res && res.ok && res.jobs) || [];
+
+      if (jobs.length === 0) {
+        setStatus_("ok", "พร้อมทำงาน — รอคิวพิมพ์...");
+        return Promise.resolve();
+      }
+
+      setStatus_("busy", "กำลังพิมพ์ " + jobs.length + " ใบ...");
+
+      // พิมพ์ทีละใบตามลำดับ กันเครื่องพิมพ์ชนงานกัน
+      return jobs.reduce(function(chain, job) {
+        return chain.then(function() { return processJob_(job); });
+      }, Promise.resolve());
+    })
+    .catch(function(err) {
+      setStatus_("err", "เชื่อมต่อไม่ได้: " + String(err && err.message ? err.message : err));
+    })
+    .finally(function() {
+      isProcessing_ = false;
+    });
+}
+
+function startPolling_() {
+  if (pollTimer_) return;
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+  setStatus_("ok", "พร้อมทำงาน — รอคิวพิมพ์...");
+  pollOnce_();
+  pollTimer_ = setInterval(pollOnce_, POLL_INTERVAL_MS);
+}
+
+function stopPolling_() {
+  if (pollTimer_) {
+    clearInterval(pollTimer_);
+    pollTimer_ = null;
+  }
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  setStatus_("", "หยุดทำงาน");
+}
+</script>
+
+</body>
+</html>
