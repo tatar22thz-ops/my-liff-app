@@ -1447,6 +1447,23 @@ footer {
   text-align: center;
 }
 
+.print-qr-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2.2vh auto 0;
+  width: 319px;
+  font-size: 1.9vh;
+  color: #333333;
+}
+
+.print-qr-toggle input[type="checkbox"] {
+  width: 2.4vh;
+  height: 2.4vh;
+  accent-color: #0B2A5C;
+  flex: 0 0 auto;
+}
+
 .save-btn {
   width: 319px;
   height: 8.41vh;
@@ -3930,6 +3947,11 @@ function showDailyWorkConfirm() {
         ${remainingRowHtml}
       </section>
 
+      <label class="print-qr-toggle">
+        <input type="checkbox" id="dwPrintQrCheckbox">
+        <span>พิมพ์ QR อัตโนมัติเมื่อครบกล่อง</span>
+      </label>
+
       <button class="save-btn" type="button" onclick="saveDailyWork_()">
         ${checkCircleWhiteIcon()}
         <span>ยืนยัน</span>
@@ -3951,6 +3973,8 @@ function saveDailyWork_() {
     saveBtn.disabled = true;
   }
 
+  var printQrCheckbox = document.getElementById("dwPrintQrCheckbox");
+
   api("logDailyWork", {
     payload: {
       mission: dailyWorkState.mission,
@@ -3963,6 +3987,7 @@ function saveDailyWork_() {
       startTime: dailyWorkState.startTime || "",
       endTime: dailyWorkState.endTime || "",
       lotCode: dailyWorkState.lotCode || "",
+      printQr: !!(printQrCheckbox && printQrCheckbox.checked),
       lineUserId: currentLineUserId
     }
   }).then(function(data) {
@@ -4025,6 +4050,8 @@ function showDailyWorkSuccess_(data) {
         ${remainingWorkRowHtml_(data.remainingAfter)}
       </section>
 
+      ${printQrResultHtml_(data.printQr)}
+
       <button class="static-primary-btn" type="button" onclick="goHome()">
         ${homeWhiteIcon()}
         <span>กลับหน้าแรก</span>
@@ -4036,6 +4063,27 @@ function showDailyWorkSuccess_(data) {
       </button>
     </div>
   `;
+}
+
+// สรุปผลปริ้น QR อัตโนมัติ (วิธีที่ 2) ให้เห็นบนหน้าสำเร็จ — ไม่ติ๊กไว้ก็ไม่
+// ต้องโชว์อะไรเลย ติ๊กไว้แต่ยังไม่ครบกล่องก็บอกตรงๆ ว่ายังไม่ครบ
+function printQrResultHtml_(printQr) {
+  if (!printQr) return "";
+
+  if (!printQr.ok) {
+    return '<div class="warn-box">พิมพ์ QR ไม่สำเร็จ: ' + escapeHtml(printQr.error || "") + '</div>';
+  }
+
+  if (printQr.boxesEnqueued > 0) {
+    var boxLabel = printQr.boxesEnqueued > 1
+      ? ('#' + printQr.startBoxNumber + ' - #' + printQr.endBoxNumber)
+      : ('#' + printQr.startBoxNumber);
+    return '<section class="confirm-qty">' +
+      '<div class="confirm-qty-row"><span>เข้าคิวพิมพ์ QR</span><span>กล่อง ' + boxLabel + '</span></div>' +
+    '</section>';
+  }
+
+  return '<p class="picker-context" style="text-align:center">ยอดยังไม่ครบกล่อง ยังไม่พิมพ์ QR</p>';
 }
 
 // ---- Print QR: เลือกวิธีทีละ 1 กล่อง หรือสั่งพิมพ์ล่วงหน้าหลายกล่อง ->
