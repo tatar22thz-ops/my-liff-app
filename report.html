@@ -1511,8 +1511,8 @@ function showPresenceEmployeeListView_() {
         '<button type="button" class="emp-row-remove" onclick="removePresenceEmployee_(\'' + item.employeeId + '\')">' + smallXIcon() + '</button>' +
       '</div>' +
       '<div class="emp-row-times" style="display:flex;">' +
-        '<div class="emp-time-field"><label>เริ่มงาน</label><input type="time" value="' + item.start + '" onchange="updatePresenceField_(\'' + item.employeeId + '\', \'start\', this.value)"></div>' +
-        '<div class="emp-time-field"><label>เลิกงาน</label><input type="time" value="' + item.end + '" onchange="updatePresenceField_(\'' + item.employeeId + '\', \'end\', this.value)"></div>' +
+        '<div class="emp-time-field"><label>เริ่มงาน</label><input type="time" value="' + (item.start || "08:00") + '" onchange="updatePresenceField_(\'' + item.employeeId + '\', \'start\', this.value)"></div>' +
+        '<div class="emp-time-field"><label>เลิกงาน</label><input type="time" value="' + (item.end || "17:00") + '" onchange="updatePresenceField_(\'' + item.employeeId + '\', \'end\', this.value)"></div>' +
       '</div>' +
       '<div class="emp-row-extra' + (showOt ? '' : ' hidden') + '">' +
         '<div class="ot-type-group">' +
@@ -2100,8 +2100,8 @@ async function showInspectEditForm_(entry) {
       '<p class="picker-context">Part No. : ' + escapeHtml(entry.partNumber) + ' &middot; Batch ' + escapeHtml(entry.batch) + '</p>' +
       '<div class="edit-form-row"><label>OK</label><input id="editEntryOk" type="number" inputmode="numeric" value="' + entry.ok + '" oninput="updateInspectEditForm_()"></div>' +
       '<div class="edit-form-row"><label>NG</label><input id="editEntryNg" type="number" inputmode="numeric" value="' + entry.ng + '" oninput="updateInspectEditForm_()"></div>' +
-      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="editEntryStart" type="time" value="' + padTimeStr_(entry.startTime) + '"></div>' +
-      '<div class="edit-form-row"><label>เลิกงาน</label><input id="editEntryEnd" type="time" value="' + padTimeStr_(entry.endTime) + '"></div>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="editEntryStart" type="time" value="' + (padTimeStr_(entry.startTime) || "08:00") + '"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="editEntryEnd" type="time" value="' + (padTimeStr_(entry.endTime) || "17:00") + '"></div>' +
       '<div id="editEntryDefectWrap">' + renderEditDefectSectionHtml_(inspectEditDefects_, entry.defectBreakdown) + '</div>' +
       '<button id="editEntrySaveBtn" class="static-primary-btn" type="button" onclick="saveInspectEdit_()">' + checkCircleWhiteIcon() + '<span>บันทึกการแก้ไข</span></button>' +
     '</div>';
@@ -2398,8 +2398,8 @@ function showPresenceEditForm_(entry) {
     '<div class="picker-page">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(presenceEditState_.dateLabel) + '</p>' +
       '<p class="picker-context">พนักงาน : ' + escapeHtml(entry.employeeName) + '</p>' +
-      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="peStart" type="time" value="' + padTimeStr_(entry.start) + '"></div>' +
-      '<div class="edit-form-row"><label>เลิกงาน</label><input id="peEnd" type="time" value="' + padTimeStr_(entry.end) + '"></div>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="peStart" type="time" value="' + (padTimeStr_(entry.start) || "08:00") + '"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="peEnd" type="time" value="' + (padTimeStr_(entry.end) || "17:00") + '"></div>' +
       '<button id="peSaveBtn" class="static-primary-btn" type="button" onclick="savePresenceEditEntry_()">' + checkCircleWhiteIcon() + '<span>บันทึก</span></button>' +
     '</div>';
 }

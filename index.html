@@ -3407,8 +3407,8 @@ function updateDefectSumStatus_(ngValue) {
 // ช่องเวลาเริ่ม/จบงาน ไม่บังคับกรอก — ถ้ากรอกไว้ ตอนสร้างใบงานจะดึงไปเติม
 // เวลาให้อัตโนมัติ (ยังแก้/เพิ่มพนักงานเองตอนสร้างใบงานได้ปกติ)
 function timeRangeFieldsHtml_(startId, endId) {
-  return '<div class="qty-row"><label>เริ่มงาน</label><input id="' + startId + '" type="time"></div>' +
-    '<div class="qty-row"><label>จบงาน</label><input id="' + endId + '" type="time"></div>';
+  return '<div class="qty-row"><label>เริ่มงาน</label><input id="' + startId + '" type="time" value="08:00"></div>' +
+    '<div class="qty-row"><label>จบงาน</label><input id="' + endId + '" type="time" value="17:00"></div>';
 }
 
 function onDefectFieldInput_() {
@@ -4038,29 +4038,44 @@ function showDailyWorkSuccess_(data) {
   `;
 }
 
-// ---- Print QR: เลือก Mission/Part/Batch ของกล่องที่เพิ่งทำเสร็จ -> เข้าคิว
-// พิมพ์ (จำนวนต่อกล่องคำนวณจาก Part Master ฝั่ง backend เสมอ ไม่ให้กรอกเอง) ----
-var printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0 };
+// ---- Print QR: เลือกวิธีทีละ 1 กล่อง หรือสั่งพิมพ์ล่วงหน้าหลายกล่อง ->
+// เลือก Mission/Part/Batch -> เข้าคิวพิมพ์ (จำนวนต่อกล่องคำนวณจาก Part
+// Master ฝั่ง backend เสมอ ไม่ให้กรอกเอง) ----
+var printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0, boxCount: 0 };
 
 function openPrintQr() {
-  printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0 };
+  printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0, boxCount: 0 };
   openFeaturePage_("Print QR");
   navStack_ = [];
-  goto_(showPrintQrEntryView);
+  goto_(showPrintQrModeChoice_);
 }
 
-async function showPrintQrEntryView() {
-  if (!partOptionsCache_) {
-    try {
-      var res = await api("getPartOptions", {});
-      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
-    } catch (e) {
-      console.log(e);
-      alert("โหลดข้อมูล Part ไม่สำเร็จ");
-      partOptionsCache_ = [];
-    }
-  }
+function showPrintQrModeChoice_() {
+  document.getElementById("receiveContent").innerHTML =
+    '<div class="picker-page">' +
+      '<h2 class="picker-heading">เลือกวิธีพิมพ์ QR</h2>' +
+      '<div class="picker-list">' +
+        '<button type="button" class="picker-item" onclick="goto_(showPrintQrEntryView)">' +
+          '<span class="picker-item-text">' +
+            '<span class="picker-item-title">ทีละ 1 กล่อง</span>' +
+            '<span class="picker-item-sub">พิมพ์ทันทีตอนกล่องนี้เสร็จ</span>' +
+          '</span>' +
+          chevronIcon() +
+        '</button>' +
+        '<button type="button" class="picker-item" onclick="goto_(showPrintQrBatchEntryView)">' +
+          '<span class="picker-item-text">' +
+            '<span class="picker-item-title">พิมพ์ล่วงหน้า</span>' +
+            '<span class="picker-item-sub">ระบุจำนวนกล่อง พิมพ์รวดเดียว</span>' +
+          '</span>' +
+          chevronIcon() +
+        '</button>' +
+      '</div>' +
+    '</div>';
+}
 
+// ใช้ร่วมกันทั้งหน้าทีละ 1 กล่อง และหน้าพิมพ์ล่วงหน้า (id ช่องเดียวกัน เพราะ
+// ไม่มีทางแสดงพร้อมกัน 2 หน้า)
+function printQrMissionPartBatchFieldsHtml_() {
   var missions = [];
   var seenMission = {};
 
@@ -4076,6 +4091,42 @@ async function showPrintQrEntryView() {
       return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
     }).join("");
 
+  return `
+    <div class="qty-row">
+      <label>Mission</label>
+      <select id="pqMission" onchange="onPrintQrMissionChange_()">
+        ${missionOptionsHtml}
+      </select>
+    </div>
+    <div class="qty-row">
+      <label>Part No</label>
+      <select id="pqPartNumber" onchange="onPrintQrPartChange_()" disabled>
+        <option value="">เลือก Mission ก่อน</option>
+      </select>
+    </div>
+    <div class="qty-row">
+      <label>Batch</label>
+      ${batchComboFieldHtml_("pq", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
+    </div>
+  `;
+}
+
+async function ensurePartOptionsLoaded_() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      console.log(e);
+      alert("โหลดข้อมูล Part ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+}
+
+async function showPrintQrEntryView() {
+  await ensurePartOptionsLoaded_();
+
   document.getElementById("receiveContent").innerHTML = `
     <div class="result-view">
       <h2 class="scan-ok-title">
@@ -4083,22 +4134,7 @@ async function showPrintQrEntryView() {
       </h2>
 
       <section class="qty-form">
-        <div class="qty-row">
-          <label>Mission</label>
-          <select id="pqMission" onchange="onPrintQrMissionChange_()">
-            ${missionOptionsHtml}
-          </select>
-        </div>
-        <div class="qty-row">
-          <label>Part No</label>
-          <select id="pqPartNumber" onchange="onPrintQrPartChange_()" disabled>
-            <option value="">เลือก Mission ก่อน</option>
-          </select>
-        </div>
-        <div class="qty-row">
-          <label>Batch</label>
-          ${batchComboFieldHtml_("pq", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
-        </div>
+        ${printQrMissionPartBatchFieldsHtml_()}
       </section>
 
       <div class="action-row">
@@ -4106,6 +4142,36 @@ async function showPrintQrEntryView() {
           <span>ยกเลิก</span>
         </button>
         <button id="pqNextBtn" class="action-btn confirm-btn" type="button" onclick="submitPrintQrEntry_()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function showPrintQrBatchEntryView() {
+  await ensurePartOptionsLoaded_();
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        <span>เลือก Mission / Part / Batch ที่จะสั่งพิมพ์ล่วงหน้า</span>
+      </h2>
+
+      <section class="qty-form">
+        ${printQrMissionPartBatchFieldsHtml_()}
+        <div class="qty-row">
+          <label>จำนวนกล่อง</label>
+          <input id="pqBoxCount" type="number" inputmode="numeric" placeholder="เช่น 10" oninput="onPrintQrFieldsChange_()">
+        </div>
+      </section>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
+          <span>ยกเลิก</span>
+        </button>
+        <button id="pqBatchNextBtn" class="action-btn confirm-btn" type="button" onclick="submitPrintQrBatchEntry_()" disabled>
           ${downloadIcon()}
           <span>ถัดไป</span>
         </button>
@@ -4155,7 +4221,17 @@ async function onPrintQrPartChange_() {
     setBatchComboOptions_("pq", batches);
   }
 
-  updatePrintQrForm_();
+  onPrintQrFieldsChange_();
+}
+
+// dispatcher — ช่อง Batch (BATCH_COMBOS_.pq.onChange) เรียกอันนี้เสมอ ไม่ว่า
+// จะอยู่หน้าทีละ 1 กล่อง หรือหน้าพิมพ์ล่วงหน้า เช็คจาก DOM ว่าหน้าไหนกำลังโชว์
+function onPrintQrFieldsChange_() {
+  if (document.getElementById("pqBatchNextBtn")) {
+    updatePrintQrBatchForm_();
+  } else if (document.getElementById("pqNextBtn")) {
+    updatePrintQrForm_();
+  }
 }
 
 function updatePrintQrForm_() {
@@ -4174,22 +4250,32 @@ function updatePrintQrForm_() {
   }
 }
 
-async function submitPrintQrEntry_() {
+function updatePrintQrBatchForm_() {
   var mission = document.getElementById("pqMission").value;
   var partNumber = document.getElementById("pqPartNumber").value;
-  var batch = document.getElementById("pqManualBatch").value.trim();
+  var boxCount = Number(document.getElementById("pqBoxCount").value || 0);
+  var nextBtn = document.getElementById("pqBatchNextBtn");
 
+  var valid = mission && partNumber && batchComboIsValid_("pq") && boxCount > 0 && boxCount <= 200;
+
+  if (valid) {
+    nextBtn.disabled = false;
+    nextBtn.classList.add("ready");
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("ready");
+  }
+}
+
+async function lookupPrintQrPartAndQty_(mission, partNumber) {
   var part = partOptionsCache_.find(function(opt) {
     return (opt.mission || "") === mission && (opt.partNumber || "") === partNumber;
   });
 
   if (!part) {
     alert("ไม่พบข้อมูล Part นี้");
-    return;
+    return null;
   }
-
-  var nextBtn = document.getElementById("pqNextBtn");
-  if (nextBtn) nextBtn.disabled = true;
 
   var qtyRes;
   try {
@@ -4198,22 +4284,60 @@ async function submitPrintQrEntry_() {
     qtyRes = { ok: false };
   }
 
-  if (nextBtn) nextBtn.disabled = false;
-
   var qty = (qtyRes && qtyRes.ok) ? Number(qtyRes.unitsPerBox || 0) : 0;
 
   if (!(qty > 0)) {
     alert("Part นี้ยังไม่ได้ตั้งค่า QTY./Box ใน Part Master กรุณาติดต่อผู้ดูแลระบบ");
-    return;
+    return null;
   }
+
+  return { part: part, qty: qty };
+}
+
+async function submitPrintQrEntry_() {
+  var mission = document.getElementById("pqMission").value;
+  var partNumber = document.getElementById("pqPartNumber").value;
+  var batch = document.getElementById("pqManualBatch").value.trim();
+
+  var nextBtn = document.getElementById("pqNextBtn");
+  if (nextBtn) nextBtn.disabled = true;
+
+  var found = await lookupPrintQrPartAndQty_(mission, partNumber);
+
+  if (nextBtn) nextBtn.disabled = false;
+  if (!found) return;
 
   printQrState.mission = mission;
   printQrState.partNumber = partNumber;
-  printQrState.partName = part.partName;
+  printQrState.partName = found.part.partName;
   printQrState.batch = batch;
-  printQrState.qty = qty;
+  printQrState.qty = found.qty;
 
   goto_(showPrintQrConfirm);
+}
+
+async function submitPrintQrBatchEntry_() {
+  var mission = document.getElementById("pqMission").value;
+  var partNumber = document.getElementById("pqPartNumber").value;
+  var batch = document.getElementById("pqManualBatch").value.trim();
+  var boxCount = Number(document.getElementById("pqBoxCount").value || 0);
+
+  var nextBtn = document.getElementById("pqBatchNextBtn");
+  if (nextBtn) nextBtn.disabled = true;
+
+  var found = await lookupPrintQrPartAndQty_(mission, partNumber);
+
+  if (nextBtn) nextBtn.disabled = false;
+  if (!found) return;
+
+  printQrState.mission = mission;
+  printQrState.partNumber = partNumber;
+  printQrState.partName = found.part.partName;
+  printQrState.batch = batch;
+  printQrState.qty = found.qty;
+  printQrState.boxCount = boxCount;
+
+  goto_(showPrintQrBatchConfirm);
 }
 
 function showPrintQrConfirm() {
@@ -4256,8 +4380,72 @@ function showPrintQrConfirm() {
       </section>
 
       <button class="save-btn" type="button" onclick="savePrintQrJob_()">
-        ${checkCircleWhiteIcon()}
-        <span>Print QR</span>
+        ${printerWhiteIcon()}
+        <span>เริ่มพิมพ์</span>
+      </button>
+
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
+        ${editIcon()}
+        <span>แก้ไขข้อมูล</span>
+      </button>
+    </div>
+  `;
+}
+
+function showPrintQrBatchConfirm() {
+  var total = printQrState.qty * printQrState.boxCount;
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนกดยืนยัน</h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้พิมพ์</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(printQrState.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(printQrState.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(printQrState.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(printQrState.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนต่อกล่อง</span>
+          <span>${printQrState.qty} Pcs</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวนกล่อง</span>
+          <span>${printQrState.boxCount}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>รวมทั้งหมด</span>
+          <span>${total} Pcs</span>
+        </div>
+      </section>
+
+      <div class="warn-box">⚠️ พิมพ์ไว้ก่อนแพ็คจริง ถ้าทำได้จริงน้อยกว่าที่พิมพ์ไว้ จะมีฉลากเหลือเกิน ต้องระวังไม่เอาไปแปะผิดกล่อง/ผิดจำนวน</div>
+
+      <button class="save-btn" type="button" onclick="saveBatchPrintQrJob_()">
+        ${printerWhiteIcon()}
+        <span>เริ่มพิมพ์</span>
       </button>
 
       <button class="edit-btn" type="button" onclick="goBackStep_()">
@@ -4287,6 +4475,36 @@ function savePrintQrJob_() {
   }).then(function(data) {
     if (data && data.ok) {
       gotoSuccess_(function() { showPrintQrSuccess_(data); });
+      return;
+    }
+    if (saveBtn) saveBtn.disabled = false;
+    alert((data && data.error) || "เข้าคิวพิมพ์ไม่สำเร็จ");
+  }).catch(function(err) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+function saveBatchPrintQrJob_() {
+  var saveBtn = document.querySelector(".save-btn");
+
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
+
+  api("enqueuePrintJobBatch", {
+    payload: {
+      mission: printQrState.mission,
+      partNumber: printQrState.partNumber,
+      partName: printQrState.partName,
+      batch: printQrState.batch,
+      boxCount: printQrState.boxCount,
+      lineUserId: currentLineUserId
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      gotoSuccess_(function() { showPrintQrBatchSuccess_(data); });
       return;
     }
     if (saveBtn) saveBtn.disabled = false;
@@ -4336,9 +4554,60 @@ function showPrintQrSuccess_(data) {
         <span>กลับหน้าแรก</span>
       </button>
 
-      <button class="static-secondary-btn" type="button" onclick="openPrintQr()">
+      <button class="static-secondary-btn" type="button" onclick="goto_(showPrintQrEntryView)">
         ${refreshIcon()}
         <span>พิมพ์กล่องต่อไป</span>
+      </button>
+    </div>
+  `;
+}
+
+function showPrintQrBatchSuccess_(data) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading-success">
+        ${checkCircleIcon()}
+        <span>เข้าคิวพิมพ์แล้ว</span>
+      </h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(data.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(data.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(data.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>กล่องที่</span>
+          <span>#${data.startBoxNumber} - #${data.endBoxNumber}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวนกล่อง</span>
+          <span>${data.boxCount}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวนต่อกล่อง</span>
+          <span>${data.qty} Pcs</span>
+        </div>
+      </section>
+
+      <button class="static-primary-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+
+      <button class="static-secondary-btn" type="button" onclick="goto_(showPrintQrBatchEntryView)">
+        ${refreshIcon()}
+        <span>พิมพ์ล่วงหน้าเพิ่ม</span>
       </button>
     </div>
   `;
@@ -5072,6 +5341,10 @@ function editIcon() {
 
 function successBigIcon() {
   return `<svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="105" fill="#00A000"></circle><path d="M64 109L95 140L162 73" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"></path><path d="M101 149L168 82" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="18" stroke-linecap="round"></path></svg>`;
+}
+
+function printerWhiteIcon() {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="18" y="8" width="28" height="14" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"></rect><rect x="8" y="22" width="48" height="24" rx="4" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"></rect><rect x="18" y="38" width="28" height="18" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"></rect></svg>`;
 }
 
 function chevronIcon() {
