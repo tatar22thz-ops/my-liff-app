@@ -251,6 +251,10 @@ body {
   color: #7C4DFF;
 }
 
+.icon-navy {
+  color: #0B2A5C;
+}
+
 .card-copy {
   display: flex;
   flex-direction: column;
@@ -1817,6 +1821,31 @@ footer {
         </span>
       </button>
 
+      <button class="menu-card" type="button" onclick="openPrintQr()">
+        <span class="card-icon icon-navy">
+          <svg viewBox="0 0 96 96" aria-hidden="true">
+            <g fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round">
+              <rect x="10" y="10" width="26" height="26"></rect>
+              <rect x="60" y="10" width="26" height="26"></rect>
+              <rect x="10" y="60" width="26" height="26"></rect>
+            </g>
+            <g fill="currentColor">
+              <rect x="18" y="18" width="10" height="10"></rect>
+              <rect x="68" y="18" width="10" height="10"></rect>
+              <rect x="18" y="68" width="10" height="10"></rect>
+              <rect x="60" y="60" width="10" height="10"></rect>
+              <rect x="76" y="60" width="10" height="10"></rect>
+              <rect x="60" y="76" width="10" height="10"></rect>
+              <rect x="76" y="76" width="10" height="10"></rect>
+            </g>
+          </svg>
+        </span>
+        <span class="card-copy card-copy-small">
+          <span class="card-title">Print QR</span>
+          <span class="card-subtitle">พิมพ์ QR ติดกล่อง</span>
+        </span>
+      </button>
+
       <button class="menu-card" type="button" onclick="openCheckStock()">
         <span class="card-icon icon-orange">
           <svg viewBox="0 0 96 96" aria-hidden="true">
@@ -2858,7 +2887,8 @@ var BATCH_COMBOS_ = {
   recv: { inputId: "manualBatch", suggestId: "manualBatchSuggest", allowFree: true, onChange: "updateManualForm" },
   dw:   { inputId: "dwManualBatch", suggestId: "dwManualBatchSuggest", allowFree: false, onChange: "updateDailyWorkManualForm" },
   ng:   { inputId: "ngManualBatch", suggestId: "ngManualBatchSuggest", allowFree: false, onChange: "updateReturnNGManualForm" },
-  cs:   { inputId: "csManualBatch", suggestId: "csManualBatchSuggest", allowFree: false, onChange: "updateCheckStockManualForm" }
+  cs:   { inputId: "csManualBatch", suggestId: "csManualBatchSuggest", allowFree: false, onChange: "updateCheckStockManualForm" },
+  pq:   { inputId: "pqManualBatch", suggestId: "pqManualBatchSuggest", allowFree: false, onChange: "updatePrintQrForm_" }
 };
 var batchComboState_ = {};
 
@@ -4003,6 +4033,312 @@ function showDailyWorkSuccess_(data) {
       <button class="static-secondary-btn" type="button" onclick="openDailyWork()">
         ${refreshIcon()}
         <span>ลงงานเพิ่ม</span>
+      </button>
+    </div>
+  `;
+}
+
+// ---- Print QR: เลือก Mission/Part/Batch ของกล่องที่เพิ่งทำเสร็จ -> เข้าคิว
+// พิมพ์ (จำนวนต่อกล่องคำนวณจาก Part Master ฝั่ง backend เสมอ ไม่ให้กรอกเอง) ----
+var printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0 };
+
+function openPrintQr() {
+  printQrState = { mission: "", partNumber: "", partName: "", batch: "", qty: 0 };
+  openFeaturePage_("Print QR");
+  navStack_ = [];
+  goto_(showPrintQrEntryView);
+}
+
+async function showPrintQrEntryView() {
+  if (!partOptionsCache_) {
+    try {
+      var res = await api("getPartOptions", {});
+      partOptionsCache_ = (res && res.ok && res.options) ? res.options : [];
+    } catch (e) {
+      console.log(e);
+      alert("โหลดข้อมูล Part ไม่สำเร็จ");
+      partOptionsCache_ = [];
+    }
+  }
+
+  var missions = [];
+  var seenMission = {};
+
+  partOptionsCache_.forEach(function(opt) {
+    var m = opt.mission || "";
+    if (!m || seenMission[m]) return;
+    seenMission[m] = true;
+    missions.push(m);
+  });
+
+  var missionOptionsHtml = '<option value="">เลือก Mission</option>' +
+    missions.map(function(m) {
+      return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+    }).join("");
+
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="result-view">
+      <h2 class="scan-ok-title">
+        <span>เลือก Mission / Part / Batch ของกล่องที่เพิ่งทำเสร็จ</span>
+      </h2>
+
+      <section class="qty-form">
+        <div class="qty-row">
+          <label>Mission</label>
+          <select id="pqMission" onchange="onPrintQrMissionChange_()">
+            ${missionOptionsHtml}
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Part No</label>
+          <select id="pqPartNumber" onchange="onPrintQrPartChange_()" disabled>
+            <option value="">เลือก Mission ก่อน</option>
+          </select>
+        </div>
+        <div class="qty-row">
+          <label>Batch</label>
+          ${batchComboFieldHtml_("pq", "เลือก Part ก่อน แล้วพิมพ์เลข Batch")}
+        </div>
+      </section>
+
+      <div class="action-row">
+        <button class="action-btn rescan-btn" type="button" onclick="goBackStep_()">
+          <span>ยกเลิก</span>
+        </button>
+        <button id="pqNextBtn" class="action-btn confirm-btn" type="button" onclick="submitPrintQrEntry_()" disabled>
+          ${downloadIcon()}
+          <span>ถัดไป</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function onPrintQrMissionChange_() {
+  var mission = document.getElementById("pqMission").value;
+  var partSelect = document.getElementById("pqPartNumber");
+
+  if (!mission) {
+    partSelect.innerHTML = '<option value="">เลือก Mission ก่อน</option>';
+    partSelect.disabled = true;
+    onPrintQrPartChange_();
+    return;
+  }
+
+  var parts = partOptionsCache_.filter(function(opt) {
+    return (opt.mission || "") === mission;
+  });
+
+  partSelect.innerHTML = '<option value="">เลือก Part No</option>' +
+    parts.map(function(p) {
+      var label = (p.partNumber || "") + " - " + (p.partName || "");
+      return '<option value="' + escapeHtml(p.partNumber) + '">' + escapeHtml(label) + '</option>';
+    }).join("");
+  partSelect.disabled = false;
+
+  onPrintQrPartChange_();
+}
+
+async function onPrintQrPartChange_() {
+  var partNumber = document.getElementById("pqPartNumber").value;
+
+  setBatchComboOptions_("pq", []);
+
+  if (partNumber) {
+    var batchRes;
+    try {
+      batchRes = await api("getBatchOptions", { partNumber: partNumber });
+    } catch (e) {
+      batchRes = { ok: false, options: [] };
+    }
+    var batches = (batchRes && batchRes.ok && batchRes.options) ? batchRes.options : [];
+    setBatchComboOptions_("pq", batches);
+  }
+
+  updatePrintQrForm_();
+}
+
+function updatePrintQrForm_() {
+  var mission = document.getElementById("pqMission").value;
+  var partNumber = document.getElementById("pqPartNumber").value;
+  var nextBtn = document.getElementById("pqNextBtn");
+
+  var valid = mission && partNumber && batchComboIsValid_("pq");
+
+  if (valid) {
+    nextBtn.disabled = false;
+    nextBtn.classList.add("ready");
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.classList.remove("ready");
+  }
+}
+
+async function submitPrintQrEntry_() {
+  var mission = document.getElementById("pqMission").value;
+  var partNumber = document.getElementById("pqPartNumber").value;
+  var batch = document.getElementById("pqManualBatch").value.trim();
+
+  var part = partOptionsCache_.find(function(opt) {
+    return (opt.mission || "") === mission && (opt.partNumber || "") === partNumber;
+  });
+
+  if (!part) {
+    alert("ไม่พบข้อมูล Part นี้");
+    return;
+  }
+
+  var nextBtn = document.getElementById("pqNextBtn");
+  if (nextBtn) nextBtn.disabled = true;
+
+  var qtyRes;
+  try {
+    qtyRes = await api("getUnitsPerBox", { partNumber: partNumber });
+  } catch (e) {
+    qtyRes = { ok: false };
+  }
+
+  if (nextBtn) nextBtn.disabled = false;
+
+  var qty = (qtyRes && qtyRes.ok) ? Number(qtyRes.unitsPerBox || 0) : 0;
+
+  if (!(qty > 0)) {
+    alert("Part นี้ยังไม่ได้ตั้งค่า QTY./Box ใน Part Master กรุณาติดต่อผู้ดูแลระบบ");
+    return;
+  }
+
+  printQrState.mission = mission;
+  printQrState.partNumber = partNumber;
+  printQrState.partName = part.partName;
+  printQrState.batch = batch;
+  printQrState.qty = qty;
+
+  goto_(showPrintQrConfirm);
+}
+
+function showPrintQrConfirm() {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading">ตรวจสอบข้อมูลก่อนกดยืนยัน</h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>วันที่</span>
+          <span class="info-value">${formatNow()}</span>
+        </div>
+        <div class="info-row">
+          <span>ผู้พิมพ์</span>
+          <span class="info-value">${escapeHtml(currentEmployeeDisplayName || "Unknown")}</span>
+        </div>
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(printQrState.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part Name</span>
+          <span class="info-value">${escapeHtml(printQrState.partName)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(printQrState.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(printQrState.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>จำนวนต่อกล่อง</span>
+          <span>${printQrState.qty} Pcs</span>
+        </div>
+      </section>
+
+      <button class="save-btn" type="button" onclick="savePrintQrJob_()">
+        ${checkCircleWhiteIcon()}
+        <span>Print QR</span>
+      </button>
+
+      <button class="edit-btn" type="button" onclick="goBackStep_()">
+        ${editIcon()}
+        <span>แก้ไขข้อมูล</span>
+      </button>
+    </div>
+  `;
+}
+
+function savePrintQrJob_() {
+  var saveBtn = document.querySelector(".save-btn");
+
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
+
+  api("enqueuePrintJob", {
+    payload: {
+      mission: printQrState.mission,
+      partNumber: printQrState.partNumber,
+      partName: printQrState.partName,
+      batch: printQrState.batch,
+      lineUserId: currentLineUserId
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      gotoSuccess_(function() { showPrintQrSuccess_(data); });
+      return;
+    }
+    if (saveBtn) saveBtn.disabled = false;
+    alert((data && data.error) || "เข้าคิวพิมพ์ไม่สำเร็จ");
+  }).catch(function(err) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+function showPrintQrSuccess_(data) {
+  document.getElementById("receiveContent").innerHTML = `
+    <div class="confirm-view">
+      <h2 class="confirm-heading-success">
+        ${checkCircleIcon()}
+        <span>เข้าคิวพิมพ์แล้ว</span>
+      </h2>
+
+      <section class="confirm-card">
+        <div class="info-row">
+          <span>Mission</span>
+          <span class="info-value">${escapeHtml(data.mission)}</span>
+        </div>
+        <div class="info-row">
+          <span>Part No.</span>
+          <span class="info-value">${escapeHtml(data.partNumber)}</span>
+        </div>
+        <div class="info-row">
+          <span>Batch</span>
+          <span class="info-value">${escapeHtml(data.batch)}</span>
+        </div>
+      </section>
+
+      <section class="confirm-qty">
+        <div class="confirm-qty-row">
+          <span>กล่องที่</span>
+          <span>#${data.boxNumber}</span>
+        </div>
+        <div class="confirm-qty-row">
+          <span>จำนวน</span>
+          <span>${data.qty} Pcs</span>
+        </div>
+      </section>
+
+      <button class="static-primary-btn" type="button" onclick="goHome()">
+        ${homeWhiteIcon()}
+        <span>กลับหน้าแรก</span>
+      </button>
+
+      <button class="static-secondary-btn" type="button" onclick="openPrintQr()">
+        ${refreshIcon()}
+        <span>พิมพ์กล่องต่อไป</span>
       </button>
     </div>
   `;
