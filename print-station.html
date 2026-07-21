@@ -115,15 +115,16 @@
   }
   .label-slot:last-child { margin-right: 0; }
 
-  /* วาง QR ไว้บน ตัวเลขไว้ล่าง เรียงตรงๆ แนวตั้งในกรอบป้ายจริง (32mm กว้าง x
-     25mm สูง) — ไม่หมุนอะไรเลย ตอนแปะบนกล่องจะเห็น QR อยู่บน ตัวเลขอยู่ล่าง
-     ตามที่ต้องการพอดี */
+  /* เอาชุด QR-บน/ตัวเลข-ล่างเดิม หมุนทั้งกลุ่ม -90 องศา — กรอบ virtual สลับ
+     เป็น 25mm x 32mm (สลับด้านจาก label จริง 32x25mm) ก่อนหมุน เพื่อให้
+     bounding box หลังหมุนพอดีกับตัว label จริง */
   .label-content {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 32mm;
-    height: 25mm;
+    top: 50%;
+    left: 50%;
+    width: 25mm;
+    height: 32mm;
+    transform: translate(-50%, -50%) rotate(-90deg);
   }
   .label-content canvas {
     position: absolute;
@@ -137,7 +138,7 @@
     position: absolute;
     top: 19mm;
     left: 0;
-    width: 32mm;
+    width: 25mm;
     text-align: center;
     font-family: Tahoma, sans-serif;
     font-size: 11px;
