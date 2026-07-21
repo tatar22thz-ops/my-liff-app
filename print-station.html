@@ -262,9 +262,7 @@ function renderLabelSlot_(slotIndex, job) {
     QRCode.toCanvas(canvas, payload, { margin: 0, width: 180 }, function(err) {
       if (err) { reject(err); return; }
 
-      var boxLabel = "L" + ("0" + job.boxNumber).slice(-2);
-      var empNum = String(job.employeeId).replace(/^\D+/, "");
-      corner.textContent = boxLabel + " " + empNum + "-" + job.qty;
+      corner.textContent = job.pass + "-" + job.boxNumber;
       resolve();
     });
   });
