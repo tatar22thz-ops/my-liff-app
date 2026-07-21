@@ -128,16 +128,15 @@
   }
   .label-content canvas {
     position: absolute;
-    top: 1mm;
-    left: 50%;
-    width: 17mm;
-    height: 17mm;
-    transform: translateX(-50%);
+    top: 3mm;
+    right: 4mm;
+    width: 19mm;
+    height: 19mm;
   }
   .label-content .corner {
     position: absolute;
-    top: 19mm;
-    left: 0;
+    top: 22mm;
+    left: -1mm;
     width: 25mm;
     text-align: center;
     font-family: Tahoma, sans-serif;
@@ -278,8 +277,8 @@ function renderLabelSlot_(slotIndex, job) {
       // qrcode.js ตั้ง inline style width/height เป็น px เองตอน render (กัน
       // ภาพเบลอบนจอ retina) ซึ่งไปทับ CSS ขนาด mm ของเราให้ QR ใหญ่เกินช่อง
       // ต้องบังคับตั้งกลับเป็น mm ทีหลังเสมอ
-      canvas.style.width = "17mm";
-      canvas.style.height = "17mm";
+      canvas.style.width = "19mm";
+      canvas.style.height = "19mm";
 
       corner.textContent = job.pass + "-" + job.boxNumber;
       resolve();
