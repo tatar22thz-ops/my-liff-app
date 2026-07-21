@@ -115,31 +115,29 @@
   }
   .label-slot:last-child { margin-right: 0; }
 
-  /* หมุนกลุ่ม QR+ตัวหนังสือทั้งชุด 90 องศาตามเข็มนาฬิกา (ด้านขวา -> ด้านล่าง)
-     ไปด้วยกันทั้งคู่ — ออกแบบกรอบ virtual ขนาด 25mm x 32mm (สลับด้านจากตัว
-     label จริง 32x25mm) วางตำแหน่งลูกด้วย top/left ตายตัว (ไม่ใช้ flex กัน
-     บั๊กเนื้อที่จองไว้ไม่ตรงกับที่แสดงผลจริงตอนหมุน) แล้วหมุนกรอบทั้งกรอบ
-     ทีเดียว พอหมุนเสร็จ bounding box จะพอดีกับตัว label จริง */
+  /* วาง QR ไว้บน ตัวเลขไว้ล่าง เรียงตรงๆ แนวตั้งในกรอบป้ายจริง (32mm กว้าง x
+     25mm สูง) — ไม่หมุนอะไรเลย ตอนแปะบนกล่องจะเห็น QR อยู่บน ตัวเลขอยู่ล่าง
+     ตามที่ต้องการพอดี */
   .label-content {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 25mm;
-    height: 32mm;
-    transform: translate(-50%, -50%) rotate(270deg);
+    top: 0;
+    left: 0;
+    width: 32mm;
+    height: 25mm;
   }
   .label-content canvas {
     position: absolute;
-    top: 11mm;
-    left: 2.5mm;
-    width: 20mm;
-    height: 20mm;
+    top: 1mm;
+    left: 50%;
+    width: 17mm;
+    height: 17mm;
+    transform: translateX(-50%);
   }
   .label-content .corner {
     position: absolute;
-    top: 4mm;
+    top: 19mm;
     left: 0;
-    width: 25mm;
+    width: 32mm;
     text-align: center;
     font-family: Tahoma, sans-serif;
     font-size: 11px;
@@ -279,8 +277,8 @@ function renderLabelSlot_(slotIndex, job) {
       // qrcode.js ตั้ง inline style width/height เป็น px เองตอน render (กัน
       // ภาพเบลอบนจอ retina) ซึ่งไปทับ CSS ขนาด mm ของเราให้ QR ใหญ่เกินช่อง
       // ต้องบังคับตั้งกลับเป็น mm ทีหลังเสมอ
-      canvas.style.width = "20mm";
-      canvas.style.height = "20mm";
+      canvas.style.width = "17mm";
+      canvas.style.height = "17mm";
 
       corner.textContent = job.pass + "-" + job.boxNumber;
       resolve();
