@@ -262,6 +262,12 @@ function renderLabelSlot_(slotIndex, job) {
     QRCode.toCanvas(canvas, payload, { margin: 0, width: 180 }, function(err) {
       if (err) { reject(err); return; }
 
+      // qrcode.js ตั้ง inline style width/height เป็น px เองตอน render (กัน
+      // ภาพเบลอบนจอ retina) ซึ่งไปทับ CSS ขนาด mm ของเราให้ QR ใหญ่เกินช่อง
+      // ต้องบังคับตั้งกลับเป็น mm ทีหลังเสมอ
+      canvas.style.width = "20mm";
+      canvas.style.height = "20mm";
+
       corner.textContent = job.pass + "-" + job.boxNumber;
       resolve();
     });
