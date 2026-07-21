@@ -86,7 +86,11 @@
   .log-row.printed .name { color: var(--green); }
   .log-row.error .name { color: var(--red); }
 
-  /* ----- Label ที่จะพิมพ์จริง (ซ่อนไว้ปกติ โชว์เฉพาะตอนสั่ง Print) ----- */
+  /* ----- Label ที่จะพิมพ์จริง (ซ่อนไว้ปกติ โชว์เฉพาะตอนสั่ง Print) -----
+     ค่าตอนนี้ (32mm x 25mm x 3 ช่อง) เป็นค่า "ทดสอบ" ตามม้วนสติ๊กเกอร์ตัวอย่าง
+     ที่มีอยู่จริงตอนนี้ — ของจริงที่จะใช้งานคือ 1x1 นิ้ว (ไม่มี 3 ช่อง) ต้อง
+     แก้ตัวเลขในนี้ใหม่ตอนม้วนจริงมาถึง (ดู LABEL_W_MM / LABEL_H_MM / GAP_MM /
+     LANES ด้านล่างในสคริปต์) */
   #printArea { display: none; }
 
   @media print {
@@ -97,29 +101,40 @@
       position: fixed;
       top: 0; left: 0;
     }
-    @page { size: 1in 1in; margin: 0; }
+    @page { size: 100mm 25mm; margin: 0; }
   }
 
-  #label {
-    width: 1in;
-    height: 1in;
+  #labelRow {
+    display: flex;
+    width: 100mm;
+    height: 25mm;
+  }
+
+  .label-slot {
+    width: 32mm;
+    height: 25mm;
     position: relative;
     background: #fff;
+    margin-right: 2mm;
   }
-  #label canvas {
+  .label-slot:last-child { margin-right: 0; }
+
+  .label-slot canvas {
     position: absolute;
-    top: 0.03in;
-    left: 0.03in;
-    width: 0.82in;
-    height: 0.82in;
+    top: 1mm;
+    left: 1mm;
+    width: 20mm;
+    height: 20mm;
   }
-  #label .corner {
+  .label-slot .corner {
     position: absolute;
-    right: 0.03in;
-    bottom: 0.02in;
+    right: 1mm;
+    bottom: 1mm;
     font-family: Tahoma, sans-serif;
-    font-size: 7px;
-    line-height: 1;
+    font-size: 6px;
+    line-height: 1.2;
+    text-align: right;
+    max-width: 28mm;
   }
 </style>
 </head>
@@ -141,9 +156,10 @@
       <button class="btn-danger" id="stopBtn" onclick="stopPolling_()" disabled>หยุด</button>
     </div>
     <p class="hint">
-      ต้องตั้งเครื่องพิมพ์ Zebra ZD220 เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน<br>
+      ต้องตั้งเครื่องพิมพ์ Zebra ZD888TA เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน<br>
       แนะนำเปิด Chrome ด้วยแฟล็ก <code>--kiosk-printing</code> เพื่อให้พิมพ์อัตโนมัติโดยไม่ต้องกดยืนยันทีละใบ
-      (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)
+      (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)<br>
+      <strong>โหมดทดสอบ:</strong> พิมพ์ทีละ 3 ดวง/แถว (32x25mm ต่อดวง) ตามม้วนตัวอย่างที่มีอยู่ตอนนี้
     </p>
   </div>
 
@@ -156,9 +172,10 @@
 </main>
 
 <div id="printArea">
-  <div id="label">
-    <canvas id="qrCanvas"></canvas>
-    <div class="corner" id="cornerText"></div>
+  <div id="labelRow">
+    <div class="label-slot" id="labelSlot0"><canvas></canvas><div class="corner"></div></div>
+    <div class="label-slot" id="labelSlot1"><canvas></canvas><div class="corner"></div></div>
+    <div class="label-slot" id="labelSlot2"><canvas></canvas><div class="corner"></div></div>
   </div>
 </div>
 
@@ -226,43 +243,70 @@ function buildQrPayload_(job) {
   ].join("|");
 }
 
-function renderLabel_(job) {
-  return new Promise(function(resolve, reject) {
-    var canvas = document.getElementById("qrCanvas");
-    var payload = buildQrPayload_(job);
+// ม้วนตัวอย่างตอนนี้แบ่งเป็น 3 ช่องขนานกัน พิมพ์ 1 ครั้งต้องได้ 3 ดวงพร้อมกัน
+// (ของจริง 1x1" ไม่มี 3 ช่อง จะกลับไปเหลือ LANES=1 ตอนนั้น)
+var LANES = 3;
 
-    QRCode.toCanvas(canvas, payload, { margin: 0, width: 240 }, function(err) {
+// ช่องไหนไม่มีงาน (เช่นเหลืองานไม่ครบ 3) ซ่อนไว้ ไม่พิมพ์อะไรลงช่องนั้น —
+// ไม่รอให้ครบ 3 ก่อน พิมพ์เท่าที่มีเลยทันที กันพนักงานรองานนานตอนท้ายวัน
+function renderLabelSlot_(slotIndex, job) {
+  var slot = document.getElementById("labelSlot" + slotIndex);
+  var canvas = slot.querySelector("canvas");
+  var corner = slot.querySelector(".corner");
+
+  if (!job) {
+    slot.style.visibility = "hidden";
+    return Promise.resolve();
+  }
+
+  slot.style.visibility = "visible";
+  var payload = buildQrPayload_(job);
+
+  return new Promise(function(resolve, reject) {
+    QRCode.toCanvas(canvas, payload, { margin: 0, width: 180 }, function(err) {
       if (err) { reject(err); return; }
 
-      document.getElementById("cornerText").textContent = "PASS " + job.employeeId + "-" + job.boxNumber;
+      corner.textContent = "PASS " + job.employeeId + "-" + job.boxNumber;
       resolve();
     });
   });
 }
 
-function printLabel_() {
+function printLabelBatch_() {
   return new Promise(function(resolve) {
     window.print();
     // window.print() เป็น synchronous ใน Chrome ปกติ (ยิ่งเปิดด้วย
     // --kiosk-printing จะพิมพ์ทันทีไม่มี dialog) หน่วงเล็กน้อยกันเครื่องพิมพ์
-    // ประมวลผลไม่ทัน ก่อนไปดึงงานถัดไป
+    // ประมวลผลไม่ทัน ก่อนไปดึงชุดถัดไป
     setTimeout(resolve, 800);
   });
 }
 
-function processJob_(job) {
-  return renderLabel_(job)
-    .then(printLabel_)
-    .then(function() { return api_("markPrintJobPrinted", { jobId: job.jobId }); })
-    .then(function(res) {
-      if (res && res.ok) {
-        addLogRow_(job, "printed", "พิมพ์แล้ว");
-      } else {
-        addLogRow_(job, "error", (res && res.error) || "mark printed ไม่สำเร็จ");
-      }
-    })
-    .catch(function(err) {
-      addLogRow_(job, "error", String(err && err.message ? err.message : err));
+// jobs.length อยู่ระหว่าง 1-3 (ช่องที่เหลือถูกซ่อนไว้ใน renderLabelSlot_)
+function processJobBatch_(jobs) {
+  var renders = [];
+  for (var i = 0; i < LANES; i++) {
+    renders.push(renderLabelSlot_(i, jobs[i] || null));
+  }
+
+  return Promise.all(renders)
+    .then(printLabelBatch_)
+    .then(function() {
+      return jobs.reduce(function(chain, job) {
+        return chain.then(function() {
+          return api_("markPrintJobPrinted", { jobId: job.jobId })
+            .then(function(res) {
+              if (res && res.ok) {
+                addLogRow_(job, "printed", "พิมพ์แล้ว");
+              } else {
+                addLogRow_(job, "error", (res && res.error) || "mark printed ไม่สำเร็จ");
+              }
+            })
+            .catch(function(err) {
+              addLogRow_(job, "error", String(err && err.message ? err.message : err));
+            });
+        });
+      }, Promise.resolve());
     });
 }
 
@@ -281,9 +325,15 @@ function pollOnce_() {
 
       setStatus_("busy", "กำลังพิมพ์ " + jobs.length + " ใบ...");
 
-      // พิมพ์ทีละใบตามลำดับ กันเครื่องพิมพ์ชนงานกัน
-      return jobs.reduce(function(chain, job) {
-        return chain.then(function() { return processJob_(job); });
+      // แบ่งเป็นชุดละ 3 ตามช่องบนม้วน พิมพ์ทีละชุดตามลำดับ กันเครื่องพิมพ์
+      // ชนงานกัน — ชุดสุดท้ายอาจมีไม่ครบ 3 ก็พิมพ์เท่าที่มีเลย
+      var batches = [];
+      for (var i = 0; i < jobs.length; i += LANES) {
+        batches.push(jobs.slice(i, i + LANES));
+      }
+
+      return batches.reduce(function(chain, batch) {
+        return chain.then(function() { return processJobBatch_(batch); });
       }, Promise.resolve());
     })
     .catch(function(err) {
