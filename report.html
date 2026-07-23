@@ -757,6 +757,144 @@ body {
   accent-color: #0E4F8C;
 }
 
+.travel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.8vh;
+  color: #333333;
+  margin-top: 1vh;
+  font-weight: 600;
+}
+
+.travel-toggle input[type="checkbox"] {
+  width: 2vh;
+  height: 2vh;
+  accent-color: #0E4F8C;
+}
+
+.travel-editor {
+  margin-top: 1vh;
+  padding: 1.2vh;
+  background: #F2F6FB;
+  border: 1px solid #CDDCEC;
+  border-radius: 10px;
+}
+
+.travel-selects {
+  display: flex;
+  gap: 8px;
+}
+
+.travel-selects label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 1.5vh;
+  color: #5B6472;
+}
+
+.travel-selects select {
+  padding: 8px;
+  border: 1px solid #CDD3DB;
+  border-radius: 8px;
+  font-size: 1.7vh;
+  background: #FFFFFF;
+}
+
+.travel-legs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 1vh 0;
+}
+
+.travel-leg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E0E6EE;
+  border-radius: 8px;
+}
+
+.travel-leg-dir {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.travel-leg-dir select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid #CDD3DB;
+  border-radius: 6px;
+  font-size: 1.6vh;
+  background: #FFFFFF;
+}
+
+.leg-arrow {
+  color: #8A93A0;
+  font-size: 2vh;
+}
+
+.travel-leg-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.travel-leg-time input[type="time"] {
+  flex: 1;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid #CDD3DB;
+  border-radius: 6px;
+  font-size: 1.6vh;
+}
+
+.leg-tag {
+  font-size: 1.3vh;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.leg-ot {
+  color: #0E4F8C;
+  background: #E1ECF8;
+}
+
+.leg-work {
+  color: #5B6472;
+  background: #EEF1F5;
+}
+
+.leg-remove {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #C0392B;
+  display: flex;
+  align-items: center;
+}
+
+.travel-add-leg {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: 1px dashed #9FB6D6;
+  border-radius: 8px;
+  color: #0E4F8C;
+  font-size: 1.6vh;
+  cursor: pointer;
+}
+
 .add-employee-btn {
   width: 340px;
   max-width: calc(100% - 32px);
@@ -1580,6 +1718,10 @@ function showPresenceEmployeeListView_() {
       (showCarOwner ?
         '<label class="car-owner-option"><input type="checkbox" ' + (item.isCarOwner ? "checked" : "") + ' onchange="updatePresenceField_(\'' + item.employeeId + '\', \'isCarOwner\', this.checked)"> เจ้าของรถ</label>'
         : '') +
+      (team === "LCBTH" ?
+        '<label class="travel-toggle"><input type="checkbox" ' + (item.travel ? "checked" : "") + ' onchange="togglePresenceTravel_(\'' + item.employeeId + '\', this.checked)"> เดินทาง</label>' +
+        (item.travel ? renderTravelEditor_(item) : '')
+        : '') +
     '</div>';
   }).join("");
 
@@ -1606,6 +1748,156 @@ function updatePresenceField_(employeeId, field, value) {
   if (field === "end" || field === "start") {
     showPresenceEmployeeListView_();
   }
+}
+
+// ---- เดินทางรายคน (เฉพาะ Site LCBTH) ----
+var PRESENCE_TRAVEL_PLACES = ["MMTH", "KUEHNE", "Rayong", "Amata"];
+var PRESENCE_TRAVEL_HOURS = { MMTH: 0.5, KUEHNE: 0.5, RAYONG: 1, AMATA: 1 };
+var PRESENCE_TRAVEL_PRESETS = [
+  { value: "in", label: "ขาเข้าอย่างเดียว" },
+  { value: "round", label: "ไป-กลับปกติ" },
+  { value: "driver", label: "ขับรถรับ-ส่ง" },
+  { value: "custom", label: "กำหนดเอง" }
+];
+
+function findPresenceEmp_(id) {
+  return presenceState.employees.find(function(e) { return e.employeeId === id; });
+}
+
+function shiftTimeStr_(t, deltaMin) {
+  var m = timeToMinutes_(t);
+  if (isNaN(m)) return t || "";
+  m += deltaMin;
+  if (m < 0) m = 0;
+  return pad2_(Math.floor(m / 60)) + ":" + pad2_(m % 60);
+}
+
+// เที่ยวที่ล้ำออกนอก 08:00-17:00 = OT (แค่ป้ายบอก ไม่กระทบชั่วโมงงาน)
+function travelLegIsOt_(leg) {
+  var s = timeToMinutes_(leg.start);
+  var e = timeToMinutes_(leg.end);
+  if (isNaN(s) || isNaN(e)) return false;
+  return s < 8 * 60 || e > 17 * 60;
+}
+
+// preset เติมเที่ยวให้อัตโนมัติจากสถานที่ + เวลาเข้า-ออก (แก้เวลาเองได้ทีหลัง)
+function buildTravelLegs_(place, preset, workStart, workEnd) {
+  var mins = Math.round((PRESENCE_TRAVEL_HOURS[String(place || "").toUpperCase()] || 1) * 60);
+  var ws = workStart || "08:00";
+  var we = workEnd || "17:00";
+
+  if (preset === "in") {
+    return [{ from: place, to: "Yusen", start: shiftTimeStr_(ws, -mins), end: ws }];
+  }
+  if (preset === "round") {
+    return [
+      { from: place, to: "Yusen", start: shiftTimeStr_(ws, -mins), end: ws },
+      { from: "Yusen", to: place, start: we, end: shiftTimeStr_(we, mins) }
+    ];
+  }
+  if (preset === "driver") {
+    return [
+      { from: "Yusen", to: place, start: shiftTimeStr_(ws, -2 * mins), end: shiftTimeStr_(ws, -mins) },
+      { from: place, to: "Yusen", start: shiftTimeStr_(ws, -mins), end: ws },
+      { from: "Yusen", to: place, start: we, end: shiftTimeStr_(we, mins) },
+      { from: place, to: "Yusen", start: shiftTimeStr_(we, mins), end: shiftTimeStr_(we, 2 * mins) }
+    ];
+  }
+  return [{ from: "Yusen", to: place, start: "", end: "" }];
+}
+
+function travelDirOptions_(sel) {
+  return ["Yusen"].concat(PRESENCE_TRAVEL_PLACES).map(function(p) {
+    return '<option' + (String(sel) === p ? ' selected' : '') + '>' + p + '</option>';
+  }).join("");
+}
+
+function renderTravelEditor_(item) {
+  var id = item.employeeId;
+
+  var placeOpts = PRESENCE_TRAVEL_PLACES.map(function(p) {
+    return '<option value="' + p + '"' + (String(item.travelPlace) === p ? ' selected' : '') + '>' + p + '</option>';
+  }).join("");
+
+  var presetOpts = PRESENCE_TRAVEL_PRESETS.map(function(pr) {
+    return '<option value="' + pr.value + '"' + (item.travelPreset === pr.value ? ' selected' : '') + '>' + pr.label + '</option>';
+  }).join("");
+
+  var legsHtml = (item.travelLegs || []).map(function(leg, k) {
+    var tag = travelLegIsOt_(leg) ? '<span class="leg-tag leg-ot">OT</span>' : '<span class="leg-tag leg-work">ในเวลา</span>';
+    return '<div class="travel-leg">' +
+      '<div class="travel-leg-dir">' +
+        '<select onchange="updatePresenceLeg_(\'' + id + '\',' + k + ',\'from\',this.value)">' + travelDirOptions_(leg.from) + '</select>' +
+        '<span class="leg-arrow">›</span>' +
+        '<select onchange="updatePresenceLeg_(\'' + id + '\',' + k + ',\'to\',this.value)">' + travelDirOptions_(leg.to) + '</select>' +
+      '</div>' +
+      '<div class="travel-leg-time">' +
+        '<input type="time" value="' + (padTimeStr_(leg.start) || '') + '" onchange="updatePresenceLeg_(\'' + id + '\',' + k + ',\'start\',this.value)">' +
+        '<input type="time" value="' + (padTimeStr_(leg.end) || '') + '" onchange="updatePresenceLeg_(\'' + id + '\',' + k + ',\'end\',this.value)">' +
+        tag +
+        '<button type="button" class="leg-remove" onclick="removePresenceLeg_(\'' + id + '\',' + k + ')">' + smallXIcon() + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  return '<div class="travel-editor">' +
+    '<div class="travel-selects">' +
+      '<label>สถานที่<select onchange="setPresenceTravelPlace_(\'' + id + '\',this.value)">' + placeOpts + '</select></label>' +
+      '<label>รูปแบบ<select onchange="setPresenceTravelPreset_(\'' + id + '\',this.value)">' + presetOpts + '</select></label>' +
+    '</div>' +
+    '<div class="travel-legs">' + legsHtml + '</div>' +
+    '<button type="button" class="travel-add-leg" onclick="addPresenceLeg_(\'' + id + '\')">+ เพิ่มเที่ยว</button>' +
+  '</div>';
+}
+
+function togglePresenceTravel_(id, checked) {
+  var item = findPresenceEmp_(id);
+  if (!item) return;
+  item.travel = checked;
+  if (checked) {
+    if (!item.travelPlace) item.travelPlace = PRESENCE_TRAVEL_PLACES[0];
+    if (!item.travelPreset) item.travelPreset = "in";
+    item.travelLegs = buildTravelLegs_(item.travelPlace, item.travelPreset, item.start, item.end);
+  }
+  showPresenceEmployeeListView_();
+}
+
+function setPresenceTravelPlace_(id, place) {
+  var item = findPresenceEmp_(id);
+  if (!item) return;
+  item.travelPlace = place;
+  item.travelLegs = buildTravelLegs_(place, item.travelPreset || "in", item.start, item.end);
+  showPresenceEmployeeListView_();
+}
+
+function setPresenceTravelPreset_(id, preset) {
+  var item = findPresenceEmp_(id);
+  if (!item) return;
+  item.travelPreset = preset;
+  item.travelLegs = buildTravelLegs_(item.travelPlace || PRESENCE_TRAVEL_PLACES[0], preset, item.start, item.end);
+  showPresenceEmployeeListView_();
+}
+
+// แก้ค่าในเที่ยว — ไม่ re-render เพื่อไม่ให้ช่องเวลาเด้งหลุดโฟกัสตอนกรอกทีละช่อง
+function updatePresenceLeg_(id, k, field, value) {
+  var item = findPresenceEmp_(id);
+  if (!item || !item.travelLegs || !item.travelLegs[k]) return;
+  item.travelLegs[k][field] = value;
+}
+
+function addPresenceLeg_(id) {
+  var item = findPresenceEmp_(id);
+  if (!item) return;
+  if (!item.travelLegs) item.travelLegs = [];
+  item.travelLegs.push({ from: "Yusen", to: item.travelPlace || PRESENCE_TRAVEL_PLACES[0], start: "", end: "" });
+  showPresenceEmployeeListView_();
+}
+
+function removePresenceLeg_(id, k) {
+  var item = findPresenceEmp_(id);
+  if (!item || !item.travelLegs) return;
+  item.travelLegs.splice(k, 1);
+  showPresenceEmployeeListView_();
 }
 
 function onPresenceProceedToConfirm_() {
@@ -1651,7 +1943,11 @@ async function showPresenceAddEmployeeView_() {
           start: "08:00",
           end: "17:00",
           otType: "normal",
-          isCarOwner: false
+          isCarOwner: false,
+          travel: false,
+          travelPlace: "",
+          travelPreset: "",
+          travelLegs: []
         });
       });
       goBack_();
@@ -1730,6 +2026,10 @@ function showPresenceConfirmView_() {
     var extra = [];
     if (timeToMinutes_(e.end) > 17 * 60) extra.push(otLabel[e.otType]);
     if (e.isCarOwner) extra.push("เจ้าของรถ");
+    if (e.travel && e.travelLegs) {
+      var validLegs = e.travelLegs.filter(function(l) { return l.start && l.end; }).length;
+      if (validLegs) extra.push("เดินทาง " + validLegs + " เที่ยว");
+    }
     var extraText = extra.length ? " [" + extra.join(", ") + "]" : "";
     return '<li>' + escapeHtml(e.name) + ' (' + escapeHtml(team) + ') &nbsp; ' + e.start + ' - ' + e.end + extraText + '</li>';
   }).join("");
@@ -1754,12 +2054,14 @@ function submitPresenceSheet_() {
   if (btn) btn.disabled = true;
 
   var employees = presenceState.employees.map(function(e) {
+    var legs = (e.travel && e.travelLegs) ? e.travelLegs.filter(function(l) { return l.start && l.end; }) : [];
     return {
       employeeId: e.employeeId,
       start: e.start,
       end: e.end,
       otType: e.otType,
-      isCarOwner: e.isCarOwner
+      isCarOwner: e.isCarOwner,
+      travelLegs: legs
     };
   });
 
