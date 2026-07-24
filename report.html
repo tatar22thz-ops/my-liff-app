@@ -471,6 +471,32 @@ body {
   flex: 0 0 auto;
 }
 
+.static-danger-btn {
+  width: 319px;
+  max-width: calc(100% - 32px);
+  height: 8.41vh;
+  margin: 0 auto;
+  border: 2px solid #C0392B;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #C0392B;
+  font-family: "Kanit", "Segoe UI", sans-serif;
+  font-size: 3.05vh;
+  line-height: 1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.static-danger-btn svg {
+  width: 3.6vh;
+  height: 3.6vh;
+  flex: 0 0 auto;
+}
+
 .emp-list {
   display: flex;
   flex-direction: column;
@@ -1332,7 +1358,7 @@ body {
       </button>
       <img class="credits-logo" src="trigo-logo-credit.png" alt="TRIGO">
       <div class="credits-title">TRIGO REPORT</div>
-      <div class="credits-version">Version 1.8.0</div>
+      <div class="credits-version">Version 1.9.0</div>
       <div class="credits-divider"></div>
       <p class="credits-text">แอปพลิเคชันนี้คิดค้นและพัฒนาโดย Lon Banjong (TRIGO538)<br>สร้างขึ้นเพื่อใช้สำหรับสร้างใบงานและใบลงชื่อประจำวัน Site Yusen LCBTH เท่านั้น<br>ห้ามทำซ้ำ แก้ไข หรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
       <div class="credits-divider"></div>
@@ -1644,7 +1670,7 @@ function showHomeChoice_() {
     '</div>' +
     '<footer class="home-footer">' +
       '<div class="footer-brand">TRIGO REPORT</div>' +
-      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.8.0<br>&copy; 2026 TRIGO</div>' +
+      '<div class="footer-meta" onclick="handleCreditTap_()">Version 1.9.0<br>&copy; 2026 TRIGO</div>' +
     '</footer>';
 }
 
@@ -2234,6 +2260,10 @@ function editIcon() {
   return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 56L11 43L43 11L53 21L21 53Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></path><path d="M35 19L45 29" stroke="currentColor" stroke-width="5"></path></svg>';
 }
 
+function trashIcon() {
+  return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 18H50L46 56H18Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></path><path d="M10 18H54" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path><path d="M25 18V11H39V18" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></path><path d="M27 28V46M37 28V46" stroke="currentColor" stroke-width="5" stroke-linecap="round"></path></svg>';
+}
+
 function numberWithCommas_(n) {
   return Number(n || 0).toLocaleString("en-US");
 }
@@ -2490,6 +2520,7 @@ async function showInspectEditForm_(entry) {
       '<div class="edit-form-row"><label>เลิกงาน</label><input id="editEntryEnd" type="time" value="' + (padTimeStr_(entry.endTime) || "17:00") + '"></div>' +
       '<div id="editEntryDefectWrap">' + renderEditDefectSectionHtml_(inspectEditDefects_, entry.defectBreakdown) + '</div>' +
       '<button id="editEntrySaveBtn" class="static-primary-btn" type="button" onclick="saveInspectEdit_()">' + checkCircleWhiteIcon() + '<span>บันทึกการแก้ไข</span></button>' +
+      '<button id="editEntryRemoveBtn" class="static-danger-btn" type="button" style="margin-top:1.4vh;" onclick="removeInspectEntry_()">' + trashIcon() + '<span>ลบออกจากมิชชั่น</span></button>' +
     '</div>';
 
   updateInspectEditForm_();
@@ -2513,7 +2544,8 @@ function updateInspectEditForm_() {
     }
   }
 
-  var valid = ok >= 0 && ng >= 0 && ok + ng > 0 && defectValid;
+  // ยอม 0/0 ได้ (คนที่เพิ่มแบบ "ไม่เพิ่มยอด" ต้องแก้เวลาได้แม้ยอดเป็น 0)
+  var valid = ok >= 0 && ng >= 0 && defectValid;
   if (saveBtn) saveBtn.disabled = !valid;
 }
 
@@ -2553,6 +2585,48 @@ function saveInspectEdit_() {
     if (saveBtn) saveBtn.disabled = false;
     alert((data && data.error) || "แก้ไขไม่สำเร็จ");
   }).catch(function(err) {
+    if (saveBtn) saveBtn.disabled = false;
+    alert(err.message || err);
+  });
+}
+
+// ลบพนักงานคนนี้ออกจากมิชชั่น/Batch นี้ — ต้องยืนยันก่อน (ลบแล้วกู้คืนไม่ได้)
+// ยอด OK/NG ที่คนนี้ลงไว้จะถูกคืนกลับ Inventory ให้อัตโนมัติฝั่ง backend
+function removeInspectEntry_() {
+  var removeBtn = document.getElementById("editEntryRemoveBtn");
+  var saveBtn = document.getElementById("editEntrySaveBtn");
+
+  var who = (inspectEditEntry_ && inspectEditEntry_.employeeName)
+    ? inspectEditEntry_.employeeName
+    : "รายการนี้";
+
+  if (!confirm("ลบ " + who + " ออกจากมิชชั่นนี้?\nยอด OK " + inspectEditEntry_.ok + " / NG " + inspectEditEntry_.ng + " จะถูกคืนกลับสต็อก และกู้คืนไม่ได้")) {
+    return;
+  }
+
+  if (removeBtn) removeBtn.disabled = true;
+  if (saveBtn) saveBtn.disabled = true;
+
+  api("removeDailyWorkEntry", {
+    payload: {
+      lineUserId: currentLineUserId,
+      timestamp: inspectEditEntry_.timestamp,
+      mission: inspectState_.currentMission.mission,
+      partNumber: inspectEditEntry_.partNumber,
+      batch: inspectEditEntry_.batch,
+      targetEmployeeId: inspectEditTargetEmployeeId_ || ""
+    }
+  }).then(function(data) {
+    if (data && data.ok) {
+      alert("ลบออกจากมิชชั่นเรียบร้อย");
+      goto_(showInspectMissionList_);
+      return;
+    }
+    if (removeBtn) removeBtn.disabled = false;
+    if (saveBtn) saveBtn.disabled = false;
+    alert((data && data.error) || "ลบไม่สำเร็จ");
+  }).catch(function(err) {
+    if (removeBtn) removeBtn.disabled = false;
     if (saveBtn) saveBtn.disabled = false;
     alert(err.message || err);
   });
