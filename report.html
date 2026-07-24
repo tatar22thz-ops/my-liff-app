@@ -2781,14 +2781,32 @@ function showPresenceEditForm_(entry) {
   presenceEditTarget_ = entry;
   setPageTitle_("แก้ไขใบลงชื่อ");
 
+  var showOt = timeToMinutes_(entry.end) > 17 * 60;
+  var otType = entry.otType || "normal";
+
   document.getElementById("content").innerHTML =
     '<div class="picker-page">' +
       '<p class="picker-context">วันที่ : ' + escapeHtml(presenceEditState_.dateLabel) + '</p>' +
       '<p class="picker-context">พนักงาน : ' + escapeHtml(entry.employeeName) + '</p>' +
-      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="peStart" type="time" value="' + (padTimeStr_(entry.start) || "08:00") + '"></div>' +
-      '<div class="edit-form-row"><label>เลิกงาน</label><input id="peEnd" type="time" value="' + (padTimeStr_(entry.end) || "17:00") + '"></div>' +
+      '<div class="edit-form-row"><label>เริ่มงาน</label><input id="peStart" type="time" value="' + (padTimeStr_(entry.start) || "08:00") + '" onchange="updatePresenceEditField_(\'start\', this.value)"></div>' +
+      '<div class="edit-form-row"><label>เลิกงาน</label><input id="peEnd" type="time" value="' + (padTimeStr_(entry.end) || "17:00") + '" onchange="updatePresenceEditField_(\'end\', this.value)"></div>' +
+      '<div class="emp-row-extra' + (showOt ? '' : ' hidden') + '">' +
+        '<div class="ot-type-group">' +
+          '<label class="ot-type-option"><input type="radio" name="peOtType" value="normal" ' + (otType === "normal" ? "checked" : "") + ' onchange="updatePresenceEditField_(\'otType\', \'normal\')"> พักเบรกตามปกติ</label>' +
+          '<label class="ot-type-option"><input type="radio" name="peOtType" value="noBreak" ' + (otType === "noBreak" ? "checked" : "") + ' onchange="updatePresenceEditField_(\'otType\', \'noBreak\')"> ไม่ได้พักเบรก</label>' +
+          '<label class="ot-type-option"><input type="radio" name="peOtType" value="travel" ' + (otType === "travel" ? "checked" : "") + ' onchange="updatePresenceEditField_(\'otType\', \'travel\')"> OT เดินทาง</label>' +
+        '</div>' +
+      '</div>' +
       '<button id="peSaveBtn" class="static-primary-btn" type="button" onclick="savePresenceEditEntry_()">' + checkCircleWhiteIcon() + '<span>บันทึก</span></button>' +
     '</div>';
+}
+
+function updatePresenceEditField_(field, value) {
+  if (!presenceEditTarget_) return;
+  presenceEditTarget_[field] = value;
+  if (field === "start" || field === "end") {
+    showPresenceEditForm_(presenceEditTarget_);
+  }
 }
 
 function savePresenceEditEntry_() {

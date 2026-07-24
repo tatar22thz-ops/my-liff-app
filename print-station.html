@@ -11,6 +11,7 @@
     --navy-dark: #081D40;
     --green: #3DAA5B;
     --red: #D8342A;
+    --amber: #E8A33D;
     --gray: #5B6472;
     --bg: #F2F4F7;
   }
@@ -21,40 +22,44 @@
     background: var(--bg);
     color: #222;
   }
-  header {
+
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 260px;
+    flex: 0 0 260px;
     background: var(--navy);
     color: #fff;
-    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 20px;
   }
-  header h1 { margin: 0; font-size: 20px; }
-  header p { margin: 4px 0 0; font-size: 13px; color: #cfd8ea; }
-  main {
-    max-width: 720px;
-    margin: 24px auto;
-    padding: 0 16px;
-  }
-  .card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
+  .brand-mark { font-size: 22px; font-weight: bold; letter-spacing: 0.3px; }
+  .brand-mark span { color: var(--green); }
+  .brand-sub { font-size: 11px; color: #9fb3d6; letter-spacing: 2px; margin-top: 2px; }
+
+  .sidebar-icon { margin: 26px 0; display: flex; justify-content: center; opacity: 0.9; }
+
   .status-row {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: bold;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
   }
-  .dot {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--gray);
-  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray); flex: 0 0 auto; }
   .dot.ok { background: var(--green); }
-  .dot.busy { background: #E8A33D; }
+  .dot.busy { background: var(--amber); }
   .dot.err { background: var(--red); }
-  .controls { margin-top: 14px; display: flex; gap: 10px; }
+
+  .sidebar-controls { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
   button {
     font-family: inherit;
     font-size: 14px;
@@ -64,27 +69,90 @@
     cursor: pointer;
     font-weight: bold;
   }
-  .btn-primary { background: var(--navy); color: #fff; }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-primary:disabled, .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
-  .hint {
-    font-size: 13px; color: var(--gray); margin-top: 10px; line-height: 1.6;
+  .sidebar-controls button { width: 100%; padding: 12px; }
+  .btn-start { background: var(--green); color: #fff; }
+  .btn-stop { background: var(--red); color: #fff; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .sidebar-spacer { flex: 1; min-height: 20px; }
+
+  .clock-widget {
+    border: 1px dashed rgba(255,255,255,0.28);
+    border-radius: 10px;
+    padding: 16px 10px;
+    text-align: center;
+    background: rgba(255,255,255,0.04);
   }
-  .log {
-    max-height: 320px;
-    overflow-y: auto;
-    font-size: 13px;
+  .clock-time { font-size: 26px; font-weight: bold; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+  .clock-date { font-size: 11.5px; color: #9fb3d6; margin-top: 4px; }
+
+  /* ---------- Main column ---------- */
+  .main-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar { background: var(--navy); color: #fff; padding: 20px 28px; }
+  .topbar h1 { margin: 0; font-size: 19px; font-weight: bold; }
+  .topbar h1 span { font-weight: normal; color: #9fb3d6; }
+
+  main { flex: 1; padding: 24px 28px; max-width: 980px; width: 100%; }
+
+  .page-heading { margin: 0 0 18px; font-size: 17px; color: var(--navy); }
+
+  .stat-cards { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card {
+    flex: 1 1 160px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 5px solid var(--gray);
   }
-  .log-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+  .stat-amber { border-left-color: var(--amber); }
+  .stat-green { border-left-color: var(--green); }
+  .stat-red { border-left-color: var(--red); }
+  .stat-value { font-size: 26px; font-weight: bold; color: #222; }
+  .stat-label { font-size: 12.5px; color: var(--gray); margin-top: 4px; }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
-  .log-row:last-child { border-bottom: none; }
-  .log-row .box { color: var(--gray); font-size: 12px; }
-  .log-row.printed .name { color: var(--green); }
-  .log-row.error .name { color: var(--red); }
+  .card-title { font-weight: bold; margin-bottom: 12px; }
+
+  .table-wrap { overflow-x: auto; }
+  .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .history-table th {
+    text-align: left; padding: 8px 10px; color: var(--gray); font-size: 12px;
+    border-bottom: 2px solid #eee; white-space: nowrap;
+  }
+  .history-table td { padding: 9px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table .empty-row td { text-align: center; color: var(--gray); padding: 20px 10px; }
+  .history-table .num-cell { color: var(--gray); font-size: 12px; }
+  .hist-sub { color: var(--gray); font-weight: normal; }
+
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+  .pill-ok { background: #E4F4E9; color: var(--green); }
+  .pill-err { background: #FBE4E2; color: var(--red); }
+
+  .info-box {
+    font-size: 12.5px; color: var(--gray); line-height: 1.7;
+    background: #fff; border-radius: 10px; padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .info-box code { background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 720px) {
+    .app-shell { flex-direction: column; }
+    .sidebar { width: auto; flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px; }
+    .sidebar-icon { margin: 0; }
+    .sidebar-controls { flex-direction: row; margin-top: 0; width: auto; }
+    .sidebar-controls button { width: auto; }
+    .sidebar-spacer { display: none; }
+    .clock-widget { margin-left: auto; }
+  }
 
   /* ----- Label ที่จะพิมพ์จริง (ซ่อนไว้ปกติ โชว์เฉพาะตอนสั่ง Print) -----
      ค่าตอนนี้ (32mm x 25mm x 3 ช่อง) เป็นค่า "ทดสอบ" ตามม้วนสติ๊กเกอร์ตัวอย่าง
@@ -94,7 +162,7 @@
   #printArea { display: none; }
 
   @media print {
-    header, main { display: none !important; }
+    .app-shell { display: none !important; }
     #printArea { display: block; }
     @page { size: 100mm 25mm; margin: 0; }
   }
@@ -148,36 +216,86 @@
 </head>
 <body>
 
-<header>
-  <h1>Trigo Yusen Hub — Print Station</h1>
-  <p>เปิดหน้านี้ค้างไว้บน notebook หน้างานที่ต่อเครื่องพิมพ์ QR</p>
-</header>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">TRIGO<span>·</span>YUSEN</div>
+      <div class="brand-sub">PRINT STATION</div>
+    </div>
 
-<main>
-  <div class="card">
+    <div class="sidebar-icon">
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#EAF0FB" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9V3h12v6"/>
+        <rect x="4" y="9" width="16" height="8" rx="1.5"/>
+        <path d="M6 17v4h12v-4"/>
+        <rect x="8.5" y="12" width="7" height="3.5" fill="#EAF0FB" stroke="none" opacity="0.25"/>
+      </svg>
+    </div>
+
     <div class="status-row">
       <span class="dot" id="statusDot"></span>
       <span id="statusText">ยังไม่ได้เริ่ม</span>
     </div>
-    <div class="controls">
-      <button class="btn-primary" id="startBtn" onclick="startPolling_()">เริ่มทำงาน</button>
-      <button class="btn-danger" id="stopBtn" onclick="stopPolling_()" disabled>หยุด</button>
-    </div>
-    <p class="hint">
-      ต้องตั้งเครื่องพิมพ์ Zebra ZD888TA เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน<br>
-      แนะนำเปิด Chrome ด้วยแฟล็ก <code>--kiosk-printing</code> เพื่อให้พิมพ์อัตโนมัติโดยไม่ต้องกดยืนยันทีละใบ
-      (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)<br>
-      <strong>โหมดทดสอบ:</strong> พิมพ์ทีละ 3 ดวง/แถว (32x25mm ต่อดวง) ตามม้วนตัวอย่างที่มีอยู่ตอนนี้
-    </p>
-  </div>
 
-  <div class="card">
-    <div style="font-weight:bold; margin-bottom:8px;">ประวัติงานพิมพ์ล่าสุด</div>
-    <div class="log" id="log">
-      <div class="log-row"><span>ยังไม่มีงานพิมพ์</span></div>
+    <div class="sidebar-controls">
+      <button class="btn-start" id="startBtn" onclick="startPolling_()">เริ่มทำงาน</button>
+      <button class="btn-stop" id="stopBtn" onclick="stopPolling_()" disabled>หยุด</button>
     </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="clock-widget">
+      <div class="clock-time" id="clockTime">--:--:--</div>
+      <div class="clock-date" id="clockDate">-</div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <h1>TRIGO<span>-YUSEN</span> PRINT STATION</h1>
+    </header>
+
+    <main>
+      <h2 class="page-heading">รอคิวพิมพ์....</h2>
+
+      <div class="stat-cards">
+        <div class="stat-card stat-amber">
+          <div class="stat-value" id="statQueued">0</div>
+          <div class="stat-label">กำลังรอคิว</div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-value" id="statPrinted">0</div>
+          <div class="stat-label">พิมพ์แล้ว (วันนี้)</div>
+        </div>
+        <div class="stat-card stat-red">
+          <div class="stat-value" id="statFailed">0</div>
+          <div class="stat-label">ล้มเหลว</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ประวัติการพิมพ์</div>
+        <div class="table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr><th>#</th><th>Mission</th><th>ส่งงานโดย</th><th>สถานะ</th><th>เวลา</th></tr>
+            </thead>
+            <tbody id="log">
+              <tr class="empty-row"><td colspan="5">ยังไม่มีงานพิมพ์</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>วิธีใช้งาน:</strong> กดเริ่มทำงานค้างไว้ตลอดกะ ระบบจะดึงงานพิมพ์จากแอป Trigo Yusen Hub มาพิมพ์ให้อัตโนมัติ<br>
+        ต้องตั้งเครื่องพิมพ์ Zebra ZD888TA เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน แนะนำเปิด Chrome ด้วยแฟล็ก <code>--kiosk-printing</code>
+        เพื่อให้พิมพ์อัตโนมัติโดยไม่ต้องกดยืนยันทีละใบ (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)<br>
+        <strong>โหมดทดสอบ:</strong> พิมพ์ทีละ 3 ดวง/แถว (32x25mm ต่อดวง) ตามม้วนตัวอย่างที่มีอยู่ตอนนี้
+      </div>
+    </main>
   </div>
-</main>
+</div>
 
 <div id="printArea">
   <div id="labelRow">
@@ -193,10 +311,17 @@ var POLL_INTERVAL_MS = 2500;
 
 var pollTimer_ = null;
 var isProcessing_ = false;
+var printedTodayCount_ = 0;
+var failedCount_ = 0;
+var logRowSeq_ = 0;
 
 function setStatus_(dotClass, text) {
   document.getElementById("statusDot").className = "dot" + (dotClass ? " " + dotClass : "");
   document.getElementById("statusText").textContent = text;
+}
+
+function setQueueCount_(n) {
+  document.getElementById("statQueued").textContent = String(n);
 }
 
 function api_(action, payload) {
@@ -208,27 +333,56 @@ function api_(action, payload) {
   }).then(function(res) { return res.json(); });
 }
 
+// คอลัมน์ Mission ในตารางประวัติ โชว์แบบ "มิชชั่น/batch 4 ตัวท้าย #เลขกล่อง"
+// เพื่อให้พนักงานหน้าเครื่องพิมพ์เช็คย้อนหลังได้ว่าใบไหนคือกล่องไหนของ batch ไหน
+function formatHistoryMission_(job) {
+  var batch4 = String(job.batch || "").slice(-4);
+  var boxNum = (job.boxNumber != null && job.boxNumber !== "") ? job.boxNumber : "?";
+  return escapeHtml_(job.mission) + '<span class="hist-sub">/' + escapeHtml_(batch4) + " #" + escapeHtml_(String(boxNum)) + "</span>";
+}
+
 function addLogRow_(job, state, message) {
-  var log = document.getElementById("log");
-  var firstRow = log.querySelector(".log-row");
-  if (firstRow && firstRow.textContent.indexOf("ยังไม่มีงานพิมพ์") !== -1) {
-    log.innerHTML = "";
+  var tbody = document.getElementById("log");
+  var emptyRow = tbody.querySelector(".empty-row");
+  if (emptyRow) emptyRow.remove();
+
+  logRowSeq_++;
+  if (state === "printed") {
+    printedTodayCount_++;
+    document.getElementById("statPrinted").textContent = String(printedTodayCount_);
+  } else {
+    failedCount_++;
+    document.getElementById("statFailed").textContent = String(failedCount_);
   }
 
-  var row = document.createElement("div");
-  row.className = "log-row " + state;
+  var row = document.createElement("tr");
 
-  var left = document.createElement("span");
-  left.innerHTML = '<span class="name">' + escapeHtml_(job.employeeName) + "</span> — " +
-    escapeHtml_(job.mission) + " · กล่อง #" + job.boxNumber + (message ? " (" + escapeHtml_(message) + ")" : "");
+  var numCell = document.createElement("td");
+  numCell.className = "num-cell";
+  numCell.textContent = logRowSeq_;
 
-  var right = document.createElement("span");
-  right.className = "box";
-  right.textContent = new Date().toLocaleTimeString("th-TH");
+  var missionCell = document.createElement("td");
+  missionCell.innerHTML = formatHistoryMission_(job);
 
-  row.appendChild(left);
-  row.appendChild(right);
-  log.insertBefore(row, log.firstChild);
+  var sentByCell = document.createElement("td");
+  sentByCell.textContent = job.employeeName || "";
+
+  var statusCell = document.createElement("td");
+  statusCell.innerHTML = state === "printed"
+    ? '<span class="pill pill-ok">สำเร็จ</span>'
+    : '<span class="pill pill-err">ล้มเหลว</span>';
+  if (message) statusCell.title = message;
+
+  var timeCell = document.createElement("td");
+  timeCell.textContent = new Date().toLocaleTimeString("th-TH");
+
+  row.appendChild(numCell);
+  row.appendChild(missionCell);
+  row.appendChild(sentByCell);
+  row.appendChild(statusCell);
+  row.appendChild(timeCell);
+
+  tbody.insertBefore(row, tbody.firstChild);
 }
 
 function escapeHtml_(s) {
@@ -331,6 +485,7 @@ function pollOnce_() {
   api_("getPendingPrintJobs", {})
     .then(function(res) {
       var jobs = (res && res.ok && res.jobs) || [];
+      setQueueCount_(jobs.length);
 
       if (jobs.length === 0) {
         setStatus_("ok", "พร้อมทำงาน — รอคิวพิมพ์...");
@@ -375,7 +530,17 @@ function stopPolling_() {
   document.getElementById("startBtn").disabled = false;
   document.getElementById("stopBtn").disabled = true;
   setStatus_("", "หยุดทำงาน");
+  setQueueCount_(0);
 }
+
+// นาฬิกาที่กล่องมุมล่างของ sidebar — เดินตลอดเวลาไม่ขึ้นกับสถานะเริ่ม/หยุด
+function tickClock_() {
+  var now = new Date();
+  document.getElementById("clockTime").textContent = now.toLocaleTimeString("th-TH", { hour12: false });
+  document.getElementById("clockDate").textContent = now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+tickClock_();
+setInterval(tickClock_, 1000);
 </script>
 
 </body>
