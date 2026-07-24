@@ -183,57 +183,52 @@
   }
 
   /* ----- Label ที่จะพิมพ์จริง (ซ่อนไว้ปกติ โชว์เฉพาะตอนสั่ง Print) -----
-     ค่าตอนนี้ (32mm x 25mm x 3 ช่อง) เป็นค่า "ทดสอบ" ตามม้วนสติ๊กเกอร์ตัวอย่าง
-     ที่มีอยู่จริงตอนนี้ — ของจริงที่จะใช้งานคือ 1x1 นิ้ว (ไม่มี 3 ช่อง) ต้อง
-     แก้ตัวเลขในนี้ใหม่ตอนม้วนจริงมาถึง (ดู LABEL_W_MM / LABEL_H_MM / GAP_MM /
-     LANES ด้านล่างในสคริปต์) */
+     ม้วนจริง 32mm x 20mm ใบเดียวต่อแถว (LANES=1) */
   #printArea { display: none; }
 
   @media print {
     .app-shell { display: none !important; }
     #printArea { display: block; }
-    @page { size: 100mm 25mm; margin: 0; }
+    @page { size: 32mm 20mm; margin: 0; }
   }
 
   #labelRow {
     display: flex;
-    width: 100mm;
-    height: 25mm;
+    width: 32mm;
+    height: 20mm;
   }
 
   .label-slot {
     width: 32mm;
-    height: 25mm;
+    height: 20mm;
     position: relative;
     background: #fff;
-    margin-right: 2mm;
     overflow: hidden;
   }
-  .label-slot:last-child { margin-right: 0; }
 
   /* เอาชุด QR-บน/ตัวเลข-ล่างเดิม หมุนทั้งกลุ่ม -90 องศา — กรอบ virtual สลับ
-     เป็น 25mm x 32mm (สลับด้านจาก label จริง 32x25mm) ก่อนหมุน เพื่อให้
+     เป็น 20mm x 32mm (สลับด้านจาก label จริง 32x20mm) ก่อนหมุน เพื่อให้
      bounding box หลังหมุนพอดีกับตัว label จริง */
   .label-content {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 25mm;
+    width: 20mm;
     height: 32mm;
     transform: translate(-50%, -50%) rotate(-90deg);
   }
   .label-content canvas {
     position: absolute;
     top: 3mm;
-    right: 5mm;
-    width: 19mm;
-    height: 19mm;
+    right: 4mm;
+    width: 15mm;
+    height: 15mm;
   }
   .label-content .corner {
     position: absolute;
     top: 24mm;
-    left: -2mm;
-    width: 25mm;
+    left: -1.6mm;
+    width: 20mm;
     text-align: center;
     font-family: Tahoma, sans-serif;
     font-size: 11px;
@@ -328,7 +323,7 @@
         <strong>วิธีใช้งาน:</strong> กดเริ่มทำงานค้างไว้ตลอดกะ ระบบจะดึงงานพิมพ์จากแอป Trigo Yusen Hub มาพิมพ์ให้อัตโนมัติ<br>
         ต้องตั้งเครื่องพิมพ์ Zebra ZD888TA เป็นเครื่องพิมพ์เริ่มต้น (Default Printer) ของ Windows ก่อน แนะนำเปิด Chrome ด้วยแฟล็ก <code>--kiosk-printing</code>
         เพื่อให้พิมพ์อัตโนมัติโดยไม่ต้องกดยืนยันทีละใบ (คลิกขวาช็อตคัต Chrome → Properties → ต่อท้าย Target ด้วย <code>--kiosk-printing</code>)<br>
-        <strong>โหมดทดสอบ:</strong> พิมพ์ทีละ 3 ดวง/แถว (32x25mm ต่อดวง) ตามม้วนตัวอย่างที่มีอยู่ตอนนี้
+        <strong>ขนาดสติกเกอร์:</strong> 32x20mm พิมพ์ทีละ 1 ใบ/แถว
       </div>
     </main>
   </div>
@@ -337,8 +332,6 @@
 <div id="printArea">
   <div id="labelRow">
     <div class="label-slot" id="labelSlot0"><div class="label-content"><div class="corner"></div><canvas></canvas></div></div>
-    <div class="label-slot" id="labelSlot1"><div class="label-content"><div class="corner"></div><canvas></canvas></div></div>
-    <div class="label-slot" id="labelSlot2"><div class="label-content"><div class="corner"></div><canvas></canvas></div></div>
   </div>
 </div>
 
@@ -442,12 +435,11 @@ function buildQrPayload_(job) {
   ].join("|");
 }
 
-// ม้วนตัวอย่างตอนนี้แบ่งเป็น 3 ช่องขนานกัน พิมพ์ 1 ครั้งต้องได้ 3 ดวงพร้อมกัน
-// (ของจริง 1x1" ไม่มี 3 ช่อง จะกลับไปเหลือ LANES=1 ตอนนั้น)
-var LANES = 3;
+// ม้วนจริง 32x20mm ใบเดียวต่อแถว
+var LANES = 1;
 
-// ช่องไหนไม่มีงาน (เช่นเหลืองานไม่ครบ 3) ซ่อนไว้ ไม่พิมพ์อะไรลงช่องนั้น —
-// ไม่รอให้ครบ 3 ก่อน พิมพ์เท่าที่มีเลยทันที กันพนักงานรองานนานตอนท้ายวัน
+// ถ้าวันหลังเปลี่ยนม้วนเป็นแบบหลายช่องขนานอีก ค่อยปรับ LANES ขึ้น — โค้ดส่วน
+// renderLabelSlot_/processJobBatch_ รองรับหลายช่องอยู่แล้วโดยไม่ต้องแก้ตรงนี้
 function renderLabelSlot_(slotIndex, job) {
   var slot = document.getElementById("labelSlot" + slotIndex);
   var canvas = slot.querySelector("canvas");
@@ -468,8 +460,8 @@ function renderLabelSlot_(slotIndex, job) {
       // qrcode.js ตั้ง inline style width/height เป็น px เองตอน render (กัน
       // ภาพเบลอบนจอ retina) ซึ่งไปทับ CSS ขนาด mm ของเราให้ QR ใหญ่เกินช่อง
       // ต้องบังคับตั้งกลับเป็น mm ทีหลังเสมอ
-      canvas.style.width = "19mm";
-      canvas.style.height = "19mm";
+      canvas.style.width = "15mm";
+      canvas.style.height = "15mm";
 
       corner.textContent = job.pass + "-" + job.boxNumber;
       resolve();
